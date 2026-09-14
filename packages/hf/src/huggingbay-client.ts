@@ -193,9 +193,7 @@ export class HuggingBayClient {
         }),
       });
     } catch (cause) {
-      throw new EnspackError("FETCH", `Hugging Bay fallback POST failed for ${artifactId}`, {
-        cause,
-      });
+      throw new EnspackError("FETCH", `Hugging Bay fallback POST failed for ${artifactId}`, cause);
     }
     if (res.status < 200 || res.status >= 300) {
       throw new EnspackError("PUBLISH", `Hugging Bay fallback ${artifactId} HTTP ${res.status}`);
@@ -207,7 +205,7 @@ export class HuggingBayClient {
     try {
       return await this.fetchFn(url, { headers: { accept: "application/json" } });
     } catch (cause) {
-      throw new EnspackError("FETCH", `request failed for ${url}`, { cause });
+      throw new EnspackError("FETCH", `request failed for ${url}`, cause);
     }
   }
 }

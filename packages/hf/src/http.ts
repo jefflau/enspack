@@ -32,7 +32,7 @@ export async function readJson(res: Response): Promise<unknown> {
   try {
     return await res.json();
   } catch (cause) {
-    throw new EnspackError("FETCH", `invalid JSON from ${res.url}`, { cause });
+    throw new EnspackError("FETCH", `invalid JSON from ${res.url}`, cause);
   }
 }
 
@@ -57,7 +57,7 @@ export async function readCappedBytes(
   return buf;
 }
 
-export function bearerHeaders(token: string | undefined): HeadersInit {
+export function bearerHeaders(token: string | undefined): Record<string, string> {
   const headers: Record<string, string> = { accept: "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
   return headers;

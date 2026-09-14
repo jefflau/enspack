@@ -239,7 +239,7 @@ export class HfClient {
     try {
       return await this.fetchFn(url, { headers: bearerHeaders(this.#token) });
     } catch (cause) {
-      throw new EnspackError("FETCH", `request failed for ${url}`, { cause });
+      throw new EnspackError("FETCH", `request failed for ${url}`, cause);
     }
   }
 }
