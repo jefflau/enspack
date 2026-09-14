@@ -70,30 +70,31 @@ async function flattenTopDir(dest: string, topName: string): Promise<void> {
   await rm(top, { recursive: true, force: true });
 }
 
-async function removeUnselected(dest: string, select: string[] | undefined): Promise<void> {
+/**
+ * aria2c materialises pieces that straddle a selected/unselected boundary, so
+ * unselected torrent files can appear as partial files. Only paths listed in the
+ * metainfo are removed; anything else in `dest` is left alone.
+ */
+async function removeUnselected(
+  dest: string,
+  parsed: ParsedTorrent,
+  select: string[] | undefined,
+): Promise<void> {
   if (isSelectAll(select)) return;
-
-  async function walk(rel: string): Promise<void> {
-    const abs = rel === "" ? dest : join(dest, rel);
-    const entries = await readdir(abs, { withFileTypes: true });
-    for (const entry of entries) {
-      const childRel = rel === "" ? entry.name : `${rel}/${entry.name}`;
-      const full = join(dest, childRel);
-      if (entry.isDirectory()) {
-        await walk(childRel);
-        const leftover = await readdir(full);
-        if (leftover.length === 0) {
-          await rm(full, { recursive: true, force: true });
-        }
-        continue;
-      }
-      if (!matchesSelect(childRel, select)) {
-        await rm(full, { force: true });
+  for (const file of parsed.files) {
+    const rel = stripTorrentTopDir(file.path, parsed.name);
+    if (matchesSelect(rel, select)) continue;
+    await rm(join(dest, rel), { force: true });
+    const parent = rel.includes("/") ? join(dest, rel.slice(0, rel.lastIndexOf("/"))) : undefined;
+    if (parent !== undefined) {
+      try {
+        if ((await readdir(parent)).length === 0)
+          await rm(parent, { recursive: true, force: true });
+      } catch {
+        /* parent already gone */
       }
     }
   }
-
-  await walk("");
 }
 
 /**
@@ -237,7 +238,7 @@ export class Aria2Downloader implements Downloader {
       ];
       await this.run(args, opts, "download");
       await flattenTopDir(dest, parsed.name);
-      await removeUnselected(dest, opts.select);
+      await removeUnselected(dest, parsed, opts.select);
     } finally {
       await rm(tmp, { recursive: true, force: true });
     }
