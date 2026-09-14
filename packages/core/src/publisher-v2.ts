@@ -68,6 +68,8 @@ async function estimateCallGas(
       account,
       to: call.to,
       data: call.data,
+      // Calldata is already encoded; skip nonce/fee RPCs so dry-run works on mocks.
+      prepare: false,
     });
   } catch (cause) {
     throw new EnspackError("PUBLISH", `gas estimation failed: ${call.description}`, cause);

@@ -1,6 +1,14 @@
 import { CID } from "multiformats/cid";
 import { sha256 } from "multiformats/hashes/sha2";
-import { type Address, createPublicClient, custom, encodeFunctionResult, zeroAddress } from "viem";
+import {
+  type Address,
+  type Hex,
+  createPublicClient,
+  custom,
+  decodeFunctionData,
+  encodeFunctionResult,
+  zeroAddress,
+} from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -76,6 +84,7 @@ function ownedPublisher(opts?: Partial<NameStateV2>): NameStateV2 {
 function mockClient() {
   return createPublicClient({
     chain: sepolia,
+    batch: { multicall: false },
     transport: custom({
       async request({ method, params }) {
         if (method === "eth_chainId") {
@@ -84,22 +93,57 @@ function mockClient() {
         if (method === "eth_estimateGas") {
           return "0x5208";
         }
+        if (method === "eth_gasPrice" || method === "eth_maxPriorityFeePerGas") {
+          return "0x3b9aca00";
+        }
+        if (method === "eth_getTransactionCount") {
+          return "0x0";
+        }
+        if (method === "eth_getCode") {
+          return "0x";
+        }
+        if (method === "eth_getBlockByNumber") {
+          return {
+            number: "0x1",
+            hash: `0x${"11".repeat(32)}`,
+            timestamp: "0x66e2d800",
+            gasLimit: "0x1c9c380",
+            gasUsed: "0x0",
+            baseFeePerGas: "0x3b9aca00",
+            miner: ACCOUNT0.address,
+            parentHash: `0x${"00".repeat(32)}`,
+            transactions: [],
+          };
+        }
         if (method === "eth_call") {
-          const data = (params as [{ data?: string }] | undefined)?.[0]?.data ?? "0x";
-          const selector = data.slice(0, 10).toLowerCase();
-          if (selector === "0xbc1c58d1") {
-            return encodeFunctionResult({
-              abi: contenthashResolverAbi,
-              functionName: "contenthash",
-              result: "0x",
-            });
+          const tx = (params as [{ data?: Hex; input?: Hex }] | undefined)?.[0];
+          const data = tx?.data ?? tx?.input;
+          if (data === undefined) {
+            return "0x";
           }
-          if (selector === "0x59d1d43d") {
-            return encodeFunctionResult({
-              abi: textResolverAbi,
-              functionName: "text",
-              result: "",
-            });
+          try {
+            const decoded = decodeFunctionData({ abi: contenthashResolverAbi, data });
+            if (decoded.functionName === "contenthash") {
+              return encodeFunctionResult({
+                abi: contenthashResolverAbi,
+                functionName: "contenthash",
+                result: "0x",
+              });
+            }
+          } catch {
+            // not contenthash
+          }
+          try {
+            const decoded = decodeFunctionData({ abi: textResolverAbi, data });
+            if (decoded.functionName === "text") {
+              return encodeFunctionResult({
+                abi: textResolverAbi,
+                functionName: "text",
+                result: "",
+              });
+            }
+          } catch {
+            // not text
           }
           return "0x";
         }

@@ -368,6 +368,10 @@ describe.skipIf(!anvilAvailable)("publisher v2 anvil sepolia fork", { timeout: 3
   it("account lacking ROLE_SET_RESOLVER gets PUBLISH naming the missing role", async () => {
     const { publicClient, wallet0 } = clients();
     const account2 = privateKeyToAccount(ANVIL_2_KEY);
+    await publicClient.request({
+      method: "anvil_setCode",
+      params: [account2.address, "0x"],
+    } as never);
     await registerSubname(
       wallet0,
       publicClient,
