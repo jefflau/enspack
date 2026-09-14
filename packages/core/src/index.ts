@@ -19,6 +19,16 @@ export type { EnspackChainName } from "./ens/client.js";
 export { decodeContenthashToCid, encodeIpfsContenthash } from "./ens/contenthash.js";
 export { dnsEncodeName } from "./ens/dns.js";
 export { hfCacheRepoDir } from "./hf-cache.js";
+export type { CoreInstaller, InstallRequest } from "./install/installer.js";
+export { createInstaller } from "./install/installer.js";
+export { emitModelfile, selectedGgufs } from "./install/modelfile.js";
+export {
+  hfCacheRepoRoot,
+  resolveHfHome,
+  resolveSafeInstallPath,
+  snapshotRevision,
+} from "./install/paths.js";
+export { isSelectAll, matchesSelect } from "./install/select.js";
 export type {
   Downloader,
   Installer,
@@ -46,6 +56,18 @@ export type {
 } from "./ipfs/types.js";
 export { createResolver } from "./resolver.js";
 export type { CreateResolverOptions } from "./resolver.js";
+export {
+  addToLock,
+  assertLockMatch,
+  findLockEntry,
+  lockEntryFrom,
+  lockKeyFor,
+  readLock,
+  removeFromLock,
+  serializeLock,
+  updateLock,
+  writeLock,
+} from "./lock/lockfile.js";
 export {
   isVersionLabel,
   labelhashOf,
