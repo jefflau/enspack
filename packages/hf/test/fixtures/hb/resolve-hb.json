@@ -1,0 +1,20 @@
+{
+  "_status": 200,
+  "schemaVersion": "hugging-bay.hb-resolve.v1",
+  "requestedUri": "hb://Qwen/Qwen2.5-7B-Instruct@sha256:d82247b7101aea36fd25bc61273bc1d2627d2cc0cb0fd29cb9586044f4e999fd",
+  "status": "resolved",
+  "artifactId": "hf-model-qwen-qwen2-5-7b-instruct",
+  "repo": "Qwen/Qwen2.5-7B-Instruct",
+  "currentUri": "hb://Qwen/Qwen2.5-7B-Instruct@sha256:d82247b7101aea36fd25bc61273bc1d2627d2cc0cb0fd29cb9586044f4e999fd",
+  "currentDigest": "sha256:d82247b7101aea36fd25bc61273bc1d2627d2cc0cb0fd29cb9586044f4e999fd",
+  "digestMethod": "derived-file-hashes",
+  "reportUrl": "https://huggingbay.xyz/api/v1/artifacts/hf-model-qwen-qwen2-5-7b-instruct/report",
+  "containment": {
+    "state": "unavailable",
+    "canonicalState": "unknown",
+    "verificationState": "unknown",
+    "executable": false,
+    "downloadReady": false,
+    "summary": "Canonical artifact completeness, verification, execution readiness, and download readiness are unavailable during containment."
+  }
+}

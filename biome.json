@@ -11,5 +11,13 @@
       "correctness": { "noUnusedVariables": "error", "noUnusedImports": "error" }
     }
   },
-  "files": { "ignore": ["**/dist/**", "**/node_modules/**", "**/.ponder/**", "**/generated/**"] }
+  "files": {
+    "ignore": [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/.ponder/**",
+      "**/generated/**",
+      "**/test/fixtures/**"
+    ]
+  }
 }

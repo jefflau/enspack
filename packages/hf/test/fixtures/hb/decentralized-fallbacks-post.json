@@ -1,0 +1,5 @@
+{
+  "_status": 422,
+  "error": "peer_fallback_source_url_required",
+  "message": "Peer fallback requests must include a sourceUrl proving the magnet maps to this public upstream release."
+}

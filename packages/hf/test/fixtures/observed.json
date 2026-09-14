@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-09-14T06:19:27.038Z",
+  "repo": "Qwen/Qwen2.5-7B-Instruct",
+  "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+  "observed": [
+    "HF info 200 7886B",
+    "HF revision 200 7867B",
+    "HF tree page 0 200 2302B Link=",
+    "HF file .gitattributes 1519B sha256=11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+    "HF file LICENSE 11343B sha256=832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+    "HF file README.md 6240B sha256=f366f33bbf6bcadbb7d87f0a21a7b65584a56b8d58b0743c77c88bee625b93a6",
+    "HF file config.json 663B sha256=7463bb0ea78315365e6c6b74de4e73bbcc8359dfb0c5a737584e077d42c0b03c",
+    "HF file generation_config.json 243B sha256=3a8f9087e486054c8a4a08dae2e5a3ba62e23da212b5b8c08bc42cb983c3459f",
+    "HF file merges.txt 1671839B sha256=599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+    "HF file model.safetensors.index.json 27752B sha256=624bf7c47cd12468fdc16e38a47cf4f19e0415b859a223ba3c027eed2f0e1028",
+    "HF file tokenizer.json 7031645B sha256=c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+    "HF file tokenizer_config.json 7305B sha256=5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583",
+    "HF file vocab.json 2776833B sha256=ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "HB hb/resolve-hb-no-digest.json HTTP 400 82B",
+    "HB hb/resolve-hb.json HTTP 200 881B",
+    "HB hb/resolve-repo.json HTTP 200 17245B",
+    "HB hb/lock.json HTTP 200 3844B",
+    "HB hb/decentralized-fallbacks-get.json HTTP 200 1016B",
+    "HB fallback POST HTTP 422"
+  ]
+}

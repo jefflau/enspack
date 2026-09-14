@@ -1,0 +1,5 @@
+{
+  "_status": 400,
+  "error": "invalid_hb_uri",
+  "expected": "hb://{owner}/{name}@sha256:{64-hex-digest}"
+}

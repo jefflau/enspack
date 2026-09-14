@@ -1,0 +1,116 @@
+{
+  "_status": 200,
+  "schema": "hugging-bay.bay-lock.v1",
+  "generatedAt": "2026-09-14T06:19:26.299Z",
+  "api": "https://huggingbay.xyz",
+  "artifacts": [
+    {
+      "hbUri": "hb://Qwen/Qwen2.5-7B-Instruct@sha256:d82247b7101aea36fd25bc61273bc1d2627d2cc0cb0fd29cb9586044f4e999fd",
+      "digestMethod": "derived-file-hashes",
+      "id": "hf-model-qwen-qwen2-5-7b-instruct",
+      "repo": "Qwen/Qwen2.5-7B-Instruct",
+      "license": "apache-2.0",
+      "licenseVerdict": "yes",
+      "safety": {
+        "verdict": "unknown",
+        "scanStatus": "passed"
+      },
+      "hosting": "partial-weights",
+      "files": [
+        {
+          "path": ".gitattributes",
+          "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+          "sizeBytes": 1519,
+          "hosted": false
+        },
+        {
+          "path": "config.json",
+          "sha256": "7463bb0ea78315365e6c6b74de4e73bbcc8359dfb0c5a737584e077d42c0b03c",
+          "sizeBytes": 663,
+          "hosted": true
+        },
+        {
+          "path": "generation_config.json",
+          "sha256": "3a8f9087e486054c8a4a08dae2e5a3ba62e23da212b5b8c08bc42cb983c3459f",
+          "sizeBytes": 243,
+          "hosted": true
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+          "sizeBytes": 11343,
+          "hosted": false
+        },
+        {
+          "path": "merges.txt",
+          "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+          "sizeBytes": 1671839,
+          "hosted": true
+        },
+        {
+          "path": "model-00001-of-00004.safetensors",
+          "sha256": "a1333e6293854747c481288ea83b348226af178dd565c49b6f9495ba1966aba7",
+          "sizeBytes": 3945441440,
+          "hosted": true
+        },
+        {
+          "path": "model-00002-of-00004.safetensors",
+          "sha256": "f5d25a2772cb825164a2a2c0fb6d51a87e282abf21e4dd75bc5cfb3cd0ea6185",
+          "sizeBytes": 3864726352,
+          "hosted": true
+        },
+        {
+          "path": "model-00003-of-00004.safetensors",
+          "sha256": "8efdec4c1bc12317ae1a38dc42b595ce777738a64deea3fcb8a0a91381bcdfd5",
+          "sizeBytes": 3864726424,
+          "hosted": true
+        },
+        {
+          "path": "model-00004-of-00004.safetensors",
+          "sha256": "1a72d403cdf0c1ec3cb7f289f17b394a01e64394c2e9b3c0f94dbce3faf879bd",
+          "sizeBytes": 3556377672,
+          "hosted": true
+        },
+        {
+          "path": "model.safetensors.index.json",
+          "sha256": "624bf7c47cd12468fdc16e38a47cf4f19e0415b859a223ba3c027eed2f0e1028",
+          "sizeBytes": 27752,
+          "hosted": true
+        },
+        {
+          "path": "README.md",
+          "sha256": "f366f33bbf6bcadbb7d87f0a21a7b65584a56b8d58b0743c77c88bee625b93a6",
+          "sizeBytes": 6240,
+          "hosted": false
+        },
+        {
+          "path": "tokenizer_config.json",
+          "sha256": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583",
+          "sizeBytes": 7305,
+          "hosted": true
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+          "sizeBytes": 7031645,
+          "hosted": true
+        },
+        {
+          "path": "vocab.json",
+          "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+          "sizeBytes": 2776833,
+          "hosted": true
+        }
+      ],
+      "sourceUrl": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct"
+    }
+  ],
+  "policy": {
+    "requireHashes": true,
+    "allowExternal": true
+  },
+  "verify": {
+    "anyFile": "https://huggingbay.xyz/api/safety?sha256={hex}",
+    "report": "https://huggingbay.xyz/api/v1/artifacts/hf-model-qwen-qwen2-5-7b-instruct/report"
+  }
+}

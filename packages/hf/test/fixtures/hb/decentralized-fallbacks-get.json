@@ -1,0 +1,40 @@
+{
+  "_status": 200,
+  "schemaVersion": "hugging-bay.peer-fallback-request-intake.v1",
+  "artifactId": "hf-model-qwen-qwen2-5-7b-instruct",
+  "endpoint": "https://huggingbay.xyz/api/artifacts/hf-model-qwen-qwen2-5-7b-instruct/decentralized-fallbacks",
+  "reviewedFallbacks": "https://huggingbay.xyz/api/artifacts/hf-model-qwen-qwen2-5-7b-instruct/peer-fallbacks",
+  "method": "POST",
+  "authenticationRequired": false,
+  "request": {
+    "required": [
+      "sourceUrl",
+      "filePath"
+    ],
+    "properties": {
+      "sourceUrl": {
+        "type": "string",
+        "format": "uri"
+      },
+      "filePath": {
+        "type": "string"
+      },
+      "magnetUri": {
+        "type": "string"
+      },
+      "infoHash": {
+        "type": "string"
+      }
+    }
+  },
+  "openapi": "https://huggingbay.xyz/openapi.json",
+  "note": "Submitting metadata creates a review request only. Unreviewed peer-assisted links are never public distribution.",
+  "containment": {
+    "state": "unavailable",
+    "canonicalState": "unknown",
+    "verificationState": "unknown",
+    "executable": false,
+    "downloadReady": false,
+    "summary": "Canonical artifact completeness, verification, execution readiness, and download readiness are unavailable during containment."
+  }
+}
