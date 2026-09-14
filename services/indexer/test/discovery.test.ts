@@ -1,7 +1,7 @@
 import { dnsEncodeName } from "@enspack/core";
 import { zeroAddress } from "viem";
 import { describe, expect, it } from "vitest";
-import { discoverResolvers } from "../src/config.js";
+import { type ResolverReadClient, discoverResolvers } from "../src/config.js";
 
 const R_ROOT = "0x1111111111111111111111111111111111111111" as const;
 const R_MIRRORS = "0x2222222222222222222222222222222222222222" as const;
@@ -12,15 +12,13 @@ function dnsOf(name: string): string {
   return dnsEncodeName(name);
 }
 
-function mockFindResolver(map: Record<string, `0x${string}`>): {
-  readContract: (opts: { functionName: string; args: readonly unknown[] }) => Promise<unknown>;
-} {
+function mockFindResolver(map: Record<string, `0x${string}`>): ResolverReadClient {
   return {
-    async readContract({ functionName, args }) {
-      if (functionName !== "findResolver") {
-        throw new Error(`unexpected ${functionName}`);
+    async readContract(opts) {
+      if (opts.functionName !== "findResolver") {
+        throw new Error(`unexpected ${String(opts.functionName)}`);
       }
-      const dns = args[0];
+      const dns = Array.isArray(opts.args) ? opts.args[0] : undefined;
       if (typeof dns !== "string") {
         throw new Error("expected dns name");
       }
@@ -34,7 +32,7 @@ function mockFindResolver(map: Record<string, `0x${string}`>): {
       }
       throw new Error(`unexpected name ${dns}`);
     },
-  };
+  } as ResolverReadClient;
 }
 
 describe("discoverResolvers v2 (Sepolia)", () => {
