@@ -116,7 +116,7 @@ describe.skipIf(skip)("sepolia e2e", { timeout: 600_000 }, () => {
       pinner,
       ...(gateways !== undefined ? { gateways } : {}),
     });
-    const resolver = createResolver({ chain: "sepolia", rpcUrl: rpc, store });
+    const resolver = createResolver({ chain: "sepolia", rpcUrl: rpc, store, ensVersion: "v2" });
 
     let version = "1.0.0";
     try {
@@ -171,12 +171,21 @@ describe.skipIf(skip)("sepolia e2e", { timeout: 600_000 }, () => {
     }
     const manifest = validateManifest(first);
     const C = await store.put(canonicalJson(manifest), "application/json");
-    const result = await createPublisher({ client, wallet, account }).publish({
+    const result = await createPublisher({
+      client,
+      wallet,
+      account,
+      ensVersion: "v2",
+    }).publish({
       manifest,
       manifestCid: C,
       chain: "sepolia",
     });
-    expect(result.txs.length).toBeGreaterThanOrEqual(2);
+    if (result.created.model) {
+      expect(result.txs.length).toBeGreaterThanOrEqual(4);
+    } else {
+      expect(result.txs).toHaveLength(2);
+    }
     publishedName = MODEL;
   });
 
@@ -203,6 +212,14 @@ describe.skipIf(skip)("sepolia e2e", { timeout: 600_000 }, () => {
     expect(payload.verified).toBe(true);
     expect(payload.cid).not.toBeNull();
     expect(existsSync(payload.installedPath)).toBe(true);
+
+    const inspected = await spawnCli(
+      ["inspect", publishedName, "--json", "--chain", "sepolia"],
+      env,
+      hfHome,
+    );
+    expect(inspected.code, inspected.stderr).toBe(0);
+    expect((lastJsonObject(inspected.stdout) as { ensVersion: string }).ensVersion).toBe("v2");
 
     const verified = await spawnCli(
       ["verify", publishedName, payload.installedPath, "--json", "--chain", "sepolia"],
