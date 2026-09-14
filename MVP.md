@@ -20,9 +20,12 @@ Done when all of the following are true on Ethereum mainnet:
    mainnet with its latest manifest.
 6. ≥ 25 mirrored models under `mirrors.enspack.eth` are seeded and
    downloadable (see `BOOTSTRAP.md`).
+7. `https://enspack.dev` shows every indexed name with its latest manifest,
+   per-file hashes, publisher proof and a copyable `enspack get` line, backed
+   by `index.enspack.dev`.
 
-Out of scope for MVP: web catalog UI, hybrid v2 torrents, embedded torrent
-client, OCI publishing, L2/offchain subnames, paid seeding tiers.
+Out of scope for MVP: hybrid v2 torrents, embedded torrent client, OCI
+publishing, L2/offchain subnames, paid seeding tiers.
 
 ## 1. Repository layout and toolchain
 
@@ -41,6 +44,8 @@ enspack/
     seed/                     seed node API + qBittorrent-nox + Kubo (docker compose)
     indexer/                  Ponder app + JSON API
   bootstrap/                  models.yaml + publish runner
+  apps/
+    site/                     static catalog site over the indexer API (WP-19)
   infra/                      docker compose, deploy notes
   test/
     fixtures/                 small model folders for swarm tests
@@ -253,9 +258,39 @@ merge order; development can start in parallel against the interfaces above.
   `versions` (P1, only if WP-08 lands early).
 - Depends on: everything.
 
+### WP-19 catalog site
+- Deliverable: `apps/site`, a static, read-only site over the indexer JSON
+  API (§4.3) deployed at `enspack.dev`; no wallet, no writes, no backend of
+  its own; build reads only `PUBLIC_INDEX_URL`, `PUBLIC_REGISTRAR_URL`,
+  `PUBLIC_CHAIN` (no keys or RPC URLs in the bundle); a "Sepolia testnet"
+  banner until mainnet is live. Pages: **Home** (pitch, `enspack get`
+  one-liner, live counts, model list, `q=` search); **Model** `/name/<model>`
+  from `/v1/names/:name` rendering the trust chain ENS name → `contenthash`
+  CID → manifest → infohash + webseeds → `files[]` SHA-256, each hop linking
+  to the artifact (ENS app, IPFS gateway, magnet, HF at the pinned revision),
+  `versions[]` with mutable model name and immutable version name side by
+  side, license, `totalSize`, upstream repo + revision; **Publisher**
+  `/publisher/<label>` from `/v1/publishers` plus the registrar attestation;
+  **Violations** `/violations` from `/v1/violations` with an explicit "none"
+  empty state; **Get started** (README quickstart + registrar claim page
+  link). The site displays the indexer's result ("verified by the indexer at
+  block N") and never implies it re-verifies; hashes are shown in full with a
+  copy control; every page has a clear empty state so it deploys before
+  bootstrap finishes. (WP-18 is `enspack ens-setup`.)
+- Depends on: WP-11, WP-12 (real data on Sepolia); final wave.
+- Acceptance: `pnpm -r check` covers typecheck, biome and render tests
+  against recorded `/v1/names`, `/v1/names/:name`, `/v1/publishers`,
+  `/v1/violations` fixtures (no network); deployed against the Sepolia
+  indexer the home page lists the first mirrors and the model page for
+  `qwen--qwen2-5-7b-instruct.mirrors.enspack.eth` renders the full trust
+  chain with working links; a registrar-issued publisher page shows the
+  attestation; Lighthouse performance ≥ 90 on the model page; no wallet
+  prompt anywhere.
+
 Suggested parallel waves: **Wave 1** WP-01, WP-05, WP-06 (independent).
 **Wave 2** WP-02, WP-03, WP-07. **Wave 3** WP-04, WP-08, WP-09, WP-11.
-**Wave 4** WP-10, WP-12. **Wave 5** WP-13.
+**Wave 4** WP-10, WP-12. **Wave 5** WP-13. **Wave 6** WP-19 (after real data
+exists on Sepolia).
 
 ## 4. Service HTTP contracts
 
