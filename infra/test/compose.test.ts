@@ -40,7 +40,9 @@ describe("infra docker-compose.yml", () => {
 
   it("publishes only caddy 80/443, qbittorrent 6881, kubo 4001", () => {
     const services = doc.services ?? {};
-    expect([...new Set(publishedHostPorts(services.caddy))].sort()).toEqual([80, 443]);
+    expect([...new Set(publishedHostPorts(services.caddy))].sort((a, b) => a - b)).toEqual([
+      80, 443,
+    ]);
     expect([...new Set(publishedHostPorts(services.qbittorrent))]).toEqual([6881]);
     expect([...new Set(publishedHostPorts(services.kubo))]).toEqual([4001]);
     expect(publishedHostPorts(services["seed-api"])).toEqual([]);
