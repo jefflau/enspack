@@ -61,7 +61,10 @@ export async function start(): Promise<void> {
   const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../public");
   const hfToken = env("HF_TOKEN");
   const ensVersion = registrarEnsVersion(chain);
-  const ensV2 = ensVersion === "v2" ? ensV2ConfigFor(chain, process.env) : undefined;
+  const ensV2 =
+    ensVersion === "v2"
+      ? ensV2ConfigFor(chain, process.env as Record<string, string | undefined>)
+      : undefined;
   const registrarChain = createRegistrarChain({
     client,
     wallet,

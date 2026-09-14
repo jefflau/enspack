@@ -42,8 +42,10 @@ function rootState(overrides?: {
   expiry?: bigint;
   owner?: Address;
 }): {
+  name: string;
   label: string;
   parentRegistry: Address;
+  tokenIdOrLabelId: bigint;
   owner: Address;
   expiry: bigint;
   resolver: Address;
@@ -51,8 +53,10 @@ function rootState(overrides?: {
   status: number;
 } {
   return {
+    name: ROOT_NAME,
     label: "enspack",
     parentRegistry: "0x2222222222222222222222222222222222222222",
+    tokenIdOrLabelId: 0n,
     owner: OPERATOR,
     expiry: overrides?.expiry ?? EXPIRY,
     resolver: overrides?.resolver ?? FAKE_RESOLVER,
@@ -223,7 +227,7 @@ describe("issuePublisherSubname v2", () => {
       data: chain.sent[1]?.data ?? "0x",
     });
     expect(multicall.functionName).toBe("multicall");
-    const inner = multicall.args[0];
+    const inner = multicall.args[0] as readonly Hex[];
     expect(inner).toHaveLength(2);
     const node = namehashOf("alice.enspack.eth");
     const first = decodeFunctionData({ abi: permissionedResolverAbi, data: inner[0] ?? "0x" });

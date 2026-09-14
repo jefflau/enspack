@@ -59,7 +59,7 @@ export function ensVersionOf(chain: RegistrarChain): EnsVersion {
  */
 export function registrarEnsVersion(
   chain: EnspackChainName,
-  env: NodeJS.ProcessEnv = process.env,
+  env: Record<string, string | undefined> = process.env,
 ): EnsVersion {
   const raw = env.REGISTRAR_ENS_VERSION;
   if (raw === "v1" || raw === "v2") {

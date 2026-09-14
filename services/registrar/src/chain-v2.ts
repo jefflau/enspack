@@ -1,6 +1,7 @@
 import {
   type EnsV2Config,
   NAME_OWNER_ROLES,
+  type NameStateV2,
   REGISTRY_ROLES,
   RESOLVER_ROLES,
   SPEC_STRING,
@@ -28,8 +29,6 @@ const YEAR_SECONDS = 365 * 24 * 60 * 60;
 
 const ROOT_SETUP_HINT =
   "Run the on-chain setup in docs/ens-v2-sepolia (On-chain setup Jeff must do on Sepolia).";
-
-export type NameStateV2 = Awaited<ReturnType<typeof nameStateV2>>;
 
 function requireEnsV2(chain: RegistrarChain): EnsV2Config {
   if (chain.ensV2 === undefined) {
@@ -212,18 +211,30 @@ async function sendAndWaitV2(
   label: string,
 ): Promise<Hex> {
   const account = chain.wallet.account ?? chain.operator;
-  const gas = await chain.client.estimateGas({
-    account,
-    to,
-    data,
-  });
-  const hash = await chain.wallet.sendTransaction({
-    account,
-    to,
-    data,
-    gas,
-    ...(chain.client.chain !== undefined ? { chain: chain.client.chain } : {}),
-  } as never);
+  let gas: bigint;
+  try {
+    gas = await chain.client.estimateGas({
+      account,
+      to,
+      data,
+    });
+  } catch (err) {
+    const detail = err instanceof Error ? (err.message.split("\n")[0] ?? "unknown") : "unknown";
+    throw new HttpError(502, "CHAIN_ERROR", `gas estimate for ${label} failed: ${detail}`);
+  }
+  let hash: Hex;
+  try {
+    hash = await chain.wallet.sendTransaction({
+      account,
+      to,
+      data,
+      gas,
+      ...(chain.client.chain !== undefined ? { chain: chain.client.chain } : {}),
+    } as never);
+  } catch (err) {
+    const detail = err instanceof Error ? (err.message.split("\n")[0] ?? "unknown") : "unknown";
+    throw new HttpError(502, "CHAIN_ERROR", `send ${label} failed: ${detail}`);
+  }
   const receipt = await chain.client.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") {
     throw new HttpError(502, "CHAIN_ERROR", `transaction ${label} reverted`);

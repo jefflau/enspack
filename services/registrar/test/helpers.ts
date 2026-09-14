@@ -19,9 +19,13 @@ export const OPERATOR = privateKeyToAccount(ANVIL_1_KEY).address;
 export const CLAIMANT = privateKeyToAccount(ANVIL_2_KEY);
 export const FAKE_RESOLVER = "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63" as Address;
 export const FAKE_ROOT_REGISTRY = "0x1111111111111111111111111111111111111111" as Address;
-export const FAKE_V2_CONFIG = {
+export const FAKE_V2_CONFIG: EnsV2Config = {
   universalResolver: "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe",
-} as EnsV2Config;
+  verifiableFactory: "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef",
+  userRegistryImpl: "0x624a25d67b59d587752ebec8dded8827dae52050",
+  permissionedResolverImpl: "0x9eae5c2730a7dd16bdd1dee6421a1b91e3b0365e",
+  ethRegistrar: "0xa88553f454b77203b0d036a05c894d555eaaa2cc",
+};
 
 function testLabelId(label: string): bigint {
   return BigInt(keccak256(toBytes(label)));

@@ -13,8 +13,10 @@ vi.mock("@enspack/core", async (importOriginal) => {
     ...actual,
     labelId: extra.labelId ?? ((label: string) => BigInt(keccak256(toBytes(label)))),
     nameStateV2: vi.fn(async () => ({
+      name: "enspack.eth",
       label: "enspack",
       parentRegistry: actual.ENS_REGISTRY,
+      tokenIdOrLabelId: 0n,
       owner: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
       expiry: 2_000_000_000n,
       resolver: "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63",
