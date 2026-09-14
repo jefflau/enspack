@@ -28,5 +28,9 @@ export function killChild(child: ChildProcess): void {
 }
 
 export function spawnSeeder(args: string[]): ChildProcess {
-  return spawn("aria2c", args, { stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn("aria2c", args, { stdio: ["ignore", "pipe", "pipe"] });
+  // Drain output so a long seed never blocks on a full pipe.
+  child.stdout?.resume();
+  child.stderr?.resume();
+  return child;
 }

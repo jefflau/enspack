@@ -55,6 +55,9 @@ describe.skipIf(!aria2cAvailable())("local swarm", () => {
 
     const seeder = spawnSeeder([
       `--dir=${seedRoot}`,
+      // aria2 defaults to --seed-ratio=1.0, which stops the seeder as soon as
+      // it has uploaded one copy, sometimes before the leecher finishes.
+      "--seed-ratio=0.0",
       "--seed-time=60",
       `--listen-port=${seedPort}`,
       "--enable-dht=false",
