@@ -31,6 +31,10 @@ export async function runGet(deps: CliDeps, ref: string, flags: GetFlags): Promi
   if (flags.update === true) opts.update = true;
   if (flags.save === true) opts.save = true;
   const result = await runPipeline(deps, opts);
+  human(
+    deps.stderr,
+    `installed ${result.name} → ${result.installedPath} files=${result.files} verified=${result.verified}`,
+  );
   if (flags.json === true) {
     writeJson(deps.stdout, {
       name: result.name,
@@ -42,12 +46,7 @@ export async function runGet(deps: CliDeps, ref: string, flags: GetFlags): Promi
       totalSize: result.totalSize,
       verified: result.verified,
     });
-    return;
   }
-  human(
-    deps.stderr,
-    `installed ${result.name} → ${result.installedPath} files=${result.files} verified=${result.verified}`,
-  );
 }
 
 export function registerGet(program: Command, deps: CliDeps): void {

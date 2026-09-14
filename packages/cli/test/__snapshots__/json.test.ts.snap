@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`json payloads > add --json writes the lock entry 1`] = `
+"{"key":"tiny-model.mirrors.enspack.eth","resolved":"v1-0-0.tiny-model.mirrors.enspack.eth","cid":"bafkreihsttlkrfbniygoxztnhtdxhhpk4uerx6lpceyx4plsxnfuellp3i","infohash":"d1cf46db7b8956eb9d609514b00a2a99c82b2daa","totalSize":2097377,"select":["*"]}
+"
+`;
+
+exports[`json payloads > get --json writes only JSON on stdout 1`] = `
+"{"name":"tiny-model.mirrors.enspack.eth","node":"0xb637b6644da46f798e5260c95ebc3def2d97ffcad3f6dcfd97598ccac764b8e2","cid":"bafkreihsttlkrfbniygoxztnhtdxhhpk4uerx6lpceyx4plsxnfuellp3i","infohash":"d1cf46db7b8956eb9d609514b00a2a99c82b2daa","installedPath":"<tmp>/out","files":3,"totalSize":2097377,"verified":true}
+"
+`;
+
+exports[`json payloads > inspect --json writes the full manifest 1`] = `
+"{"spec":"enspack/0.1","name":"v1-0-0.tiny-model.mirrors.enspack.eth","model":"tiny-model.mirrors.enspack.eth","publisher":"mirrors.enspack.eth","version":"1.0.0","createdAt":"2026-09-14T00:00:00Z","displayName":"tiny-model","license":"apache-2.0","distribution":{"infohash":"d1cf46db7b8956eb9d609514b00a2a99c82b2daa","magnet":"magnet:?xt=urn:btih:d1cf46db7b8956eb9d609514b00a2a99c82b2daa&dn=tiny-model","torrent":{"cid":"bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"webseeds":["https://example.invalid/tiny-model/"]},"files":[{"path":"config.json","size":121,"sha256":"8f963c2ff3ea54adb7710a01eedda25ae332d318a61bfc2290a4824c6dfd0404","role":"config"},{"path":"model.safetensors","size":2097152,"sha256":"e65f71cc362051f8431b2ef21ed842a540fcf3f767279701c80884b4c19d11b0","role":"weight"},{"path":"tokenizer.json","size":104,"sha256":"dd6d9ca9a2ff2c2981a01ae688e1317b5cb470bd0f1f4b7eb536ce9f40486133","role":"tokenizer"}],"totalSize":2097377,"versions":[{"version":"1.0.0","name":"v1-0-0.tiny-model.mirrors.enspack.eth","cid":"bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","createdAt":"2026-09-14T00:00:00Z"}]}
+"
+`;
+
+exports[`json payloads > install --json reproduces the lockfile 1`] = `
+"{"installed":[{"name":"tiny-model.mirrors.enspack.eth","node":"0xb637b6644da46f798e5260c95ebc3def2d97ffcad3f6dcfd97598ccac764b8e2","cid":"bafkreihsttlkrfbniygoxztnhtdxhhpk4uerx6lpceyx4plsxnfuellp3i","infohash":"d1cf46db7b8956eb9d609514b00a2a99c82b2daa","installedPath":"<tmp>/installed","files":3,"totalSize":2097377,"verified":true}]}
+"
+`;
+
+exports[`json payloads > publish --json --dry-run uses an injected Publisher 1`] = `
+"{"name":"v1-0-0.qwen--qwen2-5-7b-instruct.mirrors.enspack.eth","model":"qwen--qwen2-5-7b-instruct.mirrors.enspack.eth","cid":"<cid>","infohash":"51be72106dc5ba6438b9b35c065f234b990c3b19","txs":[],"calls":[{"to":"0x0000000000000000000000000000000000000001","data":"0x","description":"multicall","gas":"123456"}]}
+"
+`;
+
+exports[`json payloads > seed --json prints infohash and state 1`] = `
+"{"infohash":"d1cf46db7b8956eb9d609514b00a2a99c82b2daa","state":"downloading"}
+"
+`;
+
+exports[`json payloads > update --json rewrites the entry 1`] = `
+"{"updated":[{"key":"tiny-model.mirrors.enspack.eth","cid":"bafkreihsttlkrfbniygoxztnhtdxhhpk4uerx6lpceyx4plsxnfuellp3i","resolved":"v1-0-0.tiny-model.mirrors.enspack.eth"}]}
+"
+`;
+
+exports[`json payloads > verify --json on a matching directory 1`] = `
+"{"ok":true}
+"
+`;
+
+exports[`json payloads > versions --json marks the latest 1`] = `
+"{"versions":[{"version":"1.0.0","name":"v1-0-0.tiny-model.mirrors.enspack.eth","cid":"bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","createdAt":"2026-09-14T00:00:00Z","latest":true}]}
+"
+`;

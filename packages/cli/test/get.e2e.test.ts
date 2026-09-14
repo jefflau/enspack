@@ -1,8 +1,9 @@
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { createServer } from "node:http";
+import { createServer as createHttpsServer } from "node:https";
 import type { AddressInfo } from "node:net";
 import { createServer as createNetServer } from "node:net";
 import { homedir, tmpdir } from "node:os";
@@ -272,10 +273,40 @@ function startGateway(
   });
 }
 
+function selfSignedTls(): { key: string; cert: string } {
+  const dir = mkdtempSync(join(tmpdir(), "enspack-tls-"));
+  const key = join(dir, "key.pem");
+  const cert = join(dir, "cert.pem");
+  const r = spawnSync(
+    "openssl",
+    [
+      "req",
+      "-x509",
+      "-newkey",
+      "rsa:2048",
+      "-keyout",
+      key,
+      "-out",
+      cert,
+      "-days",
+      "1",
+      "-nodes",
+      "-subj",
+      "/CN=127.0.0.1",
+    ],
+    { encoding: "utf8" },
+  );
+  if (r.status !== 0) {
+    throw new Error(`openssl failed: ${r.stderr}`);
+  }
+  return { key: readFileSync(key, "utf8"), cert: readFileSync(cert, "utf8") };
+}
+
 function startWebseed(root: string): Promise<{ url: string; close: () => Promise<void> }> {
+  const tls = selfSignedTls();
   return new Promise((resolve, reject) => {
-    const server = createServer((req, res) => {
-      const u = new URL(req.url ?? "/", "http://127.0.0.1");
+    const server = createHttpsServer({ key: tls.key, cert: tls.cert }, (req, res) => {
+      const u = new URL(req.url ?? "/", "https://127.0.0.1");
       let rel = decodeURIComponent(u.pathname).replace(/^\/+/, "");
       if (rel.startsWith("tiny-model/")) rel = rel.slice("tiny-model/".length);
       const abs = join(root, rel);
@@ -297,7 +328,7 @@ function startWebseed(root: string): Promise<{ url: string; close: () => Promise
     server.listen(0, "127.0.0.1", () => {
       const addr = server.address() as AddressInfo;
       resolve({
-        url: `http://127.0.0.1:${addr.port}/`,
+        url: `https://127.0.0.1:${addr.port}/`,
         close: () =>
           new Promise((r, j) => {
             server.close((err) => (err ? j(err) : r()));
@@ -504,6 +535,7 @@ describe.skipIf(skip)("enspack get e2e (anvil + local gateway)", { timeout: 180_
       ...process.env,
       ETH_RPC_URL: rpcUrl,
       ENSPACK_IPFS_GATEWAYS: gatewayTemplate,
+      NODE_TLS_REJECT_UNAUTHORIZED: "0",
     };
     env.SEPOLIA_RPC_URL = undefined;
 

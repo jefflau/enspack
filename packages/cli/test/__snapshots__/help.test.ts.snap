@@ -1,0 +1,191 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`help > snapshots --help for the root and every command > add 1`] = `
+"Usage: enspack add [options] <ref>
+
+Resolve a ref and append enspack.lock (SPEC §9)
+
+Arguments:
+  ref              enspack ref (SPEC §1.3)
+
+Options:
+  --select <glob>  record a file selection in the lock entry (repeatable)
+  --json           print machine-readable JSON to stdout (nothing else on
+                   stdout)
+  --chain <chain>  ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help       display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > get 1`] = `
+"Usage: enspack get [options] <ref>
+
+Resolve, download, verify and install a model (SPEC §4)
+
+Arguments:
+  ref                 enspack ref (SPEC §1.3)
+
+Options:
+  --dir <path>        install to a flat directory (SPEC §5)
+  --select <glob>     download and verify only matching files (repeatable)
+  --http-only         fetch files from webseeds[] over HTTP (SPEC §4 step 7c)
+  --allow-unverified  download via magnet when the name has no contenthash
+  --emit-modelfile    write an Ollama Modelfile next to a single .gguf
+  --update            accept a lockfile CID change (otherwise exit 3)
+  --save              write/create an enspack.lock entry for this ref
+  --json              print machine-readable JSON to stdout (nothing else on
+                      stdout)
+  --chain <chain>     ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help          display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > inspect 1`] = `
+"Usage: enspack inspect [options] <ref>
+
+Print a manifest summary (SPEC §3)
+
+Arguments:
+  ref              enspack ref (SPEC §1.3)
+
+Options:
+  --json           print machine-readable JSON to stdout (nothing else on
+                   stdout)
+  --chain <chain>  ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help       display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > install 1`] = `
+"Usage: enspack install [options]
+
+Install every enspack.lock entry (SPEC §9)
+
+Options:
+  --frozen         refuse to write the lockfile; fail if it is missing
+  --dir <path>     install to a flat directory (SPEC §5)
+  --http-only      fetch files from webseeds[] over HTTP
+  --json           print machine-readable JSON to stdout (nothing else on
+                   stdout)
+  --chain <chain>  ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help       display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > publish 1`] = `
+"Usage: enspack publish [options]
+
+Publish from Hugging Face (SPEC §8)
+
+Options:
+  --from-hf <org/repo>            Hugging Face repo to publish
+  --publisher <name>              ENS publisher name (e.g. qwen.enspack.eth)
+  --version <semver>              version string recorded in the manifest
+  --revision <sha>                HF commit SHA (default: resolve main)
+  --webseed <url>                 extra BEP 19 webseed URL (repeatable)
+  --pin <pinner>                  pin adapter: kubo | pinata | seed
+  --seed-node <url>               seed node base URL
+  --submit-hb                     POST the magnet to Hugging Bay as a
+                                  decentralized fallback
+  --dry-run                       do everything except pinning and on-chain
+                                  sends
+  --i-have-redistribution-rights  override the license / gated-repo policy gate
+  --json                          print machine-readable JSON to stdout
+                                  (nothing else on stdout)
+  --chain <chain>                 ENS chain: mainnet or sepolia (default:
+                                  "mainnet")
+  -h, --help                      display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > root 1`] = `
+"Usage: enspack [options] [command]
+
+Named, verifiable, host-independent distribution of model weights
+
+Options:
+  -h, --help                    display help for command
+
+Commands:
+  get [options] <ref>           Resolve, download, verify and install a model
+                                (SPEC §4)
+  inspect [options] <ref>       Print a manifest summary (SPEC §3)
+  versions [options] <ref>      List manifest.versions[] (SPEC §3)
+  verify [options] <ref> <dir>  Verify files[] SHA-256 in a directory (SPEC §4
+                                step 8)
+  add [options] <ref>           Resolve a ref and append enspack.lock (SPEC §9)
+  install [options]             Install every enspack.lock entry (SPEC §9)
+  update [options] [ref]        Re-resolve lockfile model names (SPEC §9)
+  publish [options]             Publish from Hugging Face (SPEC §8)
+  seed [options] <ref>          Ask a seed node to fetch and seed a name
+                                (MVP.md §4.2)
+  help [command]                display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > seed 1`] = `
+"Usage: enspack seed [options] <ref>
+
+Ask a seed node to fetch and seed a name (MVP.md §4.2)
+
+Arguments:
+  ref                enspack ref (SPEC §1.3)
+
+Options:
+  --seed-node <url>  seed node base URL
+  --json             print machine-readable JSON to stdout (nothing else on
+                     stdout)
+  --chain <chain>    ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help         display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > update 1`] = `
+"Usage: enspack update [options] [ref]
+
+Re-resolve lockfile model names (SPEC §9)
+
+Arguments:
+  ref              limit the update to one lock key
+
+Options:
+  --json           print machine-readable JSON to stdout (nothing else on
+                   stdout)
+  --chain <chain>  ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help       display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > verify 1`] = `
+"Usage: enspack verify [options] <ref> <dir>
+
+Verify files[] SHA-256 in a directory (SPEC §4 step 8)
+
+Arguments:
+  ref              enspack ref (SPEC §1.3)
+  dir              directory that already contains the files
+
+Options:
+  --select <glob>  verify only matching files (repeatable)
+  --json           print machine-readable JSON to stdout (nothing else on
+                   stdout)
+  --chain <chain>  ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help       display help for command
+"
+`;
+
+exports[`help > snapshots --help for the root and every command > versions 1`] = `
+"Usage: enspack versions [options] <ref>
+
+List manifest.versions[] (SPEC §3)
+
+Arguments:
+  ref              enspack ref (SPEC §1.3)
+
+Options:
+  --json           print machine-readable JSON to stdout (nothing else on
+                   stdout)
+  --chain <chain>  ENS chain: mainnet or sepolia (default: "mainnet")
+  -h, --help       display help for command
+"
+`;

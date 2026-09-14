@@ -10,7 +10,6 @@ import type {
   Pinner,
   Progress,
   Publisher,
-  Resolved,
   Resolver,
   Verifier,
   VerifyResult,
@@ -105,4 +104,4 @@ export interface GetJson {
   verified: boolean;
 }
 
-export type { EnspackChainName, Manifest, Resolved };
+export type { EnspackChainName, Manifest };

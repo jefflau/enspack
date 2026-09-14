@@ -184,7 +184,7 @@ describe("json payloads", () => {
       expect(typeof payload.infohash).toBe("string");
       expect(payload.txs).toEqual([]);
       expect(stderr.includes("cid ")).toBe(true);
-      expect(stdout).toMatchSnapshot();
+      expect(stdout.replace(/bafkrei[a-z2-7]+/g, "<cid>")).toMatchSnapshot();
     });
   });
 
