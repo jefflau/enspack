@@ -1,0 +1,49 @@
+{
+  "spec": "enspack/0.1",
+  "name": "v1-0-0.tiny-model.mirrors.enspack.eth",
+  "model": "tiny-model.mirrors.enspack.eth",
+  "publisher": "mirrors.enspack.eth",
+  "version": "1.0.0",
+  "createdAt": "2026-09-14T00:00:00Z",
+  "displayName": "tiny-model",
+  "license": "apache-2.0",
+  "distribution": {
+    "infohash": "d1cf46db7b8956eb9d609514b00a2a99c82b2daa",
+    "magnet": "magnet:?xt=urn:btih:d1cf46db7b8956eb9d609514b00a2a99c82b2daa&dn=tiny-model",
+    "torrent": {
+      "cid": "bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "webseeds": [
+      "https://example.invalid/tiny-model/"
+    ]
+  },
+  "files": [
+    {
+      "path": "config.json",
+      "size": 121,
+      "sha256": "8f963c2ff3ea54adb7710a01eedda25ae332d318a61bfc2290a4824c6dfd0404",
+      "role": "config"
+    },
+    {
+      "path": "model.safetensors",
+      "size": 2097152,
+      "sha256": "e65f71cc362051f8431b2ef21ed842a540fcf3f767279701c80884b4c19d11b0",
+      "role": "weight"
+    },
+    {
+      "path": "tokenizer.json",
+      "size": 104,
+      "sha256": "dd6d9ca9a2ff2c2981a01ae688e1317b5cb470bd0f1f4b7eb536ce9f40486133",
+      "role": "tokenizer"
+    }
+  ],
+  "totalSize": 2097377,
+  "versions": [
+    {
+      "version": "1.0.0",
+      "name": "v1-0-0.tiny-model.mirrors.enspack.eth",
+      "cid": "bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "createdAt": "2026-09-14T00:00:00Z"
+    }
+  ]
+}

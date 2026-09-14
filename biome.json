@@ -17,7 +17,9 @@
       "**/node_modules/**",
       "**/.ponder/**",
       "**/generated/**",
-      "**/test/fixtures/**"
+      "**/test/fixtures/**",
+      "**/*.safetensors",
+      "**/*.torrent"
     ]
   }
 }
