@@ -346,6 +346,13 @@ describe.skipIf(skip)("local swarm e2e (anvil + aria2c)", { timeout: 300_000 }, 
   });
 
   it("install exits 3 after the model name is repointed to a second CID", async () => {
+    const project = await mkdtemp(join(tmpdir(), "enspack-e2e-mismatch-"));
+    tmps.push(project);
+    const added = await spawnCli(["add", MODEL_NAME, "--json", "--chain", "mainnet"], env, project);
+    expect(added.code, added.stderr).toBe(0);
+    const lock = validateLock(JSON.parse(await readFile(join(project, "enspack.lock"), "utf8")));
+    expect(lock.models[MODEL_NAME]?.cid).toBe(cid);
+
     const hash = await wallet0.writeContract({
       address: publicResolver,
       abi: publicResolverWriteAbi,
@@ -354,13 +361,6 @@ describe.skipIf(skip)("local swarm e2e (anvil + aria2c)", { timeout: 300_000 }, 
     });
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     expect(receipt.status).toBe("success");
-
-    const project = await mkdtemp(join(tmpdir(), "enspack-e2e-mismatch-"));
-    tmps.push(project);
-    const added = await spawnCli(["add", MODEL_NAME, "--json", "--chain", "mainnet"], env, project);
-    expect(added.code, added.stderr).toBe(0);
-    const lock = validateLock(JSON.parse(await readFile(join(project, "enspack.lock"), "utf8")));
-    expect(lock.models[MODEL_NAME]?.cid).toBe(cid);
 
     const r = await spawnCli(
       [
