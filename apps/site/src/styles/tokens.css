@@ -41,6 +41,7 @@
   --sp-16: 64px;
 
   --content-max: 1120px;
+  --aside: 340px;
 }
 
 @media (prefers-color-scheme: light) {

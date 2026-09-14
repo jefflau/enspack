@@ -64,6 +64,7 @@ not published yet (MVP.md §0.1). Local proof uses Anvil + `test/fixtures/tiny-m
 | `services/seed` | `@enspack/seed` | seed node API + qBittorrent + Kubo compose |
 | `services/registrar` | `@enspack/registrar` | HF-proof → `enspack.eth` publisher subnames |
 | `services/indexer` | `@enspack/indexer` | Ponder indexer + JSON API |
+| `apps/site` | `@enspack/site` | catalog site, read-only view of the indexer API |
 | `bootstrap/` | `@enspack/bootstrap` | `models.yaml` mirror runner (`enspack-bootstrap plan|run`) |
 | `infra/` | `@enspack/infra` | one-box Sepolia deploy (Caddy + compose + scripts) |
 | `test/fixtures` | — | tiny-model folder + torrent for swarm tests |

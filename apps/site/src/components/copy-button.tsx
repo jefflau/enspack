@@ -23,6 +23,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
       type="button"
       className="copy-btn"
       onClick={onClick}
+      aria-live="polite"
       aria-label={copied ? "Copied" : `${label} to clipboard`}
       data-copied={copied ? "true" : undefined}
     >
