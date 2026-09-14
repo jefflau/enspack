@@ -5,6 +5,10 @@ details live in each package's `CHANGELOG.md`.
 
 ## 0.1.0
 
+WP-21 adds a one-box Sepolia MVP deploy under `infra/` (Caddy automatic HTTPS,
+qBittorrent, Kubo, seed-api, registrar, indexer, bootstrap profile). See
+`infra/README.md`.
+
 WP-18 adds `enspack ens-setup` for one-shot Sepolia ENSv2 on-chain setup
 (issue #17). WP-17 wires Sepolia ENSv2 through CLI, bootstrap, seed, indexer,
 e2e and docs. Mainnet ENSv1 is unchanged. See `docs/ens-v2.md`.
@@ -57,6 +61,11 @@ version-immutability violations, JSON API §4.3.
 
 Mirror runner for `bootstrap/models.yaml` under `mirrors.enspack.eth` (WP-12).
 `--chain sepolia` uses ENSv2 (4/2 txs + setup gas in `plan`).
+
+### `@enspack/infra`
+
+WP-21 one-box Sepolia MVP: Caddy reverse proxy, qBittorrent, Kubo, seed-api,
+registrar, indexer, bootstrap profile, `deploy.sh` / `bootstrap-remote.sh`.
 
 ### `@enspack/e2e`
 

@@ -65,11 +65,17 @@ not published yet (MVP.md §0.1). Local proof uses Anvil + `test/fixtures/tiny-m
 | `services/registrar` | `@enspack/registrar` | HF-proof → `enspack.eth` publisher subnames |
 | `services/indexer` | `@enspack/indexer` | Ponder indexer + JSON API |
 | `bootstrap/` | `@enspack/bootstrap` | `models.yaml` mirror runner (`enspack-bootstrap plan|run`) |
+| `infra/` | `@enspack/infra` | one-box Sepolia deploy (Caddy + compose + scripts) |
 | `test/fixtures` | — | tiny-model folder + torrent for swarm tests |
 | `test/e2e` | `@enspack/e2e` | local Anvil swarm (CI) + Sepolia (nightly) |
 
 Docs: `docs/publishing.md`, `docs/registrar.md`, `docs/seed-node.md`,
 `docs/indexer.md`, `docs/exit-codes.md`, `docs/ens-v2.md`.
+
+## Deploy (Sepolia MVP)
+
+One Docker VM (Caddy + qBittorrent + Kubo + seed + registrar + indexer):
+[`infra/README.md`](infra/README.md).
 
 ## Development
 

@@ -41,6 +41,7 @@ operator owns the name. Mainnet stays ENSv1 (3 / 2) and is still refused unless
 | `ENSPACK_KUBO_API` | `--pin kubo` (default `http://127.0.0.1:5001`) |
 | `ENSPACK_SEED_NODE` | `--pin seed` and `POST /v1/seed` |
 | `ENSPACK_BOOTSTRAP_ALLOW_MAINNET` | must be `1` **and** stdin must be a TTY to run mainnet |
+| `ENSPACK_BOOTSTRAP_STATE` | path to `state.json` (default `<package>/state.json`; infra volume uses `/data/state.json`) |
 | `ENSPACK_ENS_VERSION` | `v1` or `v2` (default v2 on sepolia, v1 on mainnet) |
 | `ENSPACK_ENSV2_*` | Universal Resolver / factory / implementation overrides |
 

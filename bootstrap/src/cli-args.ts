@@ -30,6 +30,7 @@ Usage:
 
 Env: SEPOLIA_RPC_URL / ETH_RPC_URL, ENSPACK_OPERATOR_KEY, HF_TOKEN,
      ENSPACK_KUBO_API, ENSPACK_SEED_NODE, ENSPACK_BOOTSTRAP_ALLOW_MAINNET,
+     ENSPACK_BOOTSTRAP_STATE (state.json path; default <package>/state.json),
      ENSPACK_ENS_VERSION (v1|v2; default v2 on sepolia, v1 on mainnet),
      ENSPACK_ENSV2_* (Universal Resolver / factory / implementations)
 `;

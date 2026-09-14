@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+- WP-21: `ENSPACK_BOOTSTRAP_STATE` overrides the `state.json` path so the one-box
+  seed volume can persist resume state. `bootstrap/Dockerfile` is the infra
+  compose `bootstrap` profile image (aria2c + `pnpm deploy --filter @enspack/bootstrap`).
+
 - WP-17: `--chain sepolia` uses ENSv2 (`ensVersionFor`); `--ens-version` /
   `ENSPACK_ENS_VERSION` override. Plan gas totals include `PublishResultV2.setup`.
   README notes v2 tx counts (4/2) and that `mirrors.enspack.eth` needs a

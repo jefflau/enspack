@@ -8,6 +8,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml tsconfig.base.json ./
 COPY schema ./schema
 COPY packages/core ./packages/core
 COPY services/indexer ./services/indexer
+COPY infra/package.json ./infra/package.json
 
 RUN pnpm install --frozen-lockfile --filter @enspack/indexer...
 RUN pnpm --filter @enspack/core build

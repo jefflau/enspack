@@ -7,6 +7,7 @@ COPY packages ./packages
 COPY schema ./schema
 COPY services/seed ./services/seed
 COPY bootstrap ./bootstrap
+COPY infra/package.json ./infra/package.json
 RUN mkdir -p test/e2e
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @enspack/core --filter @enspack/torrent --filter @enspack/seed build

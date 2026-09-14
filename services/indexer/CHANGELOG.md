@@ -2,6 +2,8 @@
 
 ## 0.1.0
 
+- WP-21: production Dockerfile copies `infra/package.json` so the workspace
+  stays complete when `@enspack/infra` is present.
 - WP-17: Sepolia (v2) discovers per-publisher PermissionedResolver proxies via
   `findResolverV2(enspack.eth)` and `findResolverV2(mirrors.enspack.eth)`, unions
   `ENSPACK_INDEXER_RESOLVERS_SEPOLIA`. Mainnet stays v1 `readResolverAddress`.

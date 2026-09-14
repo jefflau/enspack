@@ -29,6 +29,15 @@ function packageRoot(): string {
   return fileURLToPath(new URL("..", import.meta.url));
 }
 
+/** BOOTSTRAP.md §5: `ENSPACK_BOOTSTRAP_STATE` so a seedbox volume can hold state.json. */
+export function bootstrapStatePath(env: NodeJS.ProcessEnv, pkgRoot: string): string {
+  const fromEnv = env.ENSPACK_BOOTSTRAP_STATE;
+  if (fromEnv !== undefined && fromEnv !== "") {
+    return fromEnv;
+  }
+  return join(pkgRoot, "state.json");
+}
+
 function toJson(value: unknown): string {
   return `${JSON.stringify(value, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2)}\n`;
 }
@@ -97,7 +106,7 @@ export async function runCli(argv: string[], opts: RunCliOpts = {}): Promise<num
     }
 
     const downloads = parsed.downloads ?? join(root, "downloads");
-    const statePath = opts.statePath ?? join(root, "state.json");
+    const statePath = opts.statePath ?? bootstrapStatePath(env, root);
     const results = await runBootstrap(
       {
         config,

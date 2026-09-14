@@ -9,6 +9,7 @@ COPY schema ./schema
 COPY packages/core ./packages/core
 COPY packages/hf ./packages/hf
 COPY services/registrar ./services/registrar
+COPY infra/package.json ./infra/package.json
 
 RUN pnpm install --frozen-lockfile --filter @enspack/registrar...
 RUN pnpm --filter @enspack/core build
