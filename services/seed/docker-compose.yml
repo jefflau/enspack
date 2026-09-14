@@ -1,0 +1,67 @@
+# MVP.md WP-09: qBittorrent + Kubo + seed API.
+# Secrets and RPC URLs come from the environment / .env — never from this file.
+
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Etc/UTC
+      WEBUI_PORT: ${QBT_WEBUI_PORT:-8081}
+      TORRENTING_PORT: "6881"
+    ports:
+      - "${QBT_WEBUI_PORT:-8081}:${QBT_WEBUI_PORT:-8081}"
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - qbt-config:/config
+      - downloads:/downloads
+    restart: unless-stopped
+
+  kubo:
+    image: ipfs/kubo
+    environment:
+      IPFS_PROFILE: server
+    # Gateway only. API 5001 stays on the compose network (no host publish).
+    ports:
+      - "${KUBO_GATEWAY_PORT:-8090}:8080"
+    expose:
+      - "5001"
+      - "4001"
+    volumes:
+      - kubo-staging:/export
+      - kubo-data:/data/ipfs
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../..
+      dockerfile: services/seed/Dockerfile
+    environment:
+      PORT: "8080"
+      QBT_URL: ${QBT_URL:-http://qbittorrent:8081}
+      QBT_USER: ${QBT_USER}
+      QBT_PASS: ${QBT_PASS}
+      KUBO_API: ${KUBO_API:-http://kubo:5001}
+      ETH_RPC_URL: ${ETH_RPC_URL}
+      SEPOLIA_RPC_URL: ${SEPOLIA_RPC_URL}
+      ENSPACK_CHAIN: ${ENSPACK_CHAIN:-sepolia}
+      SEED_ALLOW_ROOTS: ${SEED_ALLOW_ROOTS:-enspack.eth}
+      SEED_QUOTA_BYTES_PER_PUBLISHER: ${SEED_QUOTA_BYTES_PER_PUBLISHER:-2199023255552}
+      SEED_LICENSE_ALLOWLIST: ${SEED_LICENSE_ALLOWLIST:-}
+      SEED_DOWNLOAD_DIR: /downloads
+    ports:
+      - "${SEED_PORT:-8080}:8080"
+    volumes:
+      - downloads:/downloads
+    depends_on:
+      - qbittorrent
+      - kubo
+    restart: unless-stopped
+
+volumes:
+  qbt-config:
+  downloads:
+  kubo-staging:
+  kubo-data:

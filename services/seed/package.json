@@ -1,0 +1,40 @@
+{
+  "name": "@enspack/seed",
+  "version": "0.1.0",
+  "description": "enspack seed node: Hono API + qBittorrent + Kubo (MVP.md WP-09 / §4.2)",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@enspack/core": "workspace:*",
+    "@enspack/torrent": "workspace:*",
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.7.0",
+    "parse-torrent": "^11.0.24"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "yaml": "^2.7.0"
+  }
+}
