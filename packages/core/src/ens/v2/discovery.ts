@@ -39,7 +39,11 @@ export async function rootRegistry(
       functionName: "ROOT_REGISTRY",
     });
   } catch (err) {
-    wrapResolve(err, "failed to read ENSv2 ROOT_REGISTRY");
+    const detail = err instanceof Error ? (err.message.split("\n")[0] ?? "") : String(err);
+    wrapResolve(
+      err,
+      `failed to read ENSv2 ROOT_REGISTRY from ${cfg.universalResolver}; is the RPC on Sepolia (chain 11155111)? ${detail}`,
+    );
   }
 }
 

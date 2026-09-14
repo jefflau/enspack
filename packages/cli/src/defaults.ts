@@ -123,11 +123,30 @@ function ensSetupFromEnv(env: NodeJS.ProcessEnv): NonNullable<CliDeps["ensSetupF
       transport: http(rpcUrl),
     });
     const cfg = ensV2ConfigFor(chain, env);
+    const assertChain = async (): Promise<void> => {
+      let id: number;
+      try {
+        id = await client.getChainId();
+      } catch (cause) {
+        throw new EnspackError("RESOLVE", `RPC for ${chain} is unreachable`, cause);
+      }
+      if (id !== viemChain.id) {
+        throw new EnspackError(
+          "RESOLVE",
+          `RPC for ${chain} reports chain id ${id}, expected ${viemChain.id}; check ${chain === "sepolia" ? "SEPOLIA_RPC_URL" : "ETH_RPC_URL"}`,
+        );
+      }
+    };
     return {
       account: account.address,
-      plan: (input) => planEnsSetup(client, cfg, { ...input, account: account.address }),
-      run: (input, opts) =>
-        runEnsSetup(client, wallet, cfg, { ...input, account: account.address }, opts),
+      plan: async (input) => {
+        await assertChain();
+        return planEnsSetup(client, cfg, { ...input, account: account.address });
+      },
+      run: async (input, opts) => {
+        await assertChain();
+        return runEnsSetup(client, wallet, cfg, { ...input, account: account.address }, opts);
+      },
     };
   };
 }
