@@ -30,11 +30,7 @@ import { ANVIL_0_KEY, ANVIL_1_KEY } from "../helpers.js";
 export const FORK_URLS: readonly string[] =
   process.env.ETH_RPC_URL !== undefined && process.env.ETH_RPC_URL !== ""
     ? [process.env.ETH_RPC_URL]
-    : [
-        "https://ethereum-rpc.publicnode.com",
-        "https://1rpc.io/eth",
-        "https://eth.drpc.org",
-      ];
+    : ["https://ethereum-rpc.publicnode.com", "https://1rpc.io/eth", "https://eth.drpc.org"];
 export const FORK_URL = FORK_URLS[0] ?? "";
 const FORK_BLOCK_LAG = 64;
 export const ROOT_NAME = "enspack-test.eth";

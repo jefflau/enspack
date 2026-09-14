@@ -98,11 +98,7 @@ const ANVIL_0_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf
 export const FORK_URLS: readonly string[] =
   process.env.ETH_RPC_URL !== undefined && process.env.ETH_RPC_URL !== ""
     ? [process.env.ETH_RPC_URL]
-    : [
-        "https://ethereum-rpc.publicnode.com",
-        "https://1rpc.io/eth",
-        "https://eth.drpc.org",
-      ];
+    : ["https://ethereum-rpc.publicnode.com", "https://1rpc.io/eth", "https://eth.drpc.org"];
 export const FORK_URL = FORK_URLS[0] ?? "";
 const FORK_BLOCK_LAG = 64;
 const PUBLISHER_NAME = "enspack-test.eth";

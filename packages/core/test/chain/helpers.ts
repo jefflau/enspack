@@ -35,11 +35,7 @@ export const ANVIL_1_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412
 export const FORK_URLS: readonly string[] =
   process.env.ETH_RPC_URL !== undefined && process.env.ETH_RPC_URL !== ""
     ? [process.env.ETH_RPC_URL]
-    : [
-        "https://ethereum-rpc.publicnode.com",
-        "https://1rpc.io/eth",
-        "https://eth.drpc.org",
-      ];
+    : ["https://ethereum-rpc.publicnode.com", "https://1rpc.io/eth", "https://eth.drpc.org"];
 export const FORK_URL = FORK_URLS[0] ?? "";
 const FORK_BLOCK_LAG = 64;
 
