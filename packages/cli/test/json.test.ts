@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { namehashOf } from "@enspack/core";
+import { ensVersionFor, namehashOf } from "@enspack/core";
 import { describe, expect, it } from "vitest";
 import type { CliHf } from "../src/types.js";
 import { baseDeps, copyFixture, runCli, stubHf, stubPublisher, withTmp } from "./helpers.js";
@@ -43,13 +43,13 @@ describe("json payloads", () => {
     });
   });
 
-  it("inspect --json writes the full manifest", async () => {
+  it("inspect --json writes the full manifest and ensVersion", async () => {
     await withTmp(async (tmp) => {
       const { deps, manifest } = await baseDeps(tmp);
       const { code, stdout, stderr } = await runCli(deps, ["inspect", manifest.model, "--json"]);
       expect(code).toBe(0);
       expect(stderr).toBe("");
-      expect(JSON.parse(stdout)).toEqual(manifest);
+      expect(JSON.parse(stdout)).toEqual({ ...manifest, ensVersion: "v1" });
       expect(stdout).toMatchSnapshot();
     });
   });
@@ -183,8 +183,156 @@ describe("json payloads", () => {
       expect(typeof payload.cid).toBe("string");
       expect(typeof payload.infohash).toBe("string");
       expect(payload.txs).toEqual([]);
+      expect(payload.ensVersion).toBe("v1");
+      expect(payload.setup).toEqual([]);
       expect(stderr.includes("cid ")).toBe(true);
+      expect(stderr).toMatch(/expected 3 transactions \(new model\)/);
       expect(stdout.replace(/bafkrei[a-z2-7]+/g, "<cid>")).toMatchSnapshot();
+    });
+  });
+
+  it("inspect --chain sepolia uses ensVersion v2 unless overridden", async () => {
+    await withTmp(async (tmp) => {
+      const { deps, manifest } = await baseDeps(tmp);
+      deps.env.SEPOLIA_RPC_URL = "http://127.0.0.1:1";
+      let seen: string | undefined;
+      const inner = deps.resolverFactory;
+      deps.resolverFactory = (chain, rpcUrl) => {
+        seen = ensVersionFor(chain, deps.env);
+        return inner(chain, rpcUrl);
+      };
+      const v2 = await runCli(deps, ["inspect", manifest.model, "--json", "--chain", "sepolia"]);
+      expect(v2.code).toBe(0);
+      expect(seen).toBe("v2");
+      expect((JSON.parse(v2.stdout) as { ensVersion: string }).ensVersion).toBe("v2");
+
+      const flagged = await runCli(deps, [
+        "inspect",
+        manifest.model,
+        "--json",
+        "--chain",
+        "sepolia",
+        "--ens-version",
+        "v1",
+      ]);
+      expect(flagged.code).toBe(0);
+      expect(seen).toBe("v1");
+      expect((JSON.parse(flagged.stdout) as { ensVersion: string }).ensVersion).toBe("v1");
+    });
+  });
+
+  it("inspect honors ENSPACK_ENS_VERSION=v1 on sepolia", async () => {
+    await withTmp(async (tmp) => {
+      const { deps, manifest } = await baseDeps(tmp);
+      deps.env.SEPOLIA_RPC_URL = "http://127.0.0.1:1";
+      deps.env.ENSPACK_ENS_VERSION = "v1";
+      let seen: string | undefined;
+      const inner = deps.resolverFactory;
+      deps.resolverFactory = (chain, rpcUrl) => {
+        seen = ensVersionFor(chain, deps.env);
+        return inner(chain, rpcUrl);
+      };
+      const r = await runCli(deps, ["inspect", manifest.model, "--json", "--chain", "sepolia"]);
+      expect(r.code).toBe(0);
+      expect(seen).toBe("v1");
+      expect((JSON.parse(r.stdout) as { ensVersion: string }).ensVersion).toBe("v1");
+    });
+  });
+
+  it("publish --json with a fake v2 publisher includes ensVersion and setup", async () => {
+    await withTmp(async (tmp) => {
+      const { deps } = await baseDeps(tmp);
+      deps.env.SEPOLIA_RPC_URL = "http://127.0.0.1:1";
+      const hello = Buffer.from("hello-enspack\n");
+      const digest = createHash("sha256").update(hello).digest("hex");
+      deps.hf = {
+        ...stubHf(),
+        async info() {
+          return {
+            gated: false,
+            private: false,
+            license: "apache-2.0",
+            sha: "b".repeat(40),
+            cardData: { license: "apache-2.0" },
+          };
+        },
+        async resolveRevision() {
+          return "b".repeat(40);
+        },
+        async buildFiles() {
+          return [{ path: "hello.txt", size: hello.length, sha256: digest, role: "other" }];
+        },
+      };
+      deps.downloader = {
+        async fetch(_m: import("@enspack/core").Manifest, dest: string) {
+          const { writeFile } = await import("node:fs/promises");
+          await mkdir(dest, { recursive: true });
+          await writeFile(join(dest, "hello.txt"), hello);
+        },
+      };
+      const setup = [
+        {
+          to: "0x0000000000000000000000000000000000000002" as const,
+          data: "0x" as const,
+          description: "setup: VerifiableFactory.deployProxy(UserRegistryImpl)",
+          gas: 80_000n,
+        },
+      ];
+      deps.publisherFactory = () =>
+        stubPublisher({
+          txs: [],
+          created: { model: true, version: true },
+          setup,
+          calls: [
+            ...setup,
+            {
+              to: "0x0000000000000000000000000000000000000001",
+              data: "0x",
+              description: "multicall",
+              gas: 123456n,
+            },
+          ],
+        });
+      const { code, stdout, stderr } = await runCli(deps, [
+        "publish",
+        "--from-hf",
+        "Qwen/Qwen2.5-7B-Instruct",
+        "--publisher",
+        "mirrors.enspack.eth",
+        "--version",
+        "1.0.0",
+        "--dry-run",
+        "--json",
+        "--chain",
+        "sepolia",
+      ]);
+      expect(code, stderr).toBe(0);
+      const payload = JSON.parse(stdout) as Record<string, unknown>;
+      expect(payload.ensVersion).toBe("v2");
+      expect(payload.setup).toEqual([
+        {
+          to: "0x0000000000000000000000000000000000000002",
+          data: "0x",
+          description: "setup: VerifiableFactory.deployProxy(UserRegistryImpl)",
+          gas: "80000",
+        },
+      ]);
+      expect(stderr).toMatch(/setup: VerifiableFactory\.deployProxy\(UserRegistryImpl\)/);
+      expect(stderr).toMatch(/expected 5 transactions \(4 new model \+ 1 setup\)/);
+    });
+  });
+
+  it("invalid --ens-version exits RESOLVE", async () => {
+    await withTmp(async (tmp) => {
+      const { deps, manifest } = await baseDeps(tmp);
+      const { code, stderr } = await runCli(deps, [
+        "inspect",
+        manifest.model,
+        "--ens-version",
+        "v3",
+      ]);
+      expect(code).toBe(2);
+      expect(stderr).toMatch(/must be v1 or v2/);
     });
   });
 

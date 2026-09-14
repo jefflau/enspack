@@ -28,6 +28,8 @@ and nothing else on stdout.
 | `seed <ref> --seed-node URL` | `POST /v1/seed {name}` (MVP.md §4.2) |
 
 Every command has `--help`. `--chain mainnet|sepolia` defaults to mainnet.
+`--ens-version v1|v2` (or `ENSPACK_ENS_VERSION`) overrides the chain default:
+Sepolia is ENSv2, mainnet is ENSv1. See `docs/ens-v2.md`.
 
 ### `get`
 
@@ -64,6 +66,12 @@ webseed; see `packages/cli/test/get.e2e.test.ts`.
 |----------|----------|
 | `ETH_RPC_URL` | Mainnet (and Anvil fork) JSON-RPC |
 | `SEPOLIA_RPC_URL` | Sepolia JSON-RPC |
+| `ENSPACK_ENS_VERSION` | `v1` or `v2`. Overrides `--chain` default (Sepolia → v2, mainnet → v1) |
+| `ENSPACK_ENSV2_UNIVERSAL_RESOLVER` | ENSv2 Universal Resolver (default `0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe`) |
+| `ENSPACK_ENSV2_VERIFIABLE_FACTORY` | VerifiableFactory (Sepolia redeploys; override if ENS docs change) |
+| `ENSPACK_ENSV2_USER_REGISTRY_IMPL` | UserRegistry implementation |
+| `ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL` | PermissionedResolver implementation |
+| `ENSPACK_ENSV2_ETH_REGISTRAR` | ETHRegistrar (ROLE_REGISTRAR on ETHRegistry) |
 | `ENSPACK_PUBLISHER_KEY` | 32-byte hex private key for `publish` (wired to core `createPublisher`; never logged) |
 | `HF_TOKEN` | Optional Hugging Face read token |
 | `PINATA_JWT` | `--pin pinata` |

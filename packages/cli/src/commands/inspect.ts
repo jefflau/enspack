@@ -1,4 +1,4 @@
-import { EnspackError } from "@enspack/core";
+import { EnspackError, ensVersionFor } from "@enspack/core";
 import type { Command } from "commander";
 import { human, writeJson } from "../io.js";
 import { addGlobalOpts, parseChain, rpcUrlFor } from "../opts.js";
@@ -15,6 +15,7 @@ export async function runInspect(
   flags: { json?: boolean; chain?: string },
 ): Promise<void> {
   const chain = parseChain(flags.chain ?? "mainnet");
+  const ensVersion = ensVersionFor(chain, deps.env);
   const resolved = await deps.resolverFactory(chain, rpcUrlFor(chain, deps.env)).resolve(ref, {
     chain,
   });
@@ -23,7 +24,7 @@ export async function runInspect(
     throw new EnspackError("VERIFY", `${resolved.name} has no manifest (no contenthash)`);
   }
   if (flags.json === true) {
-    writeJson(deps.stdout, manifest);
+    writeJson(deps.stdout, { ...manifest, ensVersion });
     return;
   }
   const lines = [

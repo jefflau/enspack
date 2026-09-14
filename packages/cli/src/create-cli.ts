@@ -8,6 +8,7 @@ import { registerSeed } from "./commands/seed.js";
 import { registerUpdate } from "./commands/update.js";
 import { registerVerify } from "./commands/verify.js";
 import { registerVersions } from "./commands/versions.js";
+import { applyEnsVersionFlag } from "./ens.js";
 import { exitCodeFor } from "./io.js";
 import type { CliDeps } from "./types.js";
 
@@ -55,6 +56,11 @@ export function createCli(opts: CreateCliOpts): { run: (argv?: string[]) => Prom
     registerUpdate(program, deps);
     registerPublish(program, deps);
     registerSeed(program, deps);
+
+    program.hook("preAction", (thisCommand) => {
+      const opts = thisCommand.opts<{ ensVersion?: string }>();
+      applyEnsVersionFlag(deps.env, opts.ensVersion);
+    });
 
     try {
       await program.parseAsync(argv, { from: "node" });

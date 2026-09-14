@@ -13,6 +13,7 @@ import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
 import { http, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, sepolia } from "viem/chains";
+import { ensOptsFor } from "./ens.js";
 import type { CliDeps, CliHf, Writer } from "./types.js";
 
 function asWriter(stream: NodeJS.WritableStream): Writer {
@@ -68,7 +69,14 @@ function publisherFromEnv(env: NodeJS.ProcessEnv): CliDeps["publisherFactory"] {
       chain: viemChain,
       transport: http(rpcUrl),
     });
-    return createPublisher({ client, wallet, account });
+    const ens = ensOptsFor(chain, env);
+    return createPublisher({
+      client,
+      wallet,
+      account,
+      ensVersion: ens.ensVersion,
+      ...(ens.ensV2 !== undefined ? { ensV2: ens.ensV2 } : {}),
+    });
   };
 }
 
@@ -121,7 +129,16 @@ export function createDefaultDeps(opts: DefaultDepsOpts = {}): CliDeps {
         ? opts.stderr
         : asWriter(opts.stderr);
   return {
-    resolverFactory: (chain, rpcUrl) => createResolver({ chain, rpcUrl, store }),
+    resolverFactory: (chain, rpcUrl) => {
+      const ens = ensOptsFor(chain, env);
+      return createResolver({
+        chain,
+        rpcUrl,
+        store,
+        ensVersion: ens.ensVersion,
+        ...(ens.ensV2 !== undefined ? { ensV2: ens.ensV2 } : {}),
+      });
+    },
     store,
     downloader: new Aria2Downloader({
       extraArgs:

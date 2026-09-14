@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 import {
   EnspackError,
   type Manifest,
+  type PublishCall,
+  type PublishResult,
   type Publisher,
   type Resolved,
   canonicalJson,
@@ -160,7 +162,7 @@ export function stubHf(): CliHf {
 }
 
 export function stubPublisher(
-  result?: Partial<Awaited<ReturnType<Publisher["publish"]>>>,
+  result?: Partial<PublishResult> & { setup?: PublishCall[] },
 ): Publisher {
   return {
     async publish(input) {

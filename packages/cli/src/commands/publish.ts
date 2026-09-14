@@ -11,6 +11,7 @@ import {
   type PublishResult,
   canonicalJson,
   createManifestStore,
+  ensVersionFor,
   formatPublishPlan,
   isEnspackError,
   kuboPinner,
@@ -25,6 +26,7 @@ import {
 import { crossCheck, hfWebseed } from "@enspack/hf";
 import { createTorrent, magnetFor } from "@enspack/torrent";
 import type { Command } from "commander";
+import { expectedPublishTxs, formatExpectedTxs, setupCalls } from "../ens.js";
 import { human, writeJson } from "../io.js";
 import { addGlobalOpts, collect, createProgressWriter, parseChain, rpcUrlFor } from "../opts.js";
 import type { CliDeps } from "../types.js";
@@ -299,7 +301,14 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
       chain,
       dryRun: flags.dryRun === true,
     });
+    const ensVersion = ensVersionFor(chain, deps.env);
+    const setup = setupCalls(published);
+    const expected = expectedPublishTxs(ensVersion, published.created, setup.length);
 
+    if (setup.length > 0) {
+      human(deps.stderr, formatPublishPlan(setup));
+    }
+    human(deps.stderr, formatExpectedTxs(expected));
     if (flags.dryRun === true) {
       human(deps.stderr, new TextDecoder().decode(manifestBytes));
       human(deps.stderr, `cid ${C}`);
@@ -345,6 +354,8 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
         infohash: torrent.infohash,
         txs: published.txs,
         calls: published.calls,
+        ensVersion,
+        setup,
       });
       return;
     }

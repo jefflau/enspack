@@ -12,7 +12,11 @@ export function collect(value: string, previous: string[] | undefined): string[]
 export function addGlobalOpts(cmd: Command): Command {
   return cmd
     .option("--json", "print machine-readable JSON to stdout (nothing else on stdout)")
-    .option("--chain <chain>", "ENS chain: mainnet or sepolia", "mainnet");
+    .option("--chain <chain>", "ENS chain: mainnet or sepolia", "mainnet")
+    .option(
+      "--ens-version <version>",
+      "ENS version: v1 or v2 (default: v2 on sepolia, v1 on mainnet)",
+    );
 }
 
 /** SPEC / AGENTS.md: `--chain mainnet|sepolia`. */
