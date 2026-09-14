@@ -60,9 +60,9 @@ export function resolveAnvilBin(): string | null {
 export const anvilBin = resolveAnvilBin();
 export const anvilAvailable = anvilBin !== null;
 
-function redact(text: string): string {
+function redactUrls(text: string, urls: readonly string[]): string {
   let out = text;
-  for (const url of FORK_URLS) {
+  for (const url of urls) {
     out = out.split(url).join("[fork-url]");
   }
   return out;
@@ -135,17 +135,26 @@ async function forkBlockNumber(forkUrl: string): Promise<number> {
   return Math.max(0, Number.parseInt(json.result, 16) - FORK_BLOCK_LAG);
 }
 
-export async function startAnvil(bin: string): Promise<{ proc: ChildProcess; url: string }> {
+export async function startAnvilFork(
+  bin: string,
+  forkUrls: readonly string[],
+): Promise<{ proc: ChildProcess; url: string }> {
+  if (forkUrls.length === 0) {
+    throw new Error("anvil fork requires at least one fork URL");
+  }
   let lastError: unknown;
-  const attempts = Math.max(3, FORK_URLS.length * 2);
+  const attempts = Math.max(3, forkUrls.length * 2);
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    const forkUrl = FORK_URLS[(attempt - 1) % FORK_URLS.length] ?? FORK_URL;
+    const forkUrl = forkUrls[(attempt - 1) % forkUrls.length];
+    if (forkUrl === undefined) {
+      throw new Error("anvil fork url list is empty");
+    }
     let blockNumber: number;
     try {
       blockNumber = await forkBlockNumber(forkUrl);
     } catch (err) {
       lastError = new Error(
-        `anvil fork start attempt ${attempt}/${attempts}: fork source unavailable: ${redact(String(err))}`,
+        `anvil fork start attempt ${attempt}/${attempts}: fork source unavailable: ${redactUrls(String(err), forkUrls)}`,
       );
       continue;
     }
@@ -177,13 +186,17 @@ export async function startAnvil(bin: string): Promise<{ proc: ChildProcess; url
       return { proc, url };
     } catch (err) {
       killPid(proc);
-      const stderr = redact(Buffer.concat(stderrChunks).toString("utf8"));
+      const stderr = redactUrls(Buffer.concat(stderrChunks).toString("utf8"), forkUrls);
       lastError = new Error(
-        `anvil fork start attempt ${attempt}/${attempts} failed: ${redact(String(err))}${stderr ? ` stderr=${stderr}` : ""}`,
+        `anvil fork start attempt ${attempt}/${attempts} failed: ${redactUrls(String(err), forkUrls)}${stderr ? ` stderr=${stderr}` : ""}`,
       );
     }
   }
   throw lastError instanceof Error ? lastError : new Error("anvil fork failed");
+}
+
+export async function startAnvil(bin: string): Promise<{ proc: ChildProcess; url: string }> {
+  return startAnvilFork(bin, FORK_URLS);
 }
 
 export async function anvilRpc(url: string, method: string, params: unknown[]): Promise<void> {

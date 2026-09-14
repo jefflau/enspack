@@ -18,6 +18,34 @@ export { publicClientFor, readResolverAddress } from "./ens/client.js";
 export type { EnspackChainName } from "./ens/client.js";
 export { decodeContenthashToCid, encodeIpfsContenthash } from "./ens/contenthash.js";
 export { dnsEncodeName } from "./ens/dns.js";
+export {
+  permissionedResolverAbi,
+  registryV2Abi,
+  universalResolverV2Abi,
+  verifiableFactoryAbi,
+} from "./ens/v2/abis.js";
+export { type EnsV2Config, type EnsVersion, ensV2ConfigFor, ensVersionFor } from "./ens/v2/config.js";
+export {
+  findExactRegistry,
+  findOwnerV2,
+  findParentRegistry,
+  findResolverV2,
+  hasRolesV2,
+  hasRootRolesV2,
+  labelId,
+  nameStateV2,
+  rootRegistry,
+} from "./ens/v2/discovery.js";
+export type { NameStateV2 } from "./ens/v2/discovery.js";
+export {
+  NAME_OWNER_ROLES,
+  REGISTRY_ROLES,
+  RESOLVER_ADMIN_ROLES,
+  RESOLVER_ROLES,
+  ROOT_RESOURCE,
+  USER_REGISTRY_ROOT_ROLES,
+  adminOf,
+} from "./ens/v2/roles.js";
 export { hfCacheRepoDir } from "./hf-cache.js";
 export type { CoreInstaller, InstallRequest } from "./install/installer.js";
 export { createInstaller } from "./install/installer.js";
@@ -56,7 +84,7 @@ export type {
 } from "./ipfs/types.js";
 export { createPublisher, formatPublishPlan } from "./publisher.js";
 export type { CreatePublisherOptions } from "./publisher.js";
-export { createResolver } from "./resolver.js";
+export { createResolver, readResolverAddressV2 } from "./resolver.js";
 export type { CreateResolverOptions } from "./resolver.js";
 export {
   addToLock,
