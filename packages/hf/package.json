@@ -1,0 +1,31 @@
+{
+  "name": "@enspack/hf",
+  "version": "0.1.0",
+  "description": "Hugging Face Hub and Hugging Bay clients for enspack (SPEC §8, §10, §11)",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "dependencies": {
+    "@enspack/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
