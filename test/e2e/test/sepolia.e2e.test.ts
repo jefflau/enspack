@@ -10,14 +10,13 @@ import {
   createResolver,
   isEnspackError,
   kuboPinner,
-  magnetFor,
   manifestCid,
   publicClientFor,
   seedNodePinner,
   validateManifest,
   versionLabel,
 } from "@enspack/core";
-import { createTorrent } from "@enspack/torrent";
+import { createTorrent, magnetFor } from "@enspack/torrent";
 import { http, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";

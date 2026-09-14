@@ -9,13 +9,12 @@ import {
   createManifestStore,
   createPublisher,
   encodeIpfsContenthash,
-  magnetFor,
   manifestCid,
   namehashOf,
   validateLock,
   validateManifest,
 } from "@enspack/core";
-import { createTorrent } from "@enspack/torrent";
+import { createTorrent, magnetFor } from "@enspack/torrent";
 import type { Address } from "viem";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
