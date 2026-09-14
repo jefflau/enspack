@@ -1,0 +1,246 @@
+# WP-21: one-box Sepolia MVP (Caddy + qBittorrent + Kubo + seed + registrar + indexer).
+# Secrets come from infra/.env — never from this file.
+#
+# Resource notes (BOOTSTRAP.md §4):
+# - Disk: 4 TB for Tier 1+2 snapshots on the `downloads` volume (~220 GB Tier 1).
+# - Network: unmetered 1 Gbit; publish 80/443 (Caddy), 6881 tcp/udp (BitTorrent),
+#   4001 tcp/udp (Kubo swarm). Kubo API, qBittorrent WebUI, registrar and indexer
+#   stay on the compose network only.
+# - CPU/RAM: 4 vCPU / 16 GB is enough for the three Node services + qBittorrent + Kubo.
+# - PGlite volumes (`registrar-data`, `indexer-data`) are the default DB; set
+#   DATABASE_URL to use Postgres instead.
+
+name: enspack
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      seed-api:
+        condition: service_healthy
+      registrar:
+        condition: service_healthy
+      indexer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent
+    restart: unless-stopped
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Etc/UTC
+      WEBUI_PORT: "8081"
+      TORRENTING_PORT: "6881"
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - qbt-config:/config
+      - downloads:/downloads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8081 >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  kubo:
+    image: ipfs/kubo
+    restart: unless-stopped
+    environment:
+      IPFS_PROFILE: server
+    ports:
+      - "4001:4001"
+      - "4001:4001/udp"
+    volumes:
+      - kubo-staging:/export
+      - kubo-data:/data/ipfs
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  seed-api:
+    build:
+      context: ..
+      dockerfile: services/seed/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      QBT_URL: http://qbittorrent:8081
+      QBT_USER: ${QBT_USER}
+      QBT_PASS: ${QBT_PASS}
+      KUBO_API: http://kubo:5001
+      ETH_RPC_URL: ${ETH_RPC_URL:-}
+      SEPOLIA_RPC_URL: ${SEPOLIA_RPC_URL}
+      ENSPACK_CHAIN: ${ENSPACK_CHAIN:-sepolia}
+      ENSPACK_ENS_VERSION: ${ENSPACK_ENS_VERSION:-v2}
+      ENSPACK_ENSV2_UNIVERSAL_RESOLVER: ${ENSPACK_ENSV2_UNIVERSAL_RESOLVER:-}
+      ENSPACK_ENSV2_VERIFIABLE_FACTORY: ${ENSPACK_ENSV2_VERIFIABLE_FACTORY:-}
+      ENSPACK_ENSV2_USER_REGISTRY_IMPL: ${ENSPACK_ENSV2_USER_REGISTRY_IMPL:-}
+      ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL: ${ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL:-}
+      ENSPACK_ENSV2_ETH_REGISTRAR: ${ENSPACK_ENSV2_ETH_REGISTRAR:-}
+      SEED_ALLOW_ROOTS: ${SEED_ALLOW_ROOTS:-enspack.eth}
+      SEED_QUOTA_BYTES_PER_PUBLISHER: ${SEED_QUOTA_BYTES_PER_PUBLISHER:-2199023255552}
+      SEED_LICENSE_ALLOWLIST: ${SEED_LICENSE_ALLOWLIST:-}
+      SEED_DOWNLOAD_DIR: /downloads
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - downloads:/downloads
+    depends_on:
+      qbittorrent:
+        condition: service_healthy
+      kubo:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  registrar:
+    build:
+      context: ..
+      dockerfile: services/registrar/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      ENSPACK_OPERATOR_KEY: ${ENSPACK_OPERATOR_KEY}
+      REGISTRAR_CHAIN: ${REGISTRAR_CHAIN:-sepolia}
+      REGISTRAR_ENS_VERSION: ${REGISTRAR_ENS_VERSION:-}
+      SEPOLIA_RPC_URL: ${SEPOLIA_RPC_URL}
+      ETH_RPC_URL: ${ETH_RPC_URL:-}
+      DATABASE_URL: ${DATABASE_URL:-}
+      PGLITE_DATA_DIR: ${PGLITE_DATA_DIR:-/data/pglite}
+      HF_TOKEN: ${HF_TOKEN:-}
+      ENSPACK_ENS_VERSION: ${ENSPACK_ENS_VERSION:-v2}
+      ENSPACK_ENSV2_UNIVERSAL_RESOLVER: ${ENSPACK_ENSV2_UNIVERSAL_RESOLVER:-}
+      ENSPACK_ENSV2_VERIFIABLE_FACTORY: ${ENSPACK_ENSV2_VERIFIABLE_FACTORY:-}
+      ENSPACK_ENSV2_USER_REGISTRY_IMPL: ${ENSPACK_ENSV2_USER_REGISTRY_IMPL:-}
+      ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL: ${ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL:-}
+      ENSPACK_ENSV2_ETH_REGISTRAR: ${ENSPACK_ENSV2_ETH_REGISTRAR:-}
+    volumes:
+      - registrar-data:/data/pglite
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  indexer:
+    build:
+      context: ..
+      dockerfile: services/indexer/Dockerfile
+    restart: unless-stopped
+    environment:
+      ETH_RPC_URL: ${ETH_RPC_URL:-}
+      SEPOLIA_RPC_URL: ${SEPOLIA_RPC_URL}
+      DATABASE_URL: ${DATABASE_URL:-}
+      ENSPACK_ENS_VERSION: ${ENSPACK_ENS_VERSION:-v2}
+      ENSPACK_ENSV2_UNIVERSAL_RESOLVER: ${ENSPACK_ENSV2_UNIVERSAL_RESOLVER:-}
+      ENSPACK_ENSV2_VERIFIABLE_FACTORY: ${ENSPACK_ENSV2_VERIFIABLE_FACTORY:-}
+      ENSPACK_ENSV2_USER_REGISTRY_IMPL: ${ENSPACK_ENSV2_USER_REGISTRY_IMPL:-}
+      ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL: ${ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL:-}
+      ENSPACK_ENSV2_ETH_REGISTRAR: ${ENSPACK_ENSV2_ETH_REGISTRAR:-}
+      ENSPACK_INDEXER_RESOLVERS_SEPOLIA: ${ENSPACK_INDEXER_RESOLVERS_SEPOLIA:-}
+      ENSPACK_INDEXER_RESOLVERS_MAINNET: ${ENSPACK_INDEXER_RESOLVERS_MAINNET:-}
+      ENSPACK_INDEXER_START_BLOCK_SEPOLIA: ${ENSPACK_INDEXER_START_BLOCK_SEPOLIA:-}
+      ENSPACK_INDEXER_START_BLOCK_MAINNET: ${ENSPACK_INDEXER_START_BLOCK_MAINNET:-}
+    volumes:
+      - indexer-data:/app/services/indexer/.ponder
+    healthcheck:
+      # Ponder also serves /health and /ready on :42069; /v1/health is the §4.3 contract.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:42069/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  bootstrap:
+    profiles: ["bootstrap"]
+    build:
+      context: ..
+      dockerfile: bootstrap/Dockerfile
+    restart: "no"
+    environment:
+      SEPOLIA_RPC_URL: ${SEPOLIA_RPC_URL}
+      ETH_RPC_URL: ${ETH_RPC_URL:-}
+      ENSPACK_OPERATOR_KEY: ${ENSPACK_OPERATOR_KEY}
+      ENSPACK_CHAIN: ${ENSPACK_CHAIN:-sepolia}
+      ENSPACK_ENS_VERSION: ${ENSPACK_ENS_VERSION:-v2}
+      ENSPACK_ENSV2_UNIVERSAL_RESOLVER: ${ENSPACK_ENSV2_UNIVERSAL_RESOLVER:-}
+      ENSPACK_ENSV2_VERIFIABLE_FACTORY: ${ENSPACK_ENSV2_VERIFIABLE_FACTORY:-}
+      ENSPACK_ENSV2_USER_REGISTRY_IMPL: ${ENSPACK_ENSV2_USER_REGISTRY_IMPL:-}
+      ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL: ${ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL:-}
+      ENSPACK_ENSV2_ETH_REGISTRAR: ${ENSPACK_ENSV2_ETH_REGISTRAR:-}
+      HF_TOKEN: ${HF_TOKEN:-}
+      ENSPACK_SEED_NODE: http://seed-api:8080
+      ENSPACK_KUBO_API: http://kubo:5001
+      ENSPACK_BOOTSTRAP_STATE: /data/state.json
+    volumes:
+      - downloads:/downloads
+      - bootstrap-data:/data
+    depends_on:
+      seed-api:
+        condition: service_healthy
+      kubo:
+        condition: service_healthy
+    entrypoint: ["node", "dist/cli.js"]
+    command: ["--help"]
+    healthcheck:
+      test: ["CMD", "node", "dist/cli.js", "--help"]
+      interval: 30s
+      timeout: 10s
+      retries: 1
+      start_period: 5s
+
+volumes:
+  caddy-data:
+  caddy-config:
+  qbt-config:
+  downloads:
+  kubo-staging:
+  kubo-data:
+  registrar-data:
+  indexer-data:
+  bootstrap-data:

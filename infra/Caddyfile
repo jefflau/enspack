@@ -1,0 +1,15 @@
+{
+	email {$ACME_EMAIL}
+}
+
+seed1.{$DOMAIN} {
+	reverse_proxy seed-api:8080
+}
+
+registrar.{$DOMAIN} {
+	reverse_proxy registrar:8080
+}
+
+index.{$DOMAIN} {
+	reverse_proxy indexer:42069
+}
