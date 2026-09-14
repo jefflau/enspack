@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { Manifest } from "@enspack/core";
+import { describe, expect, it } from "vitest";
 import { createDefaultDeps } from "../src/defaults.js";
 import { capturingWriter } from "./helpers.js";
 

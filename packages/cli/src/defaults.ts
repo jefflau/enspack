@@ -10,7 +10,7 @@ import {
 } from "@enspack/core";
 import { HfClient, HuggingBayClient, licenseGate } from "@enspack/hf";
 import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
-import { createWalletClient, http } from "viem";
+import { http, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, sepolia } from "viem/chains";
 import { httpOnlyFetch } from "./http-download.js";
