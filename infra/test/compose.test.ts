@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 import {
+  type ComposeService,
   INTERNAL_ONLY_HOST_PORTS,
   KEY_RE,
   TOKEN_RE,
-  type ComposeService,
   envExampleKeys,
   interpolateCompose,
   interpolateVars,
@@ -84,7 +84,9 @@ describe("infra docker-compose.yml", () => {
     expect(dump).toContain("/v1/health");
     expect(JSON.stringify(doc.services?.["seed-api"]?.healthcheck)).toContain("/v1/health");
     expect(JSON.stringify(doc.services?.registrar?.healthcheck)).toContain("/v1/health");
-    expect(JSON.stringify(doc.services?.indexer?.healthcheck)).toMatch(/\/v1\/health|\/ready|\/health/);
+    expect(JSON.stringify(doc.services?.indexer?.healthcheck)).toMatch(
+      /\/v1\/health|\/ready|\/health/,
+    );
   });
 });
 
