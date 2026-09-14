@@ -64,7 +64,7 @@ webseed; see `packages/cli/test/get.e2e.test.ts`.
 |----------|----------|
 | `ETH_RPC_URL` | Mainnet (and Anvil fork) JSON-RPC |
 | `SEPOLIA_RPC_URL` | Sepolia JSON-RPC |
-| `ENSPACK_PUBLISHER_KEY` | Publisher wallet for `publish` (never logged) |
+| `ENSPACK_PUBLISHER_KEY` | 32-byte hex private key for `publish` (wired to core `createPublisher`; never logged) |
 | `HF_TOKEN` | Optional Hugging Face read token |
 | `PINATA_JWT` | `--pin pinata` |
 | `ENSPACK_SEED_NODE` | Default seed-node base URL (`--pin seed`, `seed`) |

@@ -1,16 +1,18 @@
-import * as core from "@enspack/core";
 import {
   DEFAULT_GATEWAYS,
-  type EnspackChainName,
   EnspackError,
   type Pinner,
-  type Publisher,
   createInstaller,
   createManifestStore,
+  createPublisher,
   createResolver,
+  publicClientFor,
 } from "@enspack/core";
 import { HfClient, HuggingBayClient, licenseGate } from "@enspack/hf";
 import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
+import { createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { mainnet, sepolia } from "viem/chains";
 import { httpOnlyFetch } from "./http-download.js";
 import type { CliDeps, CliDownloader, CliHf, Writer } from "./types.js";
 
@@ -39,38 +41,15 @@ function parseGateways(env: NodeJS.ProcessEnv): string[] {
   return [...extras, ...DEFAULT_GATEWAYS];
 }
 
-function stubPublisher(): Publisher {
-  return {
-    async publish() {
-      throw new EnspackError("PUBLISH", "on-chain publisher not available in this build");
-    },
-  };
+function isPrivateKey(value: string): value is `0x${string}` {
+  return /^0x[0-9a-fA-F]{64}$/.test(value);
 }
 
-function loadCreatePublisher():
-  | ((opts: {
-      privateKey: `0x${string}`;
-      rpcUrl: string;
-      chain: EnspackChainName;
-    }) => Publisher)
-  | undefined {
-  const fn = (core as unknown as { createPublisher?: unknown }).createPublisher;
-  if (typeof fn === "function") {
-    return fn as (opts: {
-      privateKey: `0x${string}`;
-      rpcUrl: string;
-      chain: EnspackChainName;
-    }) => Publisher;
-  }
-  return undefined;
-}
-
+/**
+ * SPEC §8 step 5 / MVP.md WP-08: wallet from `ENSPACK_PUBLISHER_KEY` (never logged).
+ */
 function publisherFromEnv(env: NodeJS.ProcessEnv): CliDeps["publisherFactory"] {
-  const create = loadCreatePublisher();
   return (chain, rpcUrl) => {
-    if (create === undefined) {
-      return stubPublisher();
-    }
     const key = env.ENSPACK_PUBLISHER_KEY;
     if (key === undefined || key === "") {
       return {
@@ -79,7 +58,18 @@ function publisherFromEnv(env: NodeJS.ProcessEnv): CliDeps["publisherFactory"] {
         },
       };
     }
-    return create({ privateKey: key as `0x${string}`, rpcUrl, chain });
+    if (!isPrivateKey(key)) {
+      throw new EnspackError("PUBLISH", "ENSPACK_PUBLISHER_KEY must be a 32-byte hex private key");
+    }
+    const account = privateKeyToAccount(key);
+    const viemChain = chain === "sepolia" ? sepolia : mainnet;
+    const client = publicClientFor(chain, rpcUrl);
+    const wallet = createWalletClient({
+      account,
+      chain: viemChain,
+      transport: http(rpcUrl),
+    });
+    return createPublisher({ client, wallet, account });
   };
 }
 

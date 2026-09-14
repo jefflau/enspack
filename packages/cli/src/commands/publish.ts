@@ -11,6 +11,7 @@ import {
   type PublishResult,
   canonicalJson,
   createManifestStore,
+  formatPublishPlan,
   isEnspackError,
   kuboPinner,
   manifestCid,
@@ -26,7 +27,6 @@ import { createTorrent, magnetFor } from "@enspack/torrent";
 import type { Command } from "commander";
 import { human, writeJson } from "../io.js";
 import { addGlobalOpts, collect, createProgressWriter, parseChain, rpcUrlFor } from "../opts.js";
-import { formatPublishPlan } from "../publish-plan.js";
 import type { CliDeps } from "../types.js";
 
 export interface PublishFlags {
@@ -303,7 +303,7 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
     if (flags.dryRun === true) {
       human(deps.stderr, new TextDecoder().decode(manifestBytes));
       human(deps.stderr, `cid ${C}`);
-      human(deps.stderr, formatPublishPlan(published));
+      human(deps.stderr, formatPublishPlan(published.calls));
     }
 
     const seedUrl = flags.seedNode ?? deps.env.ENSPACK_SEED_NODE;

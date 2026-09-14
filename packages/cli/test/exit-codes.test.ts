@@ -242,6 +242,40 @@ describe("exit codes", () => {
     });
   });
 
+  it("seed 403/422 → 5 with the server error body", async () => {
+    await withTmp(async (tmp) => {
+      const { deps, manifest } = await baseDeps(tmp);
+      deps.fetch = async () =>
+        new Response(JSON.stringify({ error: "policy denied", code: "NOT_ALLOWLISTED" }), {
+          status: 403,
+          headers: { "content-type": "application/json" },
+        });
+      const denied = await runCli(deps, [
+        "seed",
+        manifest.model,
+        "--seed-node",
+        "http://127.0.0.1:9",
+      ]);
+      expect(denied.code).toBe(5);
+      expect(denied.stderr).toContain("policy denied");
+      expect(denied.stderr).toContain("NOT_ALLOWLISTED");
+
+      deps.fetch = async () =>
+        new Response(JSON.stringify({ error: "unknown name", code: "UNKNOWN_NAME" }), {
+          status: 422,
+          headers: { "content-type": "application/json" },
+        });
+      const unprocessable = await runCli(deps, [
+        "seed",
+        manifest.model,
+        "--seed-node",
+        "http://127.0.0.1:9",
+      ]);
+      expect(unprocessable.code).toBe(5);
+      expect(unprocessable.stderr).toContain("unknown name");
+    });
+  });
+
   it("missing license → 5", async () => {
     await withTmp(async (tmp) => {
       const { deps } = await baseDeps(tmp);

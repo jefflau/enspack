@@ -29,13 +29,13 @@
     "@enspack/core": "workspace:*",
     "@enspack/hf": "workspace:*",
     "@enspack/torrent": "workspace:*",
-    "commander": "^12.1.0"
+    "commander": "^12.1.0",
+    "viem": "^2.28.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
-    "viem": "^2.28.0",
     "vitest": "^3.0.0"
   }
 }
