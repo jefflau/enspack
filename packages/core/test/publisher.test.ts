@@ -96,19 +96,19 @@ describe("createPublisher validation (no chain)", () => {
     });
   });
 
-  it("throws PUBLISH when distribution.magnet does not match MAGNET_RE", async () => {
-    const manifest = validateManifest(
-      tinyManifest({
-        magnet: "xmagnet:?xt=urn:btih:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      }),
-    );
-    await expect(publish(manifest)).rejects.toMatchObject({
-      code: "PUBLISH",
-      message: "distribution.magnet does not match SPEC",
+  it("throws VERIFY when distribution.magnet fails schema (MAGNET_RE is checked after)", async () => {
+    await expect(
+      publish(
+        tinyManifest({
+          magnet: "https://example.com/not-a-magnet",
+        }),
+      ),
+    ).rejects.toMatchObject({
+      code: "VERIFY",
     });
   });
 
-  it("does not accept a valid tiny manifest without hitting the network until after step 1", async () => {
+  it("passes step-1 validation then fails closed on chain reads with a mock client", async () => {
     const manifest = validateManifest(tinyManifest());
     const cid = await manifestCid(canonicalJson(manifest));
     expect(manifest.model).toBe(MODEL_NAME);
@@ -122,6 +122,9 @@ describe("createPublisher validation (no chain)", () => {
         chain: "mainnet",
         dryRun: true,
       }),
-    ).rejects.toThrow(/unit test must not hit the network/);
+    ).rejects.toMatchObject({
+      code: "PUBLISH",
+      message: `failed to read owner of ${PUBLISHER_NAME}`,
+    });
   });
 });
