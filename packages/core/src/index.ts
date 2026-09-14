@@ -54,6 +54,8 @@ export type {
   PinContentType,
   Pinner,
 } from "./ipfs/types.js";
+export { createPublisher, formatPublishPlan } from "./publisher.js";
+export type { CreatePublisherOptions } from "./publisher.js";
 export { createResolver } from "./resolver.js";
 export type { CreateResolverOptions } from "./resolver.js";
 export {

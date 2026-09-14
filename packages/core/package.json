@@ -1,7 +1,7 @@
 {
   "name": "@enspack/core",
   "version": "0.1.0",
-  "description": "enspack core: schema types, validators, labels, canonical JSON, CID, IPFS verified fetch, installer, lockfile",
+  "description": "enspack core: schema types, validators, labels, canonical JSON, CID, IPFS verified fetch, ENS resolve and publish, installer, lockfile",
   "type": "module",
   "engines": {
     "node": ">=22"

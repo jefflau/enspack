@@ -1,4 +1,4 @@
-/** Minimal ENS ABIs used by the WP-02 read path (SPEC §2 / §4). */
+/** Minimal ENS ABIs used by the WP-02 read path and WP-04 write path (SPEC §2 / §4 / §8). */
 
 export const ensRegistryAbi = [
   {
