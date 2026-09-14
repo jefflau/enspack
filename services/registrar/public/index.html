@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>enspack registrar</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+        line-height: 1.4;
+      }
+      body {
+        max-width: 42rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      label,
+      button {
+        display: block;
+        margin: 0.6rem 0;
+      }
+      input,
+      textarea,
+      pre {
+        width: 100%;
+        box-sizing: border-box;
+        font: inherit;
+      }
+      pre,
+      textarea {
+        white-space: pre-wrap;
+        background: canvas;
+        border: 1px solid #8884;
+        padding: 0.6rem;
+      }
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      .row input {
+        flex: 1;
+      }
+      .err {
+        color: #b00020;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Claim an <code>enspack.eth</code> publisher name</h1>
+    <p>
+      Prove control of a public Hugging Face namespace, sign the challenge with your wallet, and
+      receive <code>&lt;label&gt;.enspack.eth</code>. The registrar never asks for your private key.
+    </p>
+
+    <form id="claim-form">
+      <label>
+        Hugging Face namespace
+        <input id="hf-namespace" name="hfNamespace" autocomplete="off" required />
+      </label>
+      <div class="row">
+        <button type="button" id="connect">Connect wallet</button>
+        <input id="address" readonly placeholder="not connected" />
+      </div>
+      <button type="submit" id="create-claim">Create claim</button>
+    </form>
+
+    <h2>Challenge</h2>
+    <pre id="challenge">(create a claim first)</pre>
+    <p>Commit this exact file as <code>enspack-verify.txt</code> on a public repo under that namespace:</p>
+    <textarea id="file-contents" rows="4" readonly></textarea>
+
+    <label>
+      Repo (<code>namespace/name</code>)
+      <input id="repo" name="repo" placeholder="you/enspack-verify" />
+    </label>
+    <div class="row">
+      <button type="button" id="sign">Sign</button>
+      <button type="button" id="verify">Verify</button>
+    </div>
+    <pre id="status"></pre>
+    <pre id="txs"></pre>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const eth = window.ethereum;
+      let claimId = "";
+      let challenge = "";
+      let address = "";
+
+      function show(errOrText, el = $("status")) {
+        el.textContent = typeof errOrText === "string" ? errOrText : JSON.stringify(errOrText, null, 2);
+        el.className = "";
+      }
+
+      function fail(msg) {
+        $("status").textContent = msg;
+        $("status").className = "err";
+      }
+
+      $("connect").addEventListener("click", async () => {
+        if (!eth) {
+          fail("No injected wallet (window.ethereum).");
+          return;
+        }
+        const accounts = await eth.request({ method: "eth_requestAccounts" });
+        address = accounts[0];
+        $("address").value = address;
+      });
+
+      $("claim-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!address) {
+          fail("Connect a wallet first.");
+          return;
+        }
+        const hfNamespace = $("hf-namespace").value.trim();
+        const res = await fetch("/v1/claims", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ hfNamespace, address }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          fail(data);
+          return;
+        }
+        claimId = data.claimId;
+        challenge = data.challenge;
+        $("challenge").textContent = challenge;
+        $("file-contents").value = challenge + "\n" + address + "\n";
+        show(data);
+      });
+
+      $("sign").addEventListener("click", async () => {
+        if (!eth || !address || !challenge) {
+          fail("Connect, create a claim, then sign.");
+          return;
+        }
+        const signature = await eth.request({
+          method: "personal_sign",
+          params: [challenge, address],
+        });
+        $("status").dataset.signature = signature;
+        show({ signed: true, signature });
+      });
+
+      $("verify").addEventListener("click", async () => {
+        const signature = $("status").dataset.signature;
+        const repo = $("repo").value.trim();
+        if (!claimId || !signature || !repo) {
+          fail("Need a claim, a signature, and a repo.");
+          return;
+        }
+        const res = await fetch("/v1/claims/" + claimId + "/verify", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ repo, signature }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          fail(data);
+          return;
+        }
+        show(data);
+        $("txs").textContent = (data.txs || []).join("\n");
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+{
+  "name": "@enspack/registrar",
+  "version": "0.1.0",
+  "description": "enspack registrar: HF-proof publisher subname issuance (SPEC §7, MVP.md §4.1)",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "public", "src/schema.sql"],
+  "scripts": {
+    "build": "tsup && cp src/schema.sql dist/schema.sql",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test",
+    "start": "node dist/server.js",
+    "dev": "node --experimental-strip-types src/server.ts"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.3.7",
+    "@enspack/core": "workspace:*",
+    "@enspack/hf": "workspace:*",
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.7.0",
+    "pg": "^8.14.1",
+    "viem": "^2.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.11",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
