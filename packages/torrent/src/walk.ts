@@ -15,7 +15,11 @@ export function comparePath(a: string, b: string): number {
   return 0;
 }
 
-/** Recursively list files, skip dotfiles, sort by relative path in byte order. */
+/**
+ * Recursively list files sorted by relative path in byte order. Dotfiles are
+ * included: HF repos ship `.gitattributes` and SPEC §3 requires the torrent
+ * tree to equal `files[]` exactly. Only `.enspack-quarantine` is skipped.
+ */
 export async function walkFiles(dir: string): Promise<WalkedFile[]> {
   const out: WalkedFile[] = [];
 
@@ -23,7 +27,7 @@ export async function walkFiles(dir: string): Promise<WalkedFile[]> {
     const abs = rel === "" ? dir : join(dir, rel);
     const entries = await readdir(abs, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name.startsWith(".")) continue;
+      if (entry.name === ".enspack-quarantine") continue;
       const childRel = rel === "" ? entry.name : `${rel}/${entry.name}`;
       if (entry.isDirectory()) {
         await walk(childRel);

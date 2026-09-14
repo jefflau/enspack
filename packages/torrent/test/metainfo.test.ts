@@ -1,10 +1,11 @@
 import { readFileSync } from "node:fs";
-import { cp, mkdtemp, rm } from "node:fs/promises";
+import { cp, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { EnspackError, TORRENT_MAX_BYTES, validateManifest } from "@enspack/core";
 import { describe, expect, it } from "vitest";
 import { createTorrent, infohash, magnetFor, parseTorrent } from "../src/index.js";
+import { injectWebseeds } from "../src/metainfo.js";
 import { fixtureDir, fixtureFiles, manifestPath, torrentPath } from "./helpers/paths.js";
 
 async function copyContent(dest: string): Promise<void> {
@@ -54,6 +55,37 @@ describe("createTorrent / parseTorrent", () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+
+  it("includes dotfiles such as .gitattributes in the file tree (SPEC §3)", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "enspack-ct-"));
+    try {
+      await copyContent(dir);
+      await writeFile(join(dir, ".gitattributes"), "*.safetensors filter=lfs\n");
+      const created = await createTorrent(dir, {
+        name: "tiny-model",
+        webseeds: ["https://example.invalid/tiny-model/"],
+      });
+      expect(created.files.map((f) => f.path)).toEqual([
+        ".gitattributes",
+        "config.json",
+        "model.safetensors",
+        "tokenizer.json",
+      ]);
+      const parsed = await parseTorrent(created.metainfo);
+      expect(parsed.files.map((f) => f.path)).toContain("tiny-model/.gitattributes");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("injectWebseeds merges url-list without changing the infohash", async () => {
+    const original = readFileSync(torrentPath);
+    const before = await parseTorrent(original);
+    const merged = await injectWebseeds(original, ["https://mirror.example/tiny-model/"]);
+    const after = await parseTorrent(merged);
+    expect(after.infohash).toBe(before.infohash);
+    expect(after.webseeds).toEqual([...before.webseeds, "https://mirror.example/tiny-model/"]);
   });
 
   it("rejects webseeds that do not end with /", async () => {

@@ -24,7 +24,8 @@ function sha256(buf: Uint8Array): string {
 }
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-const fixtureDir = join(repoRoot, "test/fixtures/tiny-model");
+const fixturesRoot = join(repoRoot, "test/fixtures");
+const fixtureDir = join(fixturesRoot, "tiny-model");
 
 const config = `${JSON.stringify(
   {
@@ -53,7 +54,7 @@ for (let i = 0; i < model.length; i++) {
 }
 
 await mkdir(fixtureDir, { recursive: true });
-const staging = await mkdtemp(join(fixtureDir, ".staging-"));
+const staging = await mkdtemp(join(fixturesRoot, ".staging-"));
 await writeFile(join(fixtureDir, "config.json"), config);
 await writeFile(join(fixtureDir, "tokenizer.json"), tokenizer);
 await writeFile(join(fixtureDir, "model.safetensors"), model);
@@ -67,7 +68,7 @@ const created = await createTorrent(staging, {
   webseeds,
   comment: "enspack tiny-model fixture",
 });
-await writeFile(join(fixtureDir, "tiny-model.torrent"), created.metainfo);
+await writeFile(join(fixturesRoot, "tiny-model.torrent"), created.metainfo);
 
 const files = [
   {
@@ -117,7 +118,7 @@ const manifest = {
 
 validateManifest(manifest);
 await writeFile(
-  join(fixtureDir, "tiny-model.enspack.json"),
+  join(fixturesRoot, "tiny-model.enspack.json"),
   `${JSON.stringify(manifest, null, 2)}\n`,
 );
 await rm(staging, { recursive: true, force: true });

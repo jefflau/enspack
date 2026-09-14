@@ -7,6 +7,6 @@ export const fixtureDir = join(repoRoot, "test/fixtures/tiny-model");
 
 export const fixtureFiles = ["config.json", "model.safetensors", "tokenizer.json"] as const;
 
-export const manifestPath = join(fixtureDir, "tiny-model.enspack.json");
+export const manifestPath = join(repoRoot, "test/fixtures/tiny-model.enspack.json");
 
-export const torrentPath = join(fixtureDir, "tiny-model.torrent");
+export const torrentPath = join(repoRoot, "test/fixtures/tiny-model.torrent");
