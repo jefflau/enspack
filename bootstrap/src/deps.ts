@@ -1,15 +1,12 @@
 import type {
-  Downloader,
   Manifest,
   ManifestFile,
-  ManifestStore,
+  PinContentType,
   Progress,
   Publisher,
   Resolver,
   Verifier,
-  VerifyResult,
 } from "@enspack/core";
-import type { PinContentType } from "@enspack/core";
 import type { HbArtifact, HbFallbackInput, HbLock, HfModelInfo, HfTreeEntry } from "@enspack/hf";
 import type { ModelEntry, ModelsConfig } from "./types.js";
 
@@ -92,5 +89,3 @@ export interface RunOptions {
   seedTimeoutMs?: number;
   seedPollMs?: number;
 }
-
-export type { Downloader, ManifestStore, VerifyResult };

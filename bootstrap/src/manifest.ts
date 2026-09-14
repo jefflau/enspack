@@ -1,10 +1,4 @@
-import {
-  MIRROR_NAMESPACE,
-  type Manifest,
-  type ManifestFile,
-  SPEC_STRING,
-  canonicalJson,
-} from "@enspack/core";
+import { MIRROR_NAMESPACE, type Manifest, type ManifestFile, SPEC_STRING } from "@enspack/core";
 import { magnetFor } from "@enspack/torrent";
 import { PLACEHOLDER_CID, PLACEHOLDER_INFOHASH, PLACEHOLDER_MAGNET } from "./constants.js";
 import { canonicalNameFor, modelNameFor, versionNameFor } from "./names.js";
@@ -120,5 +114,3 @@ export function draftManifestForDownload(
 export function magnetForInfohash(infohash: string, displayName: string): string {
   return magnetFor(infohash, displayName);
 }
-
-export { canonicalJson };
