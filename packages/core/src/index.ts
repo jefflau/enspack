@@ -14,6 +14,10 @@ export {
 } from "./constants.js";
 export { EnspackError, EXIT_CODES, isEnspackError } from "./error.js";
 export type { EnspackErrorCode } from "./error.js";
+export { publicClientFor, readResolverAddress } from "./ens/client.js";
+export type { EnspackChainName } from "./ens/client.js";
+export { decodeContenthashToCid, encodeIpfsContenthash } from "./ens/contenthash.js";
+export { dnsEncodeName } from "./ens/dns.js";
 export { hfCacheRepoDir } from "./hf-cache.js";
 export type {
   Downloader,
@@ -40,6 +44,8 @@ export type {
   PinContentType,
   Pinner,
 } from "./ipfs/types.js";
+export { createResolver } from "./resolver.js";
+export type { CreateResolverOptions } from "./resolver.js";
 export {
   isVersionLabel,
   labelhashOf,
