@@ -60,7 +60,7 @@ not published yet (MVP.md §0.1). Local proof uses Anvil + `test/fixtures/tiny-m
 | `services/seed` | `@enspack/seed` | seed node API + qBittorrent + Kubo compose |
 | `services/registrar` | `@enspack/registrar` | HF-proof → `enspack.eth` publisher subnames |
 | `services/indexer` | `@enspack/indexer` | Ponder indexer + JSON API |
-| `bootstrap/` | `@enspack/bootstrap` | `models.yaml` mirror runner (WP-12; may be a stub until merged) |
+| `bootstrap/` | `@enspack/bootstrap` | `models.yaml` mirror runner (`enspack-bootstrap plan|run`) |
 | `test/fixtures` | — | tiny-model folder + torrent for swarm tests |
 | `test/e2e` | `@enspack/e2e` | local Anvil swarm (CI) + Sepolia (nightly) |
 
@@ -74,9 +74,10 @@ pnpm install
 pnpm check          # build + lint + typecheck + test (includes local e2e)
 ```
 
-Anvil mainnet-fork tests use `ETH_RPC_URL` when set, otherwise
-`https://ethereum-rpc.publicnode.com`. `anvil` (`~/.foundry/bin`) and `aria2c`
-are required for fork/swarm suites; they skip when missing.
+Anvil mainnet-fork tests use `ETH_RPC_URL` when set, otherwise they rotate
+through public endpoints (publicnode, 1rpc, drpc) and pin the fork a few blocks
+behind head. `anvil` (`~/.foundry/bin`) and `aria2c` are required for
+fork/swarm suites; they skip when missing.
 
 Secrets stay in env (`ETH_RPC_URL`, `SEPOLIA_RPC_URL`, `ENSPACK_PUBLISHER_KEY`,
 `ENSPACK_OPERATOR_KEY`, `HF_TOKEN`, `PINATA_JWT`). Never write them to disk or
