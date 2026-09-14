@@ -6,28 +6,30 @@ import { baseDeps, runCli, withTmp } from "./helpers.js";
 const PENDING = "0xdefa17a1defa17a1defa17a1defa17a1defa17a1" as const;
 const OPERATOR = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as const;
 const ACCOUNT0 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as const;
+const FACTORY = "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef" as const;
+const PARENT = "0x1111111111111111111111111111111111111111" as const;
 
 function freshPlan(): EnsSetupPlan {
-  const steps = [
+  const steps: EnsSetupPlan["steps"] = [
     {
-      to: "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef",
+      to: FACTORY,
       data: "0x",
       description:
         "VerifiableFactory.deployProxy(PermissionedResolverImpl, salt=enspack:resolver:enspack.eth)",
     },
     {
-      to: "0x1111111111111111111111111111111111111111",
+      to: PARENT,
       data: "0x",
       description: "setResolver(enspack → <pending proxy>)",
     },
     {
-      to: "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef",
+      to: FACTORY,
       data: "0x",
       description:
         "VerifiableFactory.deployProxy(UserRegistryImpl, salt=enspack:registry:enspack.eth)",
     },
     {
-      to: "0x1111111111111111111111111111111111111111",
+      to: PARENT,
       data: "0x",
       description: "setSubregistry(enspack → <pending proxy>)",
     },
@@ -52,7 +54,7 @@ function freshPlan(): EnsSetupPlan {
       description: "Registry.register(mirrors under enspack.eth)",
     },
     {
-      to: "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef",
+      to: FACTORY,
       data: "0x",
       description:
         "VerifiableFactory.deployProxy(UserRegistryImpl, salt=enspack:registry:mirrors.enspack.eth)",
