@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://enspack.eth.limo/schema/enspack-lock-1.json",
+  "title": "enspack.lock v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lockfileVersion", "models"],
+  "properties": {
+    "lockfileVersion": { "const": 1 },
+    "models": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(_?[a-z0-9-]+\\.)+[a-z0-9-]+$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["resolved", "cid", "infohash", "totalSize"],
+        "properties": {
+          "resolved": { "type": "string", "pattern": "^(_?[a-z0-9-]+\\.)+[a-z0-9-]+$" },
+          "cid": { "type": "string", "pattern": "^(bafy|bafk|bafyb|Qm)[A-Za-z0-9]{20,}$" },
+          "infohash": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "totalSize": { "type": "integer", "minimum": 0 },
+          "select": { "type": "array", "items": { "type": "string" }, "default": ["*"] },
+          "upstream": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "repo": { "type": "string" },
+              "revision": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

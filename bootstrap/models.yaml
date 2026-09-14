@@ -1,0 +1,127 @@
+# Bootstrap mirror list for mirrors.enspack.eth
+# Verified against the HF API on 2026-09-14. `storage_gb` is HF usedStorage
+# (all revisions) and is an upper bound; the runner computes the exact
+# snapshot size at `revision`. The runner re-checks license and gating at run
+# time; `expected_license` is a guard, not a source of truth.
+#
+# Publishing name: v1-0-0.<org>--<repo>.mirrors.enspack.eth
+# canonical:       <repo>.<org>.enspack.eth
+
+publisher: mirrors.enspack.eth
+license_allowlist: [apache-2.0, mit, bsd-3-clause, bsd-2-clause, cc0-1.0, cc-by-4.0, odc-by]
+webseeds:
+  huggingface: "https://huggingface.co/{repo}/resolve/{revision}/"
+  huggingbay: "https://huggingbay.xyz/api/downloads/{hb_id}/"   # only when HB reports hosted files
+
+models:
+  # ---------- Tier 1: launch ----------
+  - repo: Qwen/Qwen3-0.6B
+    tier: 1
+    expected_license: apache-2.0
+    revision: c1899de2
+    storage_gb: 4.5
+  - repo: Qwen/Qwen3-4B
+    tier: 1
+    expected_license: apache-2.0
+    revision: 1cfa9a72
+    storage_gb: 8.1
+  - repo: Qwen/Qwen3-8B
+    tier: 1
+    expected_license: apache-2.0
+    revision: b968826d
+    storage_gb: 45.5
+  - repo: Qwen/Qwen3-8B-GGUF
+    tier: 1
+    expected_license: apache-2.0
+    revision: 7c41481f
+    storage_gb: 32.0
+    note: official first-party GGUF; consumers use --select for one quant
+  - repo: Qwen/Qwen2.5-7B-Instruct
+    tier: 1
+    expected_license: apache-2.0
+    revision: a09a3545
+    storage_gb: 15.2
+    example: examples/qwen--qwen2-5-7b-instruct.enspack.json
+  - repo: Qwen/Qwen2.5-7B-Instruct-GGUF
+    tier: 1
+    expected_license: apache-2.0
+    revision: bb5d59e0
+    storage_gb: 64.3
+  - repo: Qwen/Qwen2.5-Coder-7B-Instruct
+    tier: 1
+    expected_license: apache-2.0
+    revision: c03e6d35
+    storage_gb: 30.5
+  - repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+    tier: 1
+    expected_license: mit
+    revision: 916b56a4
+    storage_gb: 15.2
+  - repo: mistralai/Mistral-7B-Instruct-v0.3
+    tier: 1
+    expected_license: apache-2.0
+    revision: c170c708
+    storage_gb: 29.0
+  - repo: microsoft/Phi-4-mini-instruct
+    tier: 1
+    expected_license: mit
+    revision: cfbefacb
+    storage_gb: 7.7
+  - repo: HuggingFaceTB/SmolLM3-3B
+    tier: 1
+    expected_license: apache-2.0
+    revision: a07cc9a0
+    storage_gb: 6.2
+  - repo: openai/gpt-oss-20b
+    tier: 1
+    expected_license: apache-2.0
+    revision: 6cee5e81
+    storage_gb: 41.4
+  - repo: openai/whisper-large-v3
+    tier: 1
+    expected_license: apache-2.0
+    revision: 06f233fe
+    storage_gb: 31.6
+  - repo: nomic-ai/nomic-embed-text-v1.5
+    tier: 1
+    expected_license: apache-2.0
+    revision: e9b67630
+    storage_gb: 4.2
+  - repo: BAAI/bge-m3
+    tier: 1
+    expected_license: mit
+    revision: 5617a9f6
+    storage_gb: 13.7
+  - repo: sentence-transformers/all-MiniLM-L6-v2
+    tier: 1
+    expected_license: apache-2.0
+    revision: 1110a243
+    storage_gb: 1.8
+
+  # ---------- Tier 2 ----------
+  - { repo: Qwen/Qwen2.5-0.5B-Instruct,            tier: 2, expected_license: apache-2.0, revision: 7ae55760, storage_gb: 3.5 }
+  - { repo: Qwen/Qwen2.5-1.5B-Instruct,            tier: 2, expected_license: apache-2.0, revision: 989aa798, storage_gb: 10.2 }
+  - { repo: Qwen/Qwen2.5-14B-Instruct,             tier: 2, expected_license: apache-2.0, revision: cf98f3b3, storage_gb: 29.5 }
+  - { repo: Qwen/Qwen2.5-32B-Instruct,             tier: 2, expected_license: apache-2.0, revision: 5ede1c97, storage_gb: 65.5 }
+  - { repo: Qwen/Qwen3-14B,                        tier: 2, expected_license: apache-2.0, revision: 40c06982, storage_gb: 29.5 }
+  - { repo: Qwen/Qwen3-32B,                        tier: 2, expected_license: apache-2.0, revision: 9216db57, storage_gb: 65.5 }
+  - { repo: Qwen/Qwen3-30B-A3B,                    tier: 2, expected_license: apache-2.0, revision: ad44e777, storage_gb: 61.1 }
+  - { repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B, tier: 2, expected_license: mit, revision: ad9f0ae0, storage_gb: 3.6 }
+  - { repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B,  tier: 2, expected_license: mit, revision: 1df85071, storage_gb: 29.5 }
+  - { repo: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B,  tier: 2, expected_license: mit, revision: 711ad2ea, storage_gb: 65.5 }
+  - { repo: mistralai/Mistral-Nemo-Instruct-2407,  tier: 2, expected_license: apache-2.0, revision: 04d8a905, storage_gb: 49.0 }
+  - { repo: mistralai/Mistral-Small-24B-Instruct-2501, tier: 2, expected_license: apache-2.0, revision: 9527884b, storage_gb: 94.3 }
+  - { repo: microsoft/phi-4,                       tier: 2, expected_license: mit,        revision: 2db69c1c, storage_gb: 29.3 }
+  - { repo: HuggingFaceTB/SmolLM2-1.7B-Instruct,   tier: 2, expected_license: apache-2.0, revision: 31b70e2e, storage_gb: 47.8 }
+  - { repo: allenai/OLMo-2-1124-7B-Instruct,       tier: 2, expected_license: apache-2.0, revision: 470b1fba, storage_gb: 107.2 }
+  - { repo: intfloat/e5-large-v2,                  tier: 2, expected_license: mit,        revision: f169b11e, storage_gb: 9.7 }
+
+  # ---------- Tier 3: needs second seedbox ----------
+  - { repo: openai/gpt-oss-120b,                   tier: 3, expected_license: apache-2.0, revision: b5c939de, storage_gb: 195.9 }
+  - { repo: Qwen/Qwen2.5-Coder-7B-Instruct-GGUF,   tier: 3, expected_license: apache-2.0, revision: 13fb94bf, storage_gb: 100.4 }
+
+# Checked and excluded (do not add back without a policy change):
+#   google/gemma-3-4b-it            gemma license, gated (manual)
+#   meta-llama/Llama-3.1-8B-Instruct llama3.1 license, gated (manual)
+#   bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF   no license field
+#   bartowski/*, unsloth/*, mradermacher/*        third-party quantizers: invite as publishers instead

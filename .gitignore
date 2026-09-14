@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.ponder/
+generated/
+*.log
+.env
+.env.*
+!.env.example
+bootstrap/state.json
+bootstrap/downloads/
+.enspack-quarantine/

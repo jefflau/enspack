@@ -1,0 +1,5 @@
+{
+  "snapshot": "default",
+  "install": "curl -L https://foundry.paradigm.xyz | bash && ~/.foundry/bin/foundryup && sudo apt-get update && sudo apt-get install -y aria2 && corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install",
+  "terminals": []
+}
