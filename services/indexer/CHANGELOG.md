@@ -2,4 +2,9 @@
 
 ## 0.1.0
 
+- WP-17: Sepolia (v2) discovers per-publisher PermissionedResolver proxies via
+  `findResolverV2(enspack.eth)` and `findResolverV2(mirrors.enspack.eth)`, unions
+  `ENSPACK_INDEXER_RESOLVERS_SEPOLIA`. Mainnet stays v1 `readResolverAddress`.
+  New publisher resolvers are added through the env list; a `ResolverUpdated`
+  subscription is out of scope.
 - WP-11: Ponder indexer for `TextChanged` / `ContenthashChanged` on discovered ENS resolvers (SPEC §2.3), version-immutability violations (SPEC §6.2), and the JSON API in MVP.md §4.3.

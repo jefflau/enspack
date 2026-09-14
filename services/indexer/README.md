@@ -33,11 +33,29 @@ Never put RPC URLs or keys in the repo. If neither RPC URL is set (CI `ponder co
 
 ## How resolvers are discovered
 
-Public resolvers are **not hardcoded** (AGENTS.md). On each configured network the indexer:
+Resolvers are **not hardcoded** (AGENTS.md). On each configured network:
 
-1. Reads the resolver of `enspack.eth` (`ROOT_NAME`) via core `readResolverAddress` (ENSIP-10 / registry walk).
-2. Unions that address with `ENSPACK_INDEXER_RESOLVERS_<NETWORK>` so additional public resolvers can be added.
-3. Indexes `TextChanged(bytes32 indexed node, string indexed indexedKey, string key, string value)` and `ContenthashChanged(bytes32 indexed node, bytes hash)` on those contracts.
+**Mainnet (ENSv1):** reads the resolver of `enspack.eth` via core
+`readResolverAddress` (ENSIP-10 / registry walk) and unions
+`ENSPACK_INDEXER_RESOLVERS_MAINNET`.
+
+**Sepolia (ENSv2):** calls `findResolverV2(enspack.eth)` and
+`findResolverV2(mirrors.enspack.eth)` (PermissionedResolver proxies; zero
+addresses are skipped) and unions `ENSPACK_INDEXER_RESOLVERS_SEPOLIA`.
+`TextChanged` / `ContenthashChanged` ABIs are identical — PermissionedResolver
+inherits the standard resolver profiles (`ITextResolver` /
+`IContentHashResolver`). The `TextChanged` handler already reads
+`contenthash` from `event.log.address`, so no ingest change.
+
+### Adding a new publisher's resolver
+
+New publishers deploy their own PermissionedResolver proxy. Until a
+`ResolverUpdated` (or equivalent) subscription exists — **out of scope** —
+add that proxy to `ENSPACK_INDEXER_RESOLVERS_SEPOLIA` (comma-separated) and
+restart. Discovery at config time only sees `enspack.eth` and
+`mirrors.enspack.eth`.
+
+Indexes `TextChanged(bytes32 indexed node, string indexed indexedKey, string key, string value)` and `ContenthashChanged(bytes32 indexed node, bytes hash)` on those contracts. PermissionedResolver inherits the standard ENS resolver profiles, so the event ABIs match the v1 PublicResolver.
 
 ## HTTP (MVP.md §4.3)
 

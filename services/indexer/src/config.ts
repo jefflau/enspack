@@ -1,10 +1,15 @@
 import {
   type EnspackChainName,
+  MIRROR_NAMESPACE,
   ROOT_NAME,
+  ensV2ConfigFor,
+  ensVersionFor,
+  findResolverV2,
   publicClientFor,
   readResolverAddress,
 } from "@enspack/core";
 import { createConfig } from "ponder";
+import type { PublicClient } from "viem";
 import { getAddress, zeroAddress } from "viem";
 import { publicResolverAbi } from "./abi.js";
 
@@ -98,13 +103,58 @@ function uniqueAddresses(addrs: readonly `0x${string}`[]): `0x${string}`[] {
   return out;
 }
 
+export type ResolverReadClient = Pick<PublicClient, "readContract">;
+
+async function discoverResolversV1(
+  network: EnspackChainName,
+  rpcUrl: string,
+  found: `0x${string}`[],
+  client?: ResolverReadClient,
+): Promise<void> {
+  try {
+    const resolved = (client ?? publicClientFor(network, rpcUrl)) as PublicClient;
+    const discovered = await readResolverAddress(resolved, ROOT_NAME);
+    if (discovered !== zeroAddress) {
+      found.push(discovered);
+    }
+  } catch (cause) {
+    if (found.length === 0) {
+      throw new Error(`failed to discover resolver for ${ROOT_NAME} on ${network}`, { cause });
+    }
+  }
+}
+
+async function discoverResolversV2(
+  network: EnspackChainName,
+  rpcUrl: string,
+  env: NodeJS.ProcessEnv,
+  found: `0x${string}`[],
+  client?: ResolverReadClient,
+): Promise<void> {
+  const cfg = ensV2ConfigFor(network, env);
+  const resolved = (client ?? publicClientFor(network, rpcUrl)) as PublicClient;
+  for (const name of [ROOT_NAME, MIRROR_NAMESPACE] as const) {
+    try {
+      const { resolver } = await findResolverV2(resolved, cfg, name);
+      if (resolver !== zeroAddress) {
+        found.push(resolver);
+      }
+    } catch {
+      /* skip missing names; fail closed below if nothing remains */
+    }
+  }
+}
+
 /**
- * AGENTS.md: discover the resolver of `enspack.eth` at runtime and union optional env overrides.
- * Returns `null` when the network's RPC env var is missing (skip that network).
+ * AGENTS.md: discover resolvers at runtime and union optional env overrides.
+ * Mainnet (v1): `readResolverAddress(enspack.eth)`.
+ * Sepolia (v2): `findResolverV2(enspack.eth)` and `findResolverV2(mirrors.enspack.eth)`,
+ * skip zero. Returns `null` when the network's RPC env var is missing.
  */
 export async function discoverResolvers(
   network: EnspackChainName,
   env: NodeJS.ProcessEnv,
+  client?: ResolverReadClient,
 ): Promise<`0x${string}`[] | null> {
   const rpcUrl = env[RPC_ENV[network]];
   if (rpcUrl === undefined || rpcUrl === "") {
@@ -113,16 +163,11 @@ export async function discoverResolvers(
 
   const overrides = parseResolverOverrides(env[OVERRIDE_ENV[network]]);
   const found: `0x${string}`[] = [...overrides];
-  try {
-    const client = publicClientFor(network, rpcUrl);
-    const discovered = await readResolverAddress(client, ROOT_NAME);
-    if (discovered !== zeroAddress) {
-      found.push(discovered);
-    }
-  } catch (cause) {
-    if (found.length === 0) {
-      throw new Error(`failed to discover resolver for ${ROOT_NAME} on ${network}`, { cause });
-    }
+  const ensVersion = ensVersionFor(network, env);
+  if (ensVersion === "v2") {
+    await discoverResolversV2(network, rpcUrl, env, found, client);
+  } else {
+    await discoverResolversV1(network, rpcUrl, found, client);
   }
 
   const unique = uniqueAddresses(found);
