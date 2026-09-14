@@ -119,24 +119,32 @@ describe("createManifestStore.getVerified", () => {
 
   it("rotates on connection refused", async () => {
     const cid = await manifestCid(PAYLOAD);
-    const closed = await listen((_req, res) => {
-      res.end();
-    });
-    closed.server.closeAllConnections();
-    await new Promise<void>((resolve, reject) => {
-      closed.server.close((err) => (err ? reject(err) : resolve()));
-    });
+    // A freed ephemeral port can be reused by a parallel test, so the refused
+    // gateway is simulated with the exact error shape undici produces.
+    const refusedOrigin = "http://127.0.0.1:9";
+    const refusingFetch: typeof fetch = (input, init) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      if (url.startsWith(refusedOrigin)) {
+        const cause = Object.assign(new Error("connect ECONNREFUSED 127.0.0.1:9"), {
+          code: "ECONNREFUSED",
+        });
+        return Promise.reject(new TypeError("fetch failed", { cause }));
+      }
+      return fetch(input, init);
+    };
     const good = await serveBytes(PAYLOAD);
     const store = createManifestStore({
-      gateways: [gatewayTemplate(closed.origin), gatewayTemplate(good)],
+      gateways: [gatewayTemplate(refusedOrigin), gatewayTemplate(good)],
       timeoutMs: 2000,
+      fetch: refusingFetch,
     });
     const got = await store.getVerified(cid);
     expect(got).toEqual(PAYLOAD);
 
     const onlyRefused = createManifestStore({
-      gateways: [gatewayTemplate(closed.origin)],
+      gateways: [gatewayTemplate(refusedOrigin)],
       timeoutMs: 2000,
+      fetch: refusingFetch,
     });
     try {
       await onlyRefused.getVerified(cid);
