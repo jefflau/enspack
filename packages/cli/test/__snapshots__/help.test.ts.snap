@@ -20,6 +20,26 @@ Options:
 "
 `;
 
+exports[`help > snapshots --help for the root and every command > ens-setup 1`] = `
+"Usage: enspack ens-setup [options]
+
+One-shot ENSv2 on-chain setup for a publisher name (Sepolia)
+
+Options:
+  --name <name>            ENS name to set up (e.g. enspack.eth)
+  --subname <label>        direct child label to register (repeatable)
+  --operator <address>     hot operator to grant REGISTRAR|RENEW and resolver
+                           record roles
+  --dry-run                print the plan without sending transactions
+  --json                   print machine-readable JSON to stdout (nothing else
+                           on stdout)
+  --chain <chain>          ENS chain: mainnet or sepolia (default: "mainnet")
+  --ens-version <version>  ENS version: v1 or v2 (default: v2 on sepolia, v1 on
+                           mainnet)
+  -h, --help               display help for command
+"
+`;
+
 exports[`help > snapshots --help for the root and every command > get 1`] = `
 "Usage: enspack get [options] <ref>
 
@@ -129,6 +149,8 @@ Commands:
   install [options]             Install every enspack.lock entry (SPEC §9)
   update [options] [ref]        Re-resolve lockfile model names (SPEC §9)
   publish [options]             Publish from Hugging Face (SPEC §8)
+  ens-setup [options]           One-shot ENSv2 on-chain setup for a publisher
+                                name (Sepolia)
   seed [options] <ref>          Ask a seed node to fetch and seed a name
                                 (MVP.md §4.2)
   help [command]                display help for command

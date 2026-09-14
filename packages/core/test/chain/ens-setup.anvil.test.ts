@@ -169,7 +169,7 @@ describe.skipIf(!anvilAvailable)("ens-setup anvil sepolia fork", { timeout: 300_
       { plan },
     );
     freshTxCount = result.txs.length;
-    expect(result.txs.length).toBeGreaterThanOrEqual(10);
+    expect(result.txs.length, result.calls.map((c) => c.description).join("\n")).toBe(11);
     for (const hash of result.txs) {
       expect((await publicClient.waitForTransactionReceipt({ hash })).status).toBe("success");
     }
