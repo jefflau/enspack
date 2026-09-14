@@ -536,6 +536,7 @@ describe.skipIf(skip)("enspack get e2e (anvil + local gateway)", { timeout: 180_
       ETH_RPC_URL: rpcUrl,
       ENSPACK_IPFS_GATEWAYS: gatewayTemplate,
       NODE_TLS_REJECT_UNAUTHORIZED: "0",
+      ENSPACK_ARIA2_EXTRA: "--check-certificate=false",
     };
     env.SEPOLIA_RPC_URL = undefined;
 

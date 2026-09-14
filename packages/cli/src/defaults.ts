@@ -13,8 +13,7 @@ import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
 import { http, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, sepolia } from "viem/chains";
-import { httpOnlyFetch } from "./http-download.js";
-import type { CliDeps, CliDownloader, CliHf, Writer } from "./types.js";
+import type { CliDeps, CliHf, Writer } from "./types.js";
 
 function asWriter(stream: NodeJS.WritableStream): Writer {
   const tty = "isTTY" in stream && Boolean((stream as NodeJS.WriteStream).isTTY);
@@ -101,24 +100,6 @@ function isWriter(value: NodeJS.WritableStream | Writer): value is Writer {
   return !("end" in value);
 }
 
-function wrapDownloader(inner: Aria2Downloader): CliDownloader {
-  return {
-    async fetch(m, dest, opts) {
-      if (opts.httpOnly === true) {
-        const httpOpts: {
-          select?: string[];
-          onProgress?: (p: import("@enspack/core").Progress) => void;
-        } = {};
-        if (opts.select !== undefined) httpOpts.select = opts.select;
-        if (opts.onProgress !== undefined) httpOpts.onProgress = opts.onProgress;
-        await httpOnlyFetch(m, dest, httpOpts);
-        return;
-      }
-      await inner.fetch(m, dest, opts);
-    },
-  };
-}
-
 /**
  * MVP.md WP-08: wire real implementations from env for `bin/enspack.js`.
  * RPC URLs and keys are read here and never logged.
@@ -142,14 +123,12 @@ export function createDefaultDeps(opts: DefaultDepsOpts = {}): CliDeps {
   return {
     resolverFactory: (chain, rpcUrl) => createResolver({ chain, rpcUrl, store }),
     store,
-    downloader: wrapDownloader(
-      new Aria2Downloader({
-        extraArgs:
-          env.ENSPACK_ARIA2_EXTRA !== undefined && env.ENSPACK_ARIA2_EXTRA !== ""
-            ? env.ENSPACK_ARIA2_EXTRA.split(",").filter((s) => s.length > 0)
-            : [],
-      }),
-    ),
+    downloader: new Aria2Downloader({
+      extraArgs:
+        env.ENSPACK_ARIA2_EXTRA !== undefined && env.ENSPACK_ARIA2_EXTRA !== ""
+          ? env.ENSPACK_ARIA2_EXTRA.split(",").filter((s) => s.length > 0)
+          : [],
+    }),
     verifier: new Sha256Verifier(),
     installer: createInstaller(),
     hf: hfFromEnv(env),

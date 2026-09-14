@@ -285,6 +285,7 @@ export class Aria2Downloader implements Downloader {
         "--summary-interval=1",
         "--console-log-level=notice",
         "--file-allocation=none",
+        ...this.extraArgs,
         "-i",
         listPath,
         "--",
