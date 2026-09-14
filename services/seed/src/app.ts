@@ -14,10 +14,9 @@ import {
   manifestCid,
   validateManifest,
 } from "@enspack/core";
-import { metainfoMatchesManifest, parseTorrent } from "@enspack/torrent";
+import { injectWebseeds, metainfoMatchesManifest, parseTorrent } from "@enspack/torrent";
 import { Hono } from "hono";
 import { mediaType, readCappedRequest } from "./body.js";
-import { injectWebseeds } from "./inject-webseeds.js";
 import type { KuboClient } from "./kubo.js";
 import { checkAllowRoots, checkLicense, checkQuota } from "./policy.js";
 import { type QbittorrentClient, isQbittorrent5 } from "./qbittorrent.js";

@@ -241,7 +241,7 @@ export async function injectWebseeds(bytes: Uint8Array, webseeds: string[]): Pro
   if (webseeds.length === 0) return bytes;
   const parsed = await parseTorrentLib(bytes);
   const existing = parsed.urlList ?? [];
-  const merged = [...new Set([...existing, ...webseeds])];
-  parsed.urlList = merged;
+  if (webseeds.every((url) => existing.includes(url))) return bytes;
+  parsed.urlList = [...new Set([...existing, ...webseeds])];
   return toTorrentFile(parsed);
 }

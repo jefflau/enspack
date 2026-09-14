@@ -5,6 +5,7 @@ export {
   checkMagnet,
   createTorrent,
   infohash,
+  injectWebseeds,
   magnetFor,
   metainfoMatchesManifest,
   parseTorrent,
