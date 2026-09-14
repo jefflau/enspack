@@ -28,18 +28,24 @@ import {
   encodeIpfsContenthash,
   isEmptyContenthash,
 } from "./ens/contenthash.js";
+import type { EnsV2Config, EnsVersion } from "./ens/v2/config.js";
+import { ensVersionFor } from "./ens/v2/config.js";
 import { EnspackError, isEnspackError } from "./error.js";
 import type { PublishCall, PublishInput, PublishResult, Publisher } from "./interfaces.js";
 import { labelhashOf, namehashOf, versionLabel } from "./labels.js";
 import type { Manifest } from "./types.js";
 import { validateManifest } from "./validate.js";
 
-/** WP-04: options for `createPublisher`. Keys and RPC URLs come from the caller, never from env. */
+/** WP-04 / WP-15: options for `createPublisher`. Keys and RPC URLs come from the caller, never from env. */
 export interface CreatePublisherOptions {
   client: PublicClient<Transport, Chain | undefined>;
   wallet?: WalletClient<Transport, Chain | undefined, Account>;
   account?: Account;
   registry?: `0x${string}`;
+  /** Default: `ensVersionFor(chain, env)` (`v2` on Sepolia, `v1` on mainnet). */
+  ensVersion?: EnsVersion;
+  /** Partial override of WP-14 `EnsV2Config` when `ensVersion` is `v2`. */
+  ensV2?: Partial<EnsV2Config>;
 }
 
 function wrapPublish(err: unknown, message: string): never {
@@ -49,11 +55,11 @@ function wrapPublish(err: unknown, message: string): never {
   throw new EnspackError("PUBLISH", message, err);
 }
 
-function addressOf(account: Account | Address): Address {
+export function publisherAccountAddress(account: Account | Address): Address {
   return typeof account === "string" ? account : account.address;
 }
 
-function resolveAccount(opts: CreatePublisherOptions): Account | Address {
+export function resolvePublisherAccount(opts: CreatePublisherOptions): Account | Address {
   if (opts.wallet?.account !== undefined) {
     return opts.wallet.account;
   }
@@ -75,11 +81,11 @@ function oneLabelUnder(name: string, parent: string): string {
   return label;
 }
 
-function cidEqual(a: string, b: string): boolean {
+export function cidEqual(a: string, b: string): boolean {
   return parseCid(a).toV1().equals(parseCid(b).toV1());
 }
 
-function cidFromContenthash(hex: Hex, what: string): string | null {
+export function cidFromContenthash(hex: Hex, what: string): string | null {
   if (isEmptyContenthash(hex)) {
     return null;
   }
@@ -90,7 +96,7 @@ function cidFromContenthash(hex: Hex, what: string): string | null {
   }
 }
 
-function chainIdFor(chain: PublishInput["chain"]): number {
+export function chainIdFor(chain: PublishInput["chain"]): number {
   return chain === "sepolia" ? sepolia.id : mainnet.id;
 }
 
@@ -116,6 +122,9 @@ function summarizeInner(data: Hex): string {
 }
 
 function summarizeCall(call: PublishCall): string {
+  if (call.description.startsWith("setup:")) {
+    return call.description;
+  }
   const registryDecoded = tryDecode(ensRegistryAbi, call.data);
   if (registryDecoded?.functionName === "setSubnodeRecord") {
     const [node, label, owner, resolver, ttl] = registryDecoded.args;
@@ -131,11 +140,13 @@ function summarizeCall(call: PublishCall): string {
 
 /**
  * SPEC §8 step 5: format a dry-run call list for CLI stderr (to, function, args, gas).
+ * WP-15: `setup:` lines print as-is; missing gas prints `(gas after deploy)`.
  */
 export function formatPublishPlan(calls: PublishCall[]): string {
   return calls
     .map((call, i) => {
-      const gas = call.gas !== undefined ? ` gas=${call.gas.toString()}` : "";
+      const gas =
+        call.gas !== undefined ? ` gas=${call.gas.toString()}` : " (gas after deploy)";
       return `${i + 1}. to=${call.to} ${summarizeCall(call)}${gas}`;
     })
     .join("\n");
@@ -159,7 +170,7 @@ async function readOwner(
   }
 }
 
-async function readContenthash(
+export async function readContenthash(
   client: PublicClient<Transport, Chain | undefined>,
   resolver: Address,
   node: Hex,
@@ -177,7 +188,7 @@ async function readContenthash(
   }
 }
 
-async function readText(
+export async function readText(
   client: PublicClient<Transport, Chain | undefined>,
   resolver: Address,
   node: Hex,
@@ -286,6 +297,85 @@ async function sendCalls(
   return txs;
 }
 
+export function validatePublishManifest(
+  manifestInput: Manifest,
+  manifestCid: string,
+): { manifest: Manifest; modelLabel: string; vLabel: string } {
+  const manifest = validateManifest(manifestInput);
+  const { modelLabel, vLabel } = validatePublishNames(manifest);
+  assertRawSha256(manifestCid);
+  return { manifest, modelLabel, vLabel };
+}
+
+export function planRecordMulticallInner(args: {
+  versionNode: Hex;
+  modelNode: Hex;
+  encodedCid: Hex;
+  manifestCid: string;
+  magnet: string;
+  currentVersionHash: Hex;
+  currentModelHash: Hex;
+  currentVersionSpec: string;
+  currentVersionMagnet: string;
+  currentModelSpec: string;
+}): { inner: Hex[]; innerDesc: string[] } {
+  const currentVersionCid = cidFromContenthash(args.currentVersionHash, "version");
+  const currentModelCid = cidFromContenthash(args.currentModelHash, "model");
+  const inner: Hex[] = [];
+  const innerDesc: string[] = [];
+  if (currentVersionCid === null || !cidEqual(currentVersionCid, args.manifestCid)) {
+    inner.push(
+      encodeFunctionData({
+        abi: publicResolverWriteAbi,
+        functionName: "setContenthash",
+        args: [args.versionNode, args.encodedCid],
+      }),
+    );
+    innerDesc.push("setContenthash(version)");
+  }
+  if (args.currentVersionSpec !== SPEC_STRING) {
+    inner.push(
+      encodeFunctionData({
+        abi: publicResolverWriteAbi,
+        functionName: "setText",
+        args: [args.versionNode, TEXT_KEYS.spec, SPEC_STRING],
+      }),
+    );
+    innerDesc.push(`setText(version, ${TEXT_KEYS.spec})`);
+  }
+  if (args.currentVersionMagnet !== args.magnet) {
+    inner.push(
+      encodeFunctionData({
+        abi: publicResolverWriteAbi,
+        functionName: "setText",
+        args: [args.versionNode, TEXT_KEYS.magnet, args.magnet],
+      }),
+    );
+    innerDesc.push(`setText(version, ${TEXT_KEYS.magnet})`);
+  }
+  if (currentModelCid === null || !cidEqual(currentModelCid, args.manifestCid)) {
+    inner.push(
+      encodeFunctionData({
+        abi: publicResolverWriteAbi,
+        functionName: "setContenthash",
+        args: [args.modelNode, args.encodedCid],
+      }),
+    );
+    innerDesc.push("setContenthash(model)");
+  }
+  if (args.currentModelSpec !== SPEC_STRING) {
+    inner.push(
+      encodeFunctionData({
+        abi: publicResolverWriteAbi,
+        functionName: "setText",
+        args: [args.modelNode, TEXT_KEYS.spec, SPEC_STRING],
+      }),
+    );
+    innerDesc.push(`setText(model, ${TEXT_KEYS.spec})`);
+  }
+  return { inner, innerDesc };
+}
+
 function validatePublishNames(manifest: Manifest): { modelLabel: string; vLabel: string } {
   const modelLabel = oneLabelUnder(manifest.model, manifest.publisher);
   const vLabel = oneLabelUnder(manifest.name, manifest.model);
@@ -315,9 +405,16 @@ export function createPublisher(opts: CreatePublisherOptions): Publisher {
 
   return {
     async publish(input: PublishInput): Promise<PublishResult> {
-      const manifest = validateManifest(input.manifest);
-      const { modelLabel, vLabel } = validatePublishNames(manifest);
-      assertRawSha256(input.manifestCid);
+      const version = opts.ensVersion ?? ensVersionFor(input.chain, process.env);
+      if (version === "v2") {
+        const { createPublisherV2 } = await import("./publisher-v2.js");
+        return createPublisherV2(opts).publish(input);
+      }
+
+      const { manifest, modelLabel, vLabel } = validatePublishManifest(
+        input.manifest,
+        input.manifestCid,
+      );
       if (!MAGNET_RE.test(manifest.distribution.magnet)) {
         throw new EnspackError("PUBLISH", "distribution.magnet does not match SPEC");
       }
@@ -328,8 +425,8 @@ export function createPublisher(opts: CreatePublisherOptions): Publisher {
         );
       }
 
-      const account = resolveAccount(opts);
-      const address = addressOf(account);
+      const account = resolvePublisherAccount(opts);
+      const address = publisherAccountAddress(account);
       const publisherNode = namehashOf(manifest.publisher);
       const modelNode = namehashOf(manifest.model);
       const versionNode = namehashOf(manifest.name);
@@ -367,7 +464,6 @@ export function createPublisher(opts: CreatePublisherOptions): Publisher {
       );
       const currentModelHash = await readContenthash(client, resolver, modelNode, manifest.model);
       const currentVersionCid = cidFromContenthash(currentVersionHash, "version");
-      const currentModelCid = cidFromContenthash(currentModelHash, "model");
       if (currentVersionCid !== null && !cidEqual(currentVersionCid, input.manifestCid)) {
         throw new EnspackError(
           "PUBLISH",
@@ -418,58 +514,18 @@ export function createPublisher(opts: CreatePublisherOptions): Publisher {
         });
       }
 
-      const inner: Hex[] = [];
-      const innerDesc: string[] = [];
-      if (currentVersionCid === null || !cidEqual(currentVersionCid, input.manifestCid)) {
-        inner.push(
-          encodeFunctionData({
-            abi: publicResolverWriteAbi,
-            functionName: "setContenthash",
-            args: [versionNode, encodedCid],
-          }),
-        );
-        innerDesc.push("setContenthash(version)");
-      }
-      if (currentVersionSpec !== SPEC_STRING) {
-        inner.push(
-          encodeFunctionData({
-            abi: publicResolverWriteAbi,
-            functionName: "setText",
-            args: [versionNode, TEXT_KEYS.spec, SPEC_STRING],
-          }),
-        );
-        innerDesc.push(`setText(version, ${TEXT_KEYS.spec})`);
-      }
-      if (currentVersionMagnet !== manifest.distribution.magnet) {
-        inner.push(
-          encodeFunctionData({
-            abi: publicResolverWriteAbi,
-            functionName: "setText",
-            args: [versionNode, TEXT_KEYS.magnet, manifest.distribution.magnet],
-          }),
-        );
-        innerDesc.push(`setText(version, ${TEXT_KEYS.magnet})`);
-      }
-      if (currentModelCid === null || !cidEqual(currentModelCid, input.manifestCid)) {
-        inner.push(
-          encodeFunctionData({
-            abi: publicResolverWriteAbi,
-            functionName: "setContenthash",
-            args: [modelNode, encodedCid],
-          }),
-        );
-        innerDesc.push("setContenthash(model)");
-      }
-      if (currentModelSpec !== SPEC_STRING) {
-        inner.push(
-          encodeFunctionData({
-            abi: publicResolverWriteAbi,
-            functionName: "setText",
-            args: [modelNode, TEXT_KEYS.spec, SPEC_STRING],
-          }),
-        );
-        innerDesc.push(`setText(model, ${TEXT_KEYS.spec})`);
-      }
+      const { inner, innerDesc } = planRecordMulticallInner({
+        versionNode,
+        modelNode,
+        encodedCid,
+        manifestCid: input.manifestCid,
+        magnet: manifest.distribution.magnet,
+        currentVersionHash,
+        currentModelHash,
+        currentVersionSpec,
+        currentVersionMagnet,
+        currentModelSpec,
+      });
       if (inner.length > 0) {
         calls.push({
           to: resolver,

@@ -2,8 +2,8 @@
 
 ## 0.1.0
 
+- WP-15: ENSv2 publisher (`createPublisher({ ensVersion: "v2" })` / `createPublisherV2`) behind the issue #17 flag: first-time publisher setup, model UserRegistry deploy, `register` + one resolver `multicall` (4 txs new model / 2 new version). V1 path unchanged.
 - WP-14: ENSv2 read path behind `ensVersion` / `ENSPACK_ENS_VERSION` (Sepolia default v2, mainnet v1). Discovery helpers, role bitmaps, and UniversalResolverV2 `resolve(bytes,bytes)` (issue #17). Existing v1 path unchanged.
-
 - WP-04: ENS write path (`createPublisher`, `formatPublishPlan`) implementing SPEC §8 step 5: `Registry.setSubnodeRecord` plus one `PublicResolver.multicall`, parent's resolver, dry-run gas, version immutability.
 - WP-07: `createInstaller` (SPEC §5 HF cache layout, `--dir`, `--emit-modelfile`, ready-to-run lines) and lockfile read/write/add/update/CID-mismatch (SPEC §9, §4 step 5, §6.2).
 - WP-03: `createManifestStore` verified fetch (SPEC §4 step 3) with gateway rotation, Kubo/Pinata/seed `Pinner` adapters, and `fetchTorrentVerified` (SPEC §4 step 7a).
