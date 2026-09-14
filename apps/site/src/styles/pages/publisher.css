@@ -1,0 +1,116 @@
+.publisher-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-8);
+}
+
+.publisher-header h1 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.publisher-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.publisher-hf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.publisher-section {
+  margin-bottom: var(--sp-8);
+}
+
+.publisher-section h2 {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.publisher-attestation-note {
+  margin: 0;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+.publisher-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.publisher-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.publisher-table th,
+.publisher-table td {
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.publisher-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  background: var(--surface-2);
+}
+
+.publisher-table tbody tr:last-child th,
+.publisher-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.publisher-table th[scope="row"] {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  width: 12rem;
+}
+
+.attestation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.attestation-pre {
+  margin: 0;
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: var(--fs-xs);
+}
+
+.publisher-name-link {
+  color: var(--text);
+}
+
+.publisher-name-link:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.publisher-empty-models {
+  margin: 0;
+  color: var(--muted);
+}

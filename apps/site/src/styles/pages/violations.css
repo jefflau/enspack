@@ -1,0 +1,62 @@
+.violations-page h1 {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+
+.violations-intro {
+  margin: 0 0 var(--sp-6);
+  color: var(--muted);
+  max-width: 68ch;
+}
+
+.violations-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.violations-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.violations-table th,
+.violations-table td {
+  text-align: left;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.violations-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  background: var(--surface-2);
+}
+
+.violations-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.violations-cids {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.violations-arrow {
+  color: var(--muted);
+}
+
+.violations-name-link {
+  color: var(--text);
+}
+
+.violations-name-link:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
