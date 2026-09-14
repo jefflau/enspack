@@ -14,9 +14,7 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "gen": "node --experimental-strip-types scripts/generate.ts",
     "build": "tsup",
