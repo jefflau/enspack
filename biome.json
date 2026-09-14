@@ -17,6 +17,7 @@
       "**/node_modules/**",
       "**/.ponder/**",
       "**/generated/**",
+      "**/ponder-env.d.ts",
       "**/test/fixtures/**",
       "**/*.safetensors",
       "**/*.torrent"
