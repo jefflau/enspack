@@ -1,7 +1,6 @@
 node_modules/
 dist/
 .ponder/
-generated/
 *.log
 .env
 .env.*
