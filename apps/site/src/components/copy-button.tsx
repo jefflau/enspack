@@ -1,5 +1,32 @@
 import { useEffect, useState } from "react";
 
+/** The async clipboard API is denied in some embedded/permissioned contexts; fall back to execCommand. */
+async function copyText(value: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  const ta = document.createElement("textarea");
+  ta.value = value;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  return ok;
+}
+
 export function CopyButton({ value, label = "Copy" }: { value: string; label?: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -10,12 +37,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
   }, [copied]);
 
   async function onClick() {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-    } catch {
-      // clipboard unavailable (insecure context); leave the value selectable instead
-    }
+    if (await copyText(value)) setCopied(true);
   }
 
   return (
