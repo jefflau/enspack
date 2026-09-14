@@ -20,7 +20,12 @@ export async function stepSubmitHb(
     deps.log.warn(`--submit-hb skipped for ${entry.repo}: no Hugging Bay artifact`);
     return { outcome: "ok", data: {} };
   }
-  if (magnet === undefined || infohash === undefined || revision === undefined || files === undefined) {
+  if (
+    magnet === undefined ||
+    infohash === undefined ||
+    revision === undefined ||
+    files === undefined
+  ) {
     deps.log.warn(`--submit-hb skipped for ${entry.repo}: missing magnet/files`);
     return { outcome: "ok", data: {} };
   }

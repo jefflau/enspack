@@ -26,7 +26,11 @@ export async function stepConfirm(
     }
     return { outcome: "ok", data: {} };
   } catch (err) {
-    const message = isEnspackError(err) ? err.message : err instanceof Error ? err.message : String(err);
+    const message = isEnspackError(err)
+      ? err.message
+      : err instanceof Error
+        ? err.message
+        : String(err);
     return { outcome: "failed", reason: `confirm resolve failed: ${message}` };
   }
 }

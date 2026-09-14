@@ -1,5 +1,5 @@
 import { EnspackError, MAGNET_RE } from "@enspack/core";
-import { HuggingBayClient, type HbFallbackInput } from "@enspack/hf";
+import type { HbFallbackInput, HuggingBayClient } from "@enspack/hf";
 import type { BootstrapHb } from "./deps.js";
 
 /**
@@ -14,14 +14,18 @@ export function wrapHuggingBay(client: HuggingBayClient): BootstrapHb {
         throw new EnspackError("PUBLISH", "magnet does not match MAGNET_RE");
       }
       const url = `${client.baseUrl}/api/artifacts/${encodeURIComponent(artifactId)}/decentralized-fallbacks`;
-      const body: HbFallbackInput & { sourceUrl?: string; filePath?: string; magnetUri: string; infoHash: string } =
-        {
-          magnet: input.magnet,
-          displayName: input.displayName,
-          infohash: input.infohash,
-          magnetUri: input.magnet,
-          infoHash: input.infohash,
-        };
+      const body: HbFallbackInput & {
+        sourceUrl?: string;
+        filePath?: string;
+        magnetUri: string;
+        infoHash: string;
+      } = {
+        magnet: input.magnet,
+        displayName: input.displayName,
+        infohash: input.infohash,
+        magnetUri: input.magnet,
+        infoHash: input.infohash,
+      };
       if (input.sourceUrl !== undefined) body.sourceUrl = input.sourceUrl;
       if (input.filePath !== undefined) body.filePath = input.filePath;
       let res: Response;
@@ -32,7 +36,11 @@ export function wrapHuggingBay(client: HuggingBayClient): BootstrapHb {
           body: JSON.stringify(body),
         });
       } catch (cause) {
-        throw new EnspackError("FETCH", `Hugging Bay fallback POST failed for ${artifactId}`, cause);
+        throw new EnspackError(
+          "FETCH",
+          `Hugging Bay fallback POST failed for ${artifactId}`,
+          cause,
+        );
       }
       if (res.status < 200 || res.status >= 300) {
         throw new EnspackError("PUBLISH", `Hugging Bay fallback ${artifactId} HTTP ${res.status}`);

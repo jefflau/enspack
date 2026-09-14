@@ -2,15 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { runBootstrap } from "../src/run.js";
-import {
-  disagreeingHb,
-  fakeHf,
-  loadModels,
-  resolverThatThrows,
-  silentLog,
-} from "./helpers.js";
 import type { BootstrapDeps } from "../src/deps.js";
+import { runBootstrap } from "../src/run.js";
+import { disagreeingHb, fakeHf, loadModels, resolverThatThrows, silentLog } from "./helpers.js";
 
 describe("cross-check (BOOTSTRAP.md §2 rule 3)", () => {
   const dirs: string[] = [];

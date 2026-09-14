@@ -10,7 +10,7 @@ import { stepSeed } from "./steps/seed.js";
 import { stepSubmitHb } from "./steps/submit-hb.js";
 import { stepTorrent } from "./steps/torrent.js";
 import { stepVerify } from "./steps/verify.js";
-import { STEP_NAMES, type EntryRecord, type StepName, type StepOutcome } from "./types.js";
+import { type EntryRecord, STEP_NAMES, type StepName, type StepOutcome } from "./types.js";
 
 async function runOneStep(
   step: StepName,

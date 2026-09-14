@@ -1,16 +1,16 @@
 import {
   EnspackError,
+  type Pinner,
   createManifestStore,
   createPublisher,
   createResolver,
   kuboPinner,
   publicClientFor,
   seedNodePinner,
-  type Pinner,
 } from "@enspack/core";
 import { HfClient, HuggingBayClient, hfWebseed } from "@enspack/hf";
 import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
-import { createWalletClient, http, type Hex } from "viem";
+import { http, type Hex, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, sepolia } from "viem/chains";
 import type { BootstrapDeps } from "./deps.js";

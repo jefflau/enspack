@@ -1,11 +1,14 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
 import { validateManifest } from "@enspack/core";
+import type { PublishInput } from "@enspack/core";
+import { manifestCid } from "@enspack/core";
+import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
 import { afterEach, describe, expect, it } from "vitest";
-import { runBootstrap } from "../src/run.js";
+import type { BootstrapDeps } from "../src/deps.js";
 import { versionNameFor } from "../src/names.js";
+import { runBootstrap } from "../src/run.js";
 import {
   TINY_REPO,
   TINY_SHA,
@@ -22,9 +25,6 @@ import {
   startWebseed,
   tinyModelFiles,
 } from "./helpers.js";
-import type { BootstrapDeps } from "../src/deps.js";
-import type { PublishInput } from "@enspack/core";
-import { manifestCid } from "@enspack/core";
 
 describe("full pipeline (tiny-model fixture)", () => {
   const dirs: string[] = [];

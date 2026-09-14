@@ -2,16 +2,16 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import type { BootstrapDeps } from "../src/deps.js";
 import { runBootstrap } from "../src/run.js";
 import {
+  TINY_REPO,
   emptyHb,
   fakeHf,
   loadModels,
   resolverThatThrows,
   silentLog,
-  TINY_REPO,
 } from "./helpers.js";
-import type { BootstrapDeps } from "../src/deps.js";
 
 const calls: string[] = [];
 

@@ -22,7 +22,7 @@ export async function stepTorrent(
   if (dir === undefined || revision === undefined) {
     return { outcome: "failed", reason: "torrent requires downloadDir and revision" };
   }
-  const webseeds = [ _deps.hfWebseed(entry.repo, revision) ];
+  const webseeds = [_deps.hfWebseed(entry.repo, revision)];
   if (snap.hbId !== undefined) {
     webseeds.push(
       fillTemplate(config.webseeds.huggingbay, {

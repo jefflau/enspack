@@ -71,15 +71,15 @@ export function parseCli(argv: string[]): CliOptions {
   }
   const chain = values.chain ?? "sepolia";
   if (chain !== "sepolia" && chain !== "mainnet") {
-    throw new EnspackError("POLICY", `--chain must be sepolia or mainnet`);
+    throw new EnspackError("POLICY", "--chain must be sepolia or mainnet");
   }
   const pin = values.pin ?? "seed";
   if (pin !== "kubo" && pin !== "seed") {
-    throw new EnspackError("POLICY", `--pin must be kubo or seed`);
+    throw new EnspackError("POLICY", "--pin must be kubo or seed");
   }
   const tier = Number(values.tier ?? "1");
   if (!Number.isInteger(tier) || tier < 1) {
-    throw new EnspackError("POLICY", `--tier must be a positive integer`);
+    throw new EnspackError("POLICY", "--tier must be a positive integer");
   }
   const opts: CliOptions = {
     command,
@@ -95,7 +95,7 @@ export function parseCli(argv: string[]): CliOptions {
   if (values.limit !== undefined) {
     const n = Number(values.limit);
     if (!Number.isInteger(n) || n < 1) {
-      throw new EnspackError("POLICY", `--limit must be a positive integer`);
+      throw new EnspackError("POLICY", "--limit must be a positive integer");
     }
     opts.limit = n;
   }

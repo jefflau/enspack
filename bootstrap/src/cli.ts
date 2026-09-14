@@ -30,11 +30,7 @@ function packageRoot(): string {
 }
 
 function toJson(value: unknown): string {
-  return `${JSON.stringify(
-    value,
-    (_k, v) => (typeof v === "bigint" ? v.toString() : v),
-    2,
-  )}\n`;
+  return `${JSON.stringify(value, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2)}\n`;
 }
 
 /**
@@ -140,11 +136,7 @@ export async function main(argv = process.argv.slice(2)): Promise<void> {
 function isBin(): boolean {
   const arg = process.argv[1];
   if (arg === undefined) return false;
-  return (
-    arg.endsWith("/cli.js") ||
-    arg.endsWith("/cli.ts") ||
-    arg.endsWith("enspack-bootstrap")
-  );
+  return arg.endsWith("/cli.js") || arg.endsWith("/cli.ts") || arg.endsWith("enspack-bootstrap");
 }
 
 if (isBin()) {

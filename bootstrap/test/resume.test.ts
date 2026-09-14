@@ -1,9 +1,10 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { type PublishInput, manifestCid } from "@enspack/core";
 import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
-import { manifestCid, type PublishInput } from "@enspack/core";
 import { afterEach, describe, expect, it } from "vitest";
+import type { BootstrapDeps } from "../src/deps.js";
 import { runBootstrap } from "../src/run.js";
 import {
   TINY_REPO,
@@ -18,7 +19,6 @@ import {
   startFakeSeed,
   startWebseed,
 } from "./helpers.js";
-import type { BootstrapDeps } from "../src/deps.js";
 
 describe("resume (BOOTSTRAP.md §5)", () => {
   const dirs: string[] = [];

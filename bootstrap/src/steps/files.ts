@@ -1,5 +1,5 @@
-import { crossCheck } from "@enspack/hf";
 import { EnspackError } from "@enspack/core";
+import { crossCheck } from "@enspack/hf";
 import type { BootstrapDeps } from "../deps.js";
 import type { EntrySnapshot, ModelEntry, StepOutcome } from "../types.js";
 

@@ -1,4 +1,10 @@
-import { MIRROR_NAMESPACE, SPEC_STRING, canonicalJson, type Manifest, type ManifestFile } from "@enspack/core";
+import {
+  MIRROR_NAMESPACE,
+  type Manifest,
+  type ManifestFile,
+  SPEC_STRING,
+  canonicalJson,
+} from "@enspack/core";
 import { magnetFor } from "@enspack/torrent";
 import { PLACEHOLDER_CID, PLACEHOLDER_INFOHASH, PLACEHOLDER_MAGNET } from "./constants.js";
 import { canonicalNameFor, modelNameFor, versionNameFor } from "./names.js";
@@ -42,7 +48,8 @@ export function assembleManifest(input: AssembleInput): Manifest {
     cid: PLACEHOLDER_CID,
     createdAt: input.createdAt,
   };
-  const versions = input.previousVersions !== undefined ? [...input.previousVersions, thisVersion] : [thisVersion];
+  const versions =
+    input.previousVersions !== undefined ? [...input.previousVersions, thisVersion] : [thisVersion];
 
   const distribution: Manifest["distribution"] = {
     infohash: input.infohash,

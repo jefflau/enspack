@@ -1,4 +1,4 @@
-import { canonicalJson, isEnspackError, type Manifest, validateManifest } from "@enspack/core";
+import { type Manifest, canonicalJson, isEnspackError, validateManifest } from "@enspack/core";
 import type { BootstrapDeps } from "../deps.js";
 import { assembleManifest } from "../manifest.js";
 import { bumpMinor, modelNameFor, versionNameFor } from "../names.js";
@@ -51,10 +51,7 @@ export async function stepPin(
   }
 
   const torrentBytes = Buffer.from(torrentB64, "base64");
-  const torrentCid = await deps.store.put(
-    new Uint8Array(torrentBytes),
-    "application/x-bittorrent",
-  );
+  const torrentCid = await deps.store.put(new Uint8Array(torrentBytes), "application/x-bittorrent");
 
   let hb: string | undefined;
   if (snap.hbDigest !== undefined && /^[0-9a-f]{64}$/.test(snap.hbDigest)) {

@@ -1,8 +1,10 @@
-import { open, mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, open, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
 import { afterEach, describe, expect, it } from "vitest";
+import type { BootstrapDeps } from "../src/deps.js";
+import { downloadDirName } from "../src/names.js";
 import { runBootstrap } from "../src/run.js";
 import {
   confirmingResolver,
@@ -14,8 +16,6 @@ import {
   silentLog,
   startWebseed,
 } from "./helpers.js";
-import type { BootstrapDeps } from "../src/deps.js";
-import { downloadDirName } from "../src/names.js";
 
 describe("local tamper (BOOTSTRAP.md §5 step 4)", () => {
   const dirs: string[] = [];

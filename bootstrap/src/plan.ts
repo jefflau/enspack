@@ -1,7 +1,7 @@
 import {
-  formatPublishPlan,
   type PublishCall,
   canonicalJson,
+  formatPublishPlan,
   manifestCid,
   validateManifest,
 } from "@enspack/core";
@@ -99,10 +99,10 @@ export async function planBootstrap(
     const webseeds = [deps.hfWebseed(entry.repo, revision)];
     if (filesResult.data.hbId !== undefined) {
       webseeds.push(
-        config.webseeds.huggingbay.replace("{hb_id}", filesResult.data.hbId).replace("{repo}", entry.repo).replace(
-          "{revision}",
-          revision,
-        ),
+        config.webseeds.huggingbay
+          .replace("{hb_id}", filesResult.data.hbId)
+          .replace("{repo}", entry.repo)
+          .replace("{revision}", revision),
       );
     }
 

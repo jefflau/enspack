@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { createServer, type Server } from "node:http";
+import { type Server, createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { dirname, join, normalize, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,17 +11,17 @@ import {
   type PublishInput,
   type PublishResult,
   type Resolved,
+  SPEC_STRING,
   manifestCid,
   namehashOf,
-  SPEC_STRING,
   validateManifest,
 } from "@enspack/core";
-import { fileRole, type HbLock, type HfModelInfo, type HfTreeEntry } from "@enspack/hf";
+import { type HbLock, type HfModelInfo, type HfTreeEntry, fileRole } from "@enspack/hf";
 import type { BootstrapDeps, BootstrapHf, SeedNode } from "../src/deps.js";
 import type { ModelsConfig } from "../src/types.js";
 import { parseModelsYaml } from "../src/yaml.js";
 
-export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
+export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 export const fixtureDir = join(repoRoot, "test/fixtures/tiny-model");
 export const fixtureManifestPath = join(repoRoot, "test/fixtures/tiny-model.enspack.json");
 export const modelsYamlPath = fileURLToPath(new URL("./fixtures/models.yaml", import.meta.url));
@@ -80,7 +80,7 @@ export function fakeHf(overrides: Partial<HfModelInfo> & { sha?: string } = {}):
     async info() {
       return info;
     },
-    async resolveRevision(_repo, ref) {
+    async resolveRevision() {
       return sha;
     },
     async tree(): Promise<HfTreeEntry[]> {
@@ -133,7 +133,12 @@ export function emptyHb(): BootstrapDeps["hb"] {
 export function disagreeingHb(): BootstrapDeps["hb"] {
   return {
     async resolve() {
-      return { id: "hf-model-enspack-tiny-model", repo: TINY_REPO, digest: "aa".repeat(32), raw: {} };
+      return {
+        id: "hf-model-enspack-tiny-model",
+        repo: TINY_REPO,
+        digest: "aa".repeat(32),
+        raw: {},
+      };
     },
     async lock(): Promise<HbLock> {
       return {
@@ -243,7 +248,11 @@ export function startWebseed(root: string): Promise<{ url: string; close: () => 
   });
 }
 
-export function startFakeSeed(): Promise<{ url: string; close: () => Promise<void>; names: string[] }> {
+export function startFakeSeed(): Promise<{
+  url: string;
+  close: () => Promise<void>;
+  names: string[];
+}> {
   const names: string[] = [];
   return new Promise((resolve, reject) => {
     const server: Server = createServer((req, res) => {

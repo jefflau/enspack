@@ -5,8 +5,7 @@ import { assertChainAllowed } from "../src/guard.js";
 
 describe("mainnet guard (FLEET.md / BOOTSTRAP.md)", () => {
   it("run --chain mainnet without ENSPACK_BOOTSTRAP_ALLOW_MAINNET=1 is POLICY", async () => {
-    const env = { ...process.env };
-    delete env.ENSPACK_BOOTSTRAP_ALLOW_MAINNET;
+    const env = { ...process.env, ENSPACK_BOOTSTRAP_ALLOW_MAINNET: "" };
     let fetches = 0;
     const orig = globalThis.fetch;
     globalThis.fetch = (async (...args: Parameters<typeof fetch>) => {
@@ -20,7 +19,11 @@ describe("mainnet guard (FLEET.md / BOOTSTRAP.md)", () => {
         interactive: false,
         io: {
           stdout: { write() {} },
-          stderr: { write(s) { stderr.push(s); } },
+          stderr: {
+            write(s) {
+              stderr.push(s);
+            },
+          },
         },
       });
       expect(code).toBe(EXIT_CODES.POLICY);
