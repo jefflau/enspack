@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "name": "jeff.enspack.eth",
+      "hf": "jefflau",
+      "models": 1
+    },
+    {
+      "name": "mirrors.enspack.eth",
+      "hf": null,
+      "models": 2
+    }
+  ]
+}

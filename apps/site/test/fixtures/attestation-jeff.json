@@ -1,0 +1,17 @@
+{
+  "label": "jeff",
+  "name": "jeff.enspack.eth",
+  "hfNamespace": "jefflau",
+  "address": "0x14ac0369ddef2ce89577f19207f84a1fb764d543",
+  "claimId": "clm_eae6dce4d473c56a",
+  "challenge": "enspack-verify:6b284480a6dda9b7867f94e86a035fe5b93d7130d2044d4ca7aea5d846981469",
+  "repo": "jefflau/enspack-verify",
+  "commit": "a56625b5541b33f6b1842637965888e8a15b470b",
+  "signature": "0xd368b0e8bbbd4a474a846a5fbfab4d8cfc1b3f8f413d25dbce5605f3fd38bbc260af54755aae952ac69e62de639b238540c593d6d3e6e9cc992768ff150fdc987f",
+  "txs": [
+    "0x4f804f611d05209bb3c24ed4275733d27ed5f5198c5bfe023dabe3da835d82ff",
+    "0x4d97664a0b4d68b03261abd7a5683ac97bdc093430699f676c514d3bc96ba014"
+  ],
+  "issuedAt": "2026-09-16T09:41:00Z",
+  "chain": "sepolia"
+}

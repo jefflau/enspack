@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "model": "meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+      "publisher": "mirrors.enspack.eth",
+      "latest": {
+        "name": "v1-0-0.meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+        "version": "1.0.0",
+        "cid": "bafkreioovluxxz2mgsituvkognp33nuccuxtsn7kiwa5pvisywiy2rarrh"
+      },
+      "upstream": "meta-llama/Llama-3.2-1B-Instruct",
+      "license": "llama3.2",
+      "totalSize": 2480836609
+    },
+    {
+      "model": "qwen--qwen2-5-7b-instruct.mirrors.enspack.eth",
+      "publisher": "mirrors.enspack.eth",
+      "latest": {
+        "name": "v1-0-0.qwen--qwen2-5-7b-instruct.mirrors.enspack.eth",
+        "version": "1.0.0",
+        "cid": "bafkreis5hm6e3jayscwqnqudbrnems5iuqts36dojc5hgq5yuvxl4vg42c"
+      },
+      "upstream": "Qwen/Qwen2.5-7B-Instruct",
+      "license": "apache-2.0",
+      "totalSize": 15242807270
+    },
+    {
+      "model": "tiny-random.jeff.enspack.eth",
+      "publisher": "jeff.enspack.eth",
+      "latest": {
+        "name": "v0-2-0.tiny-random.jeff.enspack.eth",
+        "version": "0.2.0",
+        "cid": "bafkreiqlqo4tavkcgykxj22n246t6z462d45spaqezclkcxnqw3dryt4sx"
+      },
+      "upstream": "jefflau/tiny-random",
+      "license": "mit",
+      "totalSize": 4198657
+    }
+  ],
+  "nextCursor": null
+}

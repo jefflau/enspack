@@ -1,0 +1,86 @@
+{
+  "model": "tiny-random.jeff.enspack.eth",
+  "versions": [
+    {
+      "name": "v0-1-0.tiny-random.jeff.enspack.eth",
+      "version": "0.1.0",
+      "cid": "bafkreiq2jzse7l6h3bz37newkvc5qkjog6b6slmbt7smopt333icaq4ipl",
+      "createdAt": "2026-09-16T10:00:00Z"
+    },
+    {
+      "name": "v0-2-0.tiny-random.jeff.enspack.eth",
+      "version": "0.2.0",
+      "cid": "bafkreiqlqo4tavkcgykxj22n246t6z462d45spaqezclkcxnqw3dryt4sx",
+      "createdAt": "2026-09-18T14:12:00Z"
+    }
+  ],
+  "manifest": {
+    "spec": "enspack/0.1",
+    "name": "v0-2-0.tiny-random.jeff.enspack.eth",
+    "model": "tiny-random.jeff.enspack.eth",
+    "publisher": "jeff.enspack.eth",
+    "version": "0.2.0",
+    "createdAt": "2026-09-18T14:12:00Z",
+    "displayName": "tiny-random",
+    "license": "mit",
+    "licenseUrl": "https://huggingface.co/jefflau/tiny-random/blob/3f0c2a9d1e8b7c6a5d4e3f2a1b0c9d8e7f6a5b4c/LICENSE",
+    "upstream": {
+      "provider": "huggingface",
+      "repo": "jefflau/tiny-random",
+      "url": "https://huggingface.co/jefflau/tiny-random",
+      "revision": "3f0c2a9d1e8b7c6a5d4e3f2a1b0c9d8e7f6a5b4c"
+    },
+    "distribution": {
+      "infohash": "cc14c60026a418e23e1a2ad0c1aaee22ed4439f2",
+      "webseeds": [
+        "https://huggingface.co/jefflau/tiny-random/resolve/3f0c2a9d1e8b7c6a5d4e3f2a1b0c9d8e7f6a5b4c/"
+      ],
+      "torrent": {
+        "cid": "bafkrei5j7377yemorjn7fik7ktjkd76htfwpqjftzj5hnk7m45qcmhsi6z"
+      },
+      "magnet": "magnet:?xt=urn:btih:cc14c60026a418e23e1a2ad0c1aaee22ed4439f2&dn=tiny-random"
+    },
+    "files": [
+      {
+        "path": "config.json",
+        "size": 612,
+        "sha256": "d34ddab30f9487b9ede3e550786d30eeec2285e2e2a9e7a5e66084b47fe99d65",
+        "role": "config"
+      },
+      {
+        "path": "model.safetensors",
+        "size": 4194512,
+        "sha256": "ecad3aaece44f0d2180b09308aefb49eea7aa4f3a970b0df190deb54c78a410f",
+        "role": "weight"
+      },
+      {
+        "path": "tokenizer.json",
+        "size": 2113,
+        "sha256": "f0e21a1b1c7d365985647c38e75d7ff8e4578955da446cac9ca7ebcd0d3234b4",
+        "role": "tokenizer"
+      },
+      {
+        "path": "README.md",
+        "size": 1420,
+        "sha256": "2ea30fe5d1f68bb891d692993de79d89dc513064a2e3f641b844bd333e8a7acd",
+        "role": "doc"
+      }
+    ],
+    "totalSize": 4198657,
+    "versions": [
+      {
+        "version": "0.1.0",
+        "name": "v0-1-0.tiny-random.jeff.enspack.eth",
+        "cid": "bafkreiq2jzse7l6h3bz37newkvc5qkjog6b6slmbt7smopt333icaq4ipl",
+        "createdAt": "2026-09-16T10:00:00Z"
+      },
+      {
+        "version": "0.2.0",
+        "name": "v0-2-0.tiny-random.jeff.enspack.eth",
+        "cid": "bafkreiqlqo4tavkcgykxj22n246t6z462d45spaqezclkcxnqw3dryt4sx",
+        "createdAt": "2026-09-18T14:12:00Z"
+      }
+    ],
+    "previous": "bafkreiq2jzse7l6h3bz37newkvc5qkjog6b6slmbt7smopt333icaq4ipl"
+  }
+}

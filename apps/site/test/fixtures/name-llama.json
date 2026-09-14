@@ -1,0 +1,97 @@
+{
+  "model": "meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+  "versions": [
+    {
+      "name": "v1-0-0.meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+      "version": "1.0.0",
+      "cid": "bafkreioovluxxz2mgsituvkognp33nuccuxtsn7kiwa5pvisywiy2rarrh",
+      "createdAt": "2026-09-15T08:30:00Z"
+    }
+  ],
+  "manifest": {
+    "spec": "enspack/0.1",
+    "name": "v1-0-0.meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+    "model": "meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+    "publisher": "mirrors.enspack.eth",
+    "version": "1.0.0",
+    "createdAt": "2026-09-15T08:30:00Z",
+    "displayName": "Llama-3.2-1B-Instruct",
+    "license": "llama3.2",
+    "licenseUrl": "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/blob/9213176726f574b556790deb65791e0c5aa438b6/LICENSE",
+    "upstream": {
+      "provider": "huggingface",
+      "repo": "meta-llama/Llama-3.2-1B-Instruct",
+      "url": "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct",
+      "revision": "9213176726f574b556790deb65791e0c5aa438b6"
+    },
+    "distribution": {
+      "infohash": "2261eac56b458d3a2720ff6f5e5e5cb6de75649e",
+      "webseeds": [
+        "https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/resolve/9213176726f574b556790deb65791e0c5aa438b6/"
+      ],
+      "torrent": {
+        "cid": "bafkreiari6rfjs3w7ozmozlpllnsirjwtfv54lkqnf3nmpzaaf7lsztciq"
+      },
+      "magnet": "magnet:?xt=urn:btih:2261eac56b458d3a2720ff6f5e5e5cb6de75649e&dn=Llama-3.2-1B-Instruct"
+    },
+    "files": [
+      {
+        "path": "config.json",
+        "size": 877,
+        "sha256": "b2adbeb198827c155f321d14a71864793e42e9c7b3784be7e91e362f4c8fbe1d",
+        "role": "config"
+      },
+      {
+        "path": "generation_config.json",
+        "size": 189,
+        "sha256": "07973cd474e5f28ce207287f5c8ed0435d08fa7952903212e212cf9ba84311b5",
+        "role": "config"
+      },
+      {
+        "path": "model.safetensors",
+        "size": 2471645608,
+        "sha256": "3afb8e36158ca06f20f7555c526835fd62db6a460189de52c0e88eca3f4c41c6",
+        "role": "weight"
+      },
+      {
+        "path": "special_tokens_map.json",
+        "size": 296,
+        "sha256": "732b4fcb3f140f5afe4849a9fc9cc076b5604192bafbcdef22bb4694b8cfa5ab",
+        "role": "tokenizer"
+      },
+      {
+        "path": "tokenizer.json",
+        "size": 9085657,
+        "sha256": "1de82e2af146b4ce8a57f05e6a890bd4a453e18b898842bb0d99e5fe7af917b3",
+        "role": "tokenizer"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "size": 54528,
+        "sha256": "be27ee438dcd533a36a44cf9a74eff034dd1226aab5d765ce5fe2efe7e30f74b",
+        "role": "tokenizer"
+      },
+      {
+        "path": "LICENSE.txt",
+        "size": 7712,
+        "sha256": "bb0e95fae6937efdbba43f7fb0562ccd0b521b7fcb396a20e8b33a94286933f9",
+        "role": "license"
+      },
+      {
+        "path": "README.md",
+        "size": 41742,
+        "sha256": "2f0f009369df31606499eb9b862ced426d6ef3b0dc4953a49e4446cfaf89b77c",
+        "role": "doc"
+      }
+    ],
+    "totalSize": 2480836609,
+    "versions": [
+      {
+        "version": "1.0.0",
+        "name": "v1-0-0.meta-llama--llama-3-2-1b-instruct.mirrors.enspack.eth",
+        "cid": "bafkreioovluxxz2mgsituvkognp33nuccuxtsn7kiwa5pvisywiy2rarrh",
+        "createdAt": "2026-09-15T08:30:00Z"
+      }
+    ]
+  }
+}
