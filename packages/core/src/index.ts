@@ -30,6 +30,16 @@ export type {
   Verifier,
   VerifyResult,
 } from "./interfaces.js";
+export { kuboPinner, pinataPinner, seedNodePinner } from "./ipfs/pinners.js";
+export { createManifestStore } from "./ipfs/store.js";
+export { fetchTorrentVerified } from "./ipfs/torrent.js";
+export type {
+  GetVerifiedOpts,
+  IpfsManifestStore,
+  ManifestStoreOpts,
+  PinContentType,
+  Pinner,
+} from "./ipfs/types.js";
 export {
   isVersionLabel,
   labelhashOf,
