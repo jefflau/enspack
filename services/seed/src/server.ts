@@ -1,7 +1,7 @@
 import { createManifestStore, createResolver, kuboPinner } from "@enspack/core";
 import { serve } from "@hono/node-server";
 import { createApp } from "./app.js";
-import { loadSeedEnv, rpcUrlFor } from "./env.js";
+import { loadSeedEnv, rpcUrlFor, seedEnsOpts } from "./env.js";
 import { createKuboClient } from "./kubo.js";
 import { createQbittorrentClient } from "./qbittorrent.js";
 
@@ -20,6 +20,7 @@ function kuboGatewayTemplate(apiUrl: string): string {
 }
 
 const env = loadSeedEnv();
+const ens = seedEnsOpts(env.chain, process.env);
 const rpcUrl = rpcUrlFor(env);
 const pinner = kuboPinner({ apiUrl: env.kuboApi });
 const store = createManifestStore({
@@ -30,6 +31,8 @@ const resolver = createResolver({
   chain: env.chain,
   rpcUrl,
   store,
+  ensVersion: ens.ensVersion,
+  ...(ens.ensV2 !== undefined ? { ensV2: ens.ensV2 } : {}),
 });
 const qbt = createQbittorrentClient({
   baseUrl: env.qbtUrl,
@@ -49,6 +52,7 @@ const app = createApp({
   quotaBytesPerPublisher: env.quotaBytesPerPublisher,
   downloadDir: env.downloadDir,
   chain: env.chain,
+  ensVersion: ens.ensVersion,
 });
 
 serve({ fetch: app.fetch, port: env.port }, (info) => {

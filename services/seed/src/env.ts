@@ -1,4 +1,11 @@
-import { type EnspackChainName, LICENSE_ALLOWLIST } from "@enspack/core";
+import {
+  type EnsV2Config,
+  type EnsVersion,
+  type EnspackChainName,
+  LICENSE_ALLOWLIST,
+  ensV2ConfigFor,
+  ensVersionFor,
+} from "@enspack/core";
 
 const TWO_TIB = 2 * 1024 * 1024 * 1024 * 1024;
 
@@ -88,4 +95,16 @@ export function loadSeedEnv(env: NodeJS.ProcessEnv = process.env): SeedEnv {
 export function rpcUrlFor(env: SeedEnv): string {
   const url = env.chain === "sepolia" ? env.sepoliaRpcUrl : env.ethRpcUrl;
   return required(env.chain === "sepolia" ? "SEPOLIA_RPC_URL" : "ETH_RPC_URL", url);
+}
+
+/** WP-17: `ensVersion` + optional `ensV2` for `createResolver`. */
+export function seedEnsOpts(
+  chain: EnspackChainName,
+  env: NodeJS.ProcessEnv,
+): { ensVersion: EnsVersion; ensV2?: EnsV2Config } {
+  const ensVersion = ensVersionFor(chain, env);
+  if (ensVersion === "v2") {
+    return { ensVersion, ensV2: ensV2ConfigFor(chain, env) };
+  }
+  return { ensVersion };
 }

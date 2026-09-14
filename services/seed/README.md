@@ -32,6 +32,8 @@ Never bake secrets into compose or the image. Keys and RPC URLs come from env.
 | `KUBO_API` | `http://kubo:5001` | Kubo HTTP API (internal) |
 | `ETH_RPC_URL` / `SEPOLIA_RPC_URL` | (required for the selected chain) | viem RPC; never logged |
 | `ENSPACK_CHAIN` | `sepolia` | `mainnet` or `sepolia` |
+| `ENSPACK_ENS_VERSION` | chain default | `v1` or `v2` (default v2 on sepolia) |
+| `ENSPACK_ENSV2_*` | (core defaults) | Universal Resolver / factory / implementations |
 | `SEED_ALLOW_ROOTS` | `enspack.eth` | comma list; `manifest.publisher` must equal a root or end with `.<root>` |
 | `SEED_QUOTA_BYTES_PER_PUBLISHER` | `2199023255552` (2 TiB) | sum of `totalSize` already seeded for that publisher plus this manifest |
 | `SEED_LICENSE_ALLOWLIST` | core `LICENSE_ALLOWLIST` | SPDX ids, comma-separated |
@@ -46,7 +48,7 @@ Errors are `{ "error": string, "code": string }`.
 - `POST /v1/pin` body bytes, `Content-Type: application/json` or `application/x-bittorrent` → `201 { cid }`
   - `413` over `MANIFEST_MAX_BYTES` / `TORRENT_MAX_BYTES` · `422` invalid · `415` other types · `500 { code: "PUBLISH" }` if Kubo CID ≠ raw sha2-256
 - `GET /v1/status/:infohash` → `200 { state, progress, peers, uploaded }`
-- `GET /v1/health` → `{ ok: true, qbittorrent, kubo, chain }` (HTTP 200 even when a dependency is down)
+- `GET /v1/health` → `{ ok: true, qbittorrent, kubo, chain, ensVersion }` (HTTP 200 even when a dependency is down)
 
 ### How webseeds reach qBittorrent
 

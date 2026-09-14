@@ -1,4 +1,5 @@
 import {
+  type EnsVersion,
   type EnspackChainName,
   EnspackError,
   type IpfsManifestStore,
@@ -9,6 +10,7 @@ import {
   type Resolved,
   type Resolver,
   TORRENT_MAX_BYTES,
+  ensVersionFor,
   fetchTorrentVerified,
   isEnspackError,
   manifestCid,
@@ -42,6 +44,7 @@ export interface SeedAppDeps {
   quotaBytesPerPublisher: number;
   downloadDir: string;
   chain: EnspackChainName;
+  ensVersion?: EnsVersion;
   fetch?: typeof fetch;
   now?: () => Date;
   log?: (event: SeedLogEvent) => void;
@@ -318,7 +321,13 @@ export function createApp(deps: SeedAppDeps): Hono {
 
   app.get("/v1/health", async (c) => {
     const [qbittorrent, kubo] = await Promise.all([deps.qbt.health(), deps.kubo.health()]);
-    return c.json({ ok: true, qbittorrent, kubo, chain: deps.chain });
+    return c.json({
+      ok: true,
+      qbittorrent,
+      kubo,
+      chain: deps.chain,
+      ensVersion: deps.ensVersion ?? ensVersionFor(deps.chain),
+    });
   });
 
   return app;
