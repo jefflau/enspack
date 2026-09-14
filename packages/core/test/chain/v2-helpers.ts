@@ -1,4 +1,5 @@
 import {
+  http,
   type Account,
   type Address,
   type Chain,
@@ -8,7 +9,6 @@ import {
   createWalletClient,
   encodeAbiParameters,
   encodeFunctionData,
-  http,
   keccak256,
   parseEther,
   parseEventLogs,
@@ -160,6 +160,10 @@ export async function provisionV2Name(
     params: [cfg.ethRegistrar],
   } as never);
   await client.request({
+    method: "anvil_autoImpersonateAccount",
+    params: [true],
+  } as never);
+  await client.request({
     method: "anvil_setBalance",
     params: [cfg.ethRegistrar, `0x${parseEther("100").toString(16)}`],
   } as never);
@@ -167,13 +171,23 @@ export async function provisionV2Name(
     method: "anvil_setBalance",
     params: [owner, `0x${parseEther("100").toString(16)}`],
   } as never);
+  // Foundry default accounts hold EIP-7702 delegations on live Sepolia, so
+  // extcodesize != 0 and ERC1155 mint reverts ERC1155InvalidReceiver.
+  await client.request({
+    method: "anvil_setCode",
+    params: [owner, "0x"],
+  } as never);
 
   const rpcUrl = opts?.rpcUrl;
   if (rpcUrl === undefined) {
     throw new Error("provisionV2Name requires opts.rpcUrl for the impersonated registrar wallet");
   }
+  const registrarAccount = {
+    address: cfg.ethRegistrar,
+    type: "json-rpc" as const,
+  };
   const registrarWallet = createWalletClient({
-    account: cfg.ethRegistrar,
+    account: registrarAccount,
     chain,
     transport: http(rpcUrl),
   });
@@ -181,16 +195,22 @@ export async function provisionV2Name(
   const now = (await client.getBlock()).timestamp;
   const expiry = now + 365n * 24n * 60n * 60n;
 
-  const registerHash = await registrarWallet.writeContract({
-    chain,
-    address: ethRegistry,
-    abi: registryV2Abi,
-    functionName: "register",
-    args: [label, owner, zeroAddress, zeroAddress, NAME_OWNER_ROLES, expiry],
-  });
-  const registerReceipt = await client.waitForTransactionReceipt({ hash: registerHash });
-  if (registerReceipt.status !== "success") {
-    throw new Error(`ETHRegistry.register(${label}) failed`);
+  try {
+    const { request } = await client.simulateContract({
+      account: cfg.ethRegistrar,
+      address: ethRegistry,
+      abi: registryV2Abi,
+      functionName: "register",
+      args: [label, owner, zeroAddress, zeroAddress, NAME_OWNER_ROLES, expiry],
+    });
+    const registerHash = await registrarWallet.writeContract(request);
+    const registerReceipt = await client.waitForTransactionReceipt({ hash: registerHash });
+    if (registerReceipt.status !== "success") {
+      throw new Error(`ETHRegistry.register(${label}) failed`);
+    }
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    throw new Error(`ETHRegistry.register(${label}) failed: ${detail}`);
   }
 
   const resolverInit = encodeFunctionData({

@@ -39,11 +39,7 @@ function parseAddress(value: string, envName: string): `0x${string}` {
   return getAddress(value);
 }
 
-function addressFrom(
-  env: EnvLike,
-  envName: string,
-  fallback: string,
-): `0x${string}` {
+function addressFrom(env: EnvLike, envName: string, fallback: string): `0x${string}` {
   const raw = env[envName];
   if (raw === undefined || raw === "") {
     return parseAddress(fallback, envName);

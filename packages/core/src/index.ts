@@ -24,7 +24,12 @@ export {
   universalResolverV2Abi,
   verifiableFactoryAbi,
 } from "./ens/v2/abis.js";
-export { type EnsV2Config, type EnsVersion, ensV2ConfigFor, ensVersionFor } from "./ens/v2/config.js";
+export {
+  type EnsV2Config,
+  type EnsVersion,
+  ensV2ConfigFor,
+  ensVersionFor,
+} from "./ens/v2/config.js";
 export {
   findExactRegistry,
   findOwnerV2,

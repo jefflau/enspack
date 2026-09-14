@@ -1,4 +1,5 @@
 import { getAddress, keccak256, toBytes } from "viem";
+import { labelhash } from "viem/ens";
 import { describe, expect, it } from "vitest";
 import { EnspackError, ensV2ConfigFor, ensVersionFor, labelId } from "../../src/index.js";
 
@@ -54,17 +55,16 @@ describe("ensV2ConfigFor", () => {
   });
 
   it("throws RESOLVE for an invalid override address", () => {
-    expect(() =>
-      ensV2ConfigFor("sepolia", { ENSPACK_ENSV2_UNIVERSAL_RESOLVER: "0x123" }),
-    ).toThrow(EnspackError);
+    expect(() => ensV2ConfigFor("sepolia", { ENSPACK_ENSV2_UNIVERSAL_RESOLVER: "0x123" })).toThrow(
+      EnspackError,
+    );
   });
 });
 
 describe("labelId", () => {
   it("is uint256(keccak256(bytes(label)))", () => {
-    expect(labelId("eth")).toBe(
-      0x4f5b812789fc606be1b3b16908db13b0c28c18d7bf5da51b7489e90cd413d2c5n,
-    );
+    expect(labelId("eth")).toBe(BigInt(labelhash("eth")));
+    expect(labelId("eth")).toBe(BigInt(keccak256(toBytes("eth"))));
     expect(labelId("enspack-test")).toBe(BigInt(keccak256(toBytes("enspack-test"))));
   });
 });

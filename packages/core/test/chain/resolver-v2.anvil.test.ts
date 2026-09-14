@@ -3,6 +3,7 @@ import { http, type Address, createPublicClient, createWalletClient, zeroAddress
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { NAME_OWNER_ROLES } from "../../src/ens/v2/roles.js";
 import {
   EnspackError,
   SPEC_STRING,
@@ -16,13 +17,7 @@ import {
   namehashOf,
   validateManifest,
 } from "../../src/index.js";
-import { NAME_OWNER_ROLES } from "../../src/ens/v2/roles.js";
-import {
-  MAGNET,
-  MODEL_NAME,
-  VERSION_NAME,
-  tinyManifest,
-} from "../helpers/tiny-manifest.js";
+import { MAGNET, MODEL_NAME, VERSION_NAME, tinyManifest } from "../helpers/tiny-manifest.js";
 import {
   ANVIL_0_KEY,
   anvilAvailable,
@@ -151,27 +146,27 @@ describe.skipIf(!anvilAvailable)("resolver ENSv2 sepolia fork", { timeout: 240_0
     }
   });
 
-  function resolver(store?: {
-    put(): Promise<string>;
-    getVerified(): Promise<Uint8Array>;
-  }) {
-    const client = createPublicClient({ chain: sepolia, transport: http(rpcUrl) });
-    return createResolver({
-      client,
-      chain: "sepolia",
-      ensVersion: "v2",
-      store,
-    });
+  function client() {
+    return createPublicClient({ chain: sepolia, transport: http(rpcUrl) });
   }
 
-  it("resolves tiny-model.enspack-test.eth@1.0.0 with a fake store", async () => {
-    const resolved = await resolver({
+  function fakeStore() {
+    return {
       async put() {
         throw new Error("unused");
       },
       async getVerified() {
         return manifestBytes;
       },
+    };
+  }
+
+  it("resolves tiny-model.enspack-test.eth@1.0.0 with a fake store", async () => {
+    const resolved = await createResolver({
+      client: client(),
+      chain: "sepolia",
+      ensVersion: "v2",
+      store: fakeStore(),
     }).resolve("tiny-model.enspack-test.eth@1.0.0");
     expect(resolved.name).toBe(VERSION_NAME);
     expect(resolved.cid).toBe(cid);
@@ -182,13 +177,11 @@ describe.skipIf(!anvilAvailable)("resolver ENSv2 sepolia fork", { timeout: 240_0
   });
 
   it("resolves the model name against manifest.model", async () => {
-    const resolved = await resolver({
-      async put() {
-        throw new Error("unused");
-      },
-      async getVerified() {
-        return manifestBytes;
-      },
+    const resolved = await createResolver({
+      client: client(),
+      chain: "sepolia",
+      ensVersion: "v2",
+      store: fakeStore(),
     }).resolve(MODEL_NAME);
     expect(resolved.name).toBe(MODEL_NAME);
     expect(resolved.cid).toBe(cid);
@@ -196,30 +189,36 @@ describe.skipIf(!anvilAvailable)("resolver ENSv2 sepolia fork", { timeout: 240_0
   });
 
   it("returns cid: null and the magnet when only com.enspack.magnet is set", async () => {
-    const resolved = await resolver().resolve(MAGNET_ONLY_NAME);
+    const resolved = await createResolver({
+      client: client(),
+      chain: "sepolia",
+      ensVersion: "v2",
+    }).resolve(MAGNET_ONLY_NAME);
     expect(resolved.cid).toBeNull();
     expect(resolved.magnet).toBe(MAGNET);
   });
 
   it("throws RESOLVE for a name with a resolver but no records", async () => {
-    await expect(resolver().resolve(EMPTY_NAME)).rejects.toMatchObject({
+    await expect(
+      createResolver({ client: client(), chain: "sepolia", ensVersion: "v2" }).resolve(EMPTY_NAME),
+    ).rejects.toMatchObject({
       code: "RESOLVE",
       message: `${EMPTY_NAME} has no enspack records`,
     });
   });
 
   it("throws RESOLVE for an unregistered label", async () => {
-    await expect(resolver().resolve(UNREGISTERED)).rejects.toBeInstanceOf(EnspackError);
+    const r = createResolver({ client: client(), chain: "sepolia", ensVersion: "v2" });
+    await expect(r.resolve(UNREGISTERED)).rejects.toBeInstanceOf(EnspackError);
     try {
-      await resolver().resolve(UNREGISTERED);
+      await r.resolve(UNREGISTERED);
     } catch (e) {
       expect(e).toMatchObject({ code: "RESOLVE" });
     }
   });
 
   it("nameStateV2 for the model has owner, subregistry, and shared resolver", async () => {
-    const client = createPublicClient({ chain: sepolia, transport: http(rpcUrl) });
-    const state = await nameStateV2(client, ensV2ConfigFor("sepolia"), MODEL_NAME);
+    const state = await nameStateV2(client(), ensV2ConfigFor("sepolia"), MODEL_NAME);
     expect(state.owner.toLowerCase()).toBe(owner.toLowerCase());
     expect(state.subregistry.toLowerCase()).toBe(modelRegistry.toLowerCase());
     expect(state.resolver.toLowerCase()).toBe(resolverAddr.toLowerCase());

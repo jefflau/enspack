@@ -22,7 +22,12 @@ import {
 import { decodeContenthashToCid, isEmptyContenthash } from "./ens/contenthash.js";
 import { dnsEncodeName } from "./ens/dns.js";
 import { universalResolverV2Abi } from "./ens/v2/abis.js";
-import { type EnsV2Config, type EnsVersion, ensV2ConfigFor, ensVersionFor } from "./ens/v2/config.js";
+import {
+  type EnsV2Config,
+  type EnsVersion,
+  ensV2ConfigFor,
+  ensVersionFor,
+} from "./ens/v2/config.js";
 import { findResolverV2 } from "./ens/v2/discovery.js";
 import { EnspackError, isEnspackError } from "./error.js";
 import type { ManifestStore, Resolved, Resolver } from "./interfaces.js";
@@ -209,7 +214,10 @@ function clientFor(opts: CreateResolverOptions): ReadClient {
   throw new EnspackError("RESOLVE", "createResolver requires client, transport, or rpcUrl");
 }
 
-function configuredChainName(opts: CreateResolverOptions, client: ReadClient): EnspackChainName | undefined {
+function configuredChainName(
+  opts: CreateResolverOptions,
+  client: ReadClient,
+): EnspackChainName | undefined {
   if (opts.chain !== undefined) {
     return opts.chain;
   }
@@ -240,7 +248,10 @@ function manifestMatchesNode(
   return !isVersionLabel(firstLabel(name)) && namehashOf(manifestModel) === node;
 }
 
-function mergeV2Config(opts: CreateResolverOptions, chainName: EnspackChainName | undefined): EnsV2Config {
+function mergeV2Config(
+  opts: CreateResolverOptions,
+  chainName: EnspackChainName | undefined,
+): EnsV2Config {
   if (chainName === "mainnet") {
     throw new EnspackError("RESOLVE", "ENSv2 is not deployed on mainnet");
   }

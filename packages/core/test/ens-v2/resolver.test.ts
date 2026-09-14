@@ -17,7 +17,6 @@ import {
   type ManifestStore,
   canonicalJson,
   createResolver,
-  dnsEncodeName,
   ensV2ConfigFor,
 } from "../../src/index.js";
 import {
@@ -51,7 +50,11 @@ function tryDecode(
   }
 }
 
-function createV2Transport(fixtures: Record<string, Fixture>, calls: { count: number }) {
+function createV2Transport(
+  fixtures: Record<string, Fixture>,
+  calls: { count: number; tos?: string[] },
+  ur = UR,
+) {
   return custom({
     async request({ method, params }) {
       calls.count += 1;
@@ -68,7 +71,8 @@ function createV2Transport(fixtures: Record<string, Fixture>, calls: { count: nu
         throw new Error("eth_call missing to/data");
       }
       const toLc = to.toLowerCase();
-      if (toLc !== UR.toLowerCase()) {
+      calls.tos?.push(toLc);
+      if (toLc !== ur.toLowerCase()) {
         throw new Error(`unexpected eth_call to ${to}`);
       }
       const decoded = tryDecode(universalResolverV2Abi, data);
@@ -126,16 +130,27 @@ function createV2Transport(fixtures: Record<string, Fixture>, calls: { count: nu
   });
 }
 
-function makeResolver(fixtures: Record<string, Fixture>, store?: ManifestStore) {
-  const calls = { count: 0 };
+function makeResolver(fixtures: Record<string, Fixture>, store?: ManifestStore, ur = UR) {
+  const calls = { count: 0, tos: [] as string[] };
   const client = createPublicClient({
     chain: sepolia,
-    transport: createV2Transport(fixtures, calls),
+    transport: createV2Transport(fixtures, calls, ur),
   });
   const resolver =
     store === undefined
-      ? createResolver({ client, chain: "sepolia", ensVersion: "v2" })
-      : createResolver({ client, chain: "sepolia", ensVersion: "v2", store });
+      ? createResolver({
+          client,
+          chain: "sepolia",
+          ensVersion: "v2",
+          ensV2: { universalResolver: ur },
+        })
+      : createResolver({
+          client,
+          chain: "sepolia",
+          ensVersion: "v2",
+          store,
+          ensV2: { universalResolver: ur },
+        });
   return { resolver, calls };
 }
 
@@ -239,11 +254,11 @@ describe("createResolver ensVersion v2 (mock transport)", () => {
     });
   });
 
-  it("does not call the chain-config Universal Resolver address", async () => {
-    const sepoliaUr = sepolia.contracts.ensUniversalResolver?.address;
-    const { resolver } = makeResolver({ [VERSION_NAME]: fullRecords });
-    await resolver.resolve(VERSION_NAME);
-    expect(dnsEncodeName(VERSION_NAME).startsWith("0x")).toBe(true);
-    expect(UR.toLowerCase()).not.toBe(sepoliaUr?.toLowerCase());
+  it("reads via cfg.universalResolver, not viem getEnsText on the chain UR", async () => {
+    const override = "0x2222222222222222222222222222222222222222" as const;
+    const { resolver, calls } = makeResolver({ [VERSION_NAME]: fullRecords }, undefined, override);
+    const resolved = await resolver.resolve(VERSION_NAME);
+    expect(resolved.cid).toBe(PINNED_CID);
+    expect(calls.tos?.every((to) => to === override.toLowerCase())).toBe(true);
   });
 });

@@ -27,7 +27,11 @@ export function labelId(label: string): bigint {
 }
 
 /** Issue #17: ENSv2 root registry from UniversalResolverV2.ROOT_REGISTRY(). */
-export async function rootRegistry(client: V2Client, cfg: EnsV2Config, _name?: string): Promise<Address> {
+export async function rootRegistry(
+  client: V2Client,
+  cfg: EnsV2Config,
+  _name?: string,
+): Promise<Address> {
   try {
     return await client.readContract({
       address: cfg.universalResolver,
@@ -95,7 +99,11 @@ export async function findResolverV2(
 }
 
 /** Issue #17: UniversalResolverV2.findOwner for a DNS-encoded name. */
-export async function findOwnerV2(client: V2Client, cfg: EnsV2Config, name: string): Promise<Address> {
+export async function findOwnerV2(
+  client: V2Client,
+  cfg: EnsV2Config,
+  name: string,
+): Promise<Address> {
   try {
     return await client.readContract({
       address: cfg.universalResolver,
@@ -143,7 +151,11 @@ function emptyState(
 }
 
 /** Issue #17: walk ROOT_REGISTRY → getSubregistry(label) from the TLD down. */
-export async function nameStateV2(client: V2Client, cfg: EnsV2Config, name: string): Promise<NameStateV2> {
+export async function nameStateV2(
+  client: V2Client,
+  cfg: EnsV2Config,
+  name: string,
+): Promise<NameStateV2> {
   const labels = name.split(".");
   const leaf = labels[0];
   if (leaf === undefined || leaf === "") {
