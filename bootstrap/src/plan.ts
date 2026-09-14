@@ -1,5 +1,6 @@
 import {
   type PublishCall,
+  type PublishResult,
   canonicalJson,
   formatPublishPlan,
   manifestCid,
@@ -30,6 +31,24 @@ export interface PlanEntryJson {
 export interface PlanJson {
   entries: PlanEntryJson[];
   totals: { bytes: number; gasEstimate: string };
+}
+
+function callKey(call: PublishCall): string {
+  return `${call.to}:${call.data}:${call.description}`;
+}
+
+function setupCalls(result: PublishResult): PublishCall[] {
+  if ("setup" in result && Array.isArray((result as { setup?: PublishCall[] }).setup)) {
+    return (result as { setup: PublishCall[] }).setup;
+  }
+  return [];
+}
+
+function allPublishCalls(result: PublishResult): PublishCall[] {
+  const setup = setupCalls(result);
+  const keys = new Set(result.calls.map(callKey));
+  const extra = setup.filter((call) => !keys.has(callKey(call)));
+  return [...result.calls, ...extra];
 }
 
 function sumGas(calls: PublishCall[]): bigint {
@@ -130,7 +149,8 @@ export async function planBootstrap(
       chain,
       dryRun: true,
     });
-    const gas = sumGas(published.calls);
+    const calls = allPublishCalls(published);
+    const gas = sumGas(calls);
     totalBytes += snapshotSize;
     totalGas += gas;
     const row: PlanEntryJson = {
@@ -142,7 +162,7 @@ export async function planBootstrap(
       gasEstimate: gas.toString(),
       version,
       name: manifest.name,
-      plan: formatPublishPlan(published.calls),
+      plan: formatPublishPlan(calls),
     };
     if (filesResult.data.hbCrossCheck !== undefined) {
       row.hbCrossCheck = filesResult.data.hbCrossCheck;

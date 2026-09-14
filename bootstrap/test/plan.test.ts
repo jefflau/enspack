@@ -7,6 +7,7 @@ import { runCli } from "../src/cli.js";
 import type { BootstrapDeps } from "../src/deps.js";
 import type { PlanJson } from "../src/plan.js";
 import {
+  ZERO_ADDR,
   emptyHb,
   fakeHf,
   loadModels,
@@ -89,5 +90,90 @@ describe("plan --json (MVP.md WP-12 dry run)", () => {
     expect(plan.totals.gasEstimate).toBe("300000");
     expect(publishes.every((p) => p.dryRun === true)).toBe(true);
     expect(loadModels().models[0]?.repo).toBeDefined();
+  });
+
+  it("totals include setup gas from a fake v2 publisher", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "enspack-plan-setup-"));
+    dirs.push(dir);
+    const chunks: string[] = [];
+    const deps: BootstrapDeps = {
+      hf: fakeHf(),
+      hb: emptyHb(),
+      store: {
+        async put() {
+          throw new Error("plan must not pin");
+        },
+        async getVerified() {
+          throw new Error("unused");
+        },
+      },
+      publisher: {
+        async publish(input) {
+          const register = {
+            to: ZERO_ADDR,
+            data: "0x" as const,
+            description: "register",
+            gas: 100_000n,
+          };
+          const setup = {
+            to: ZERO_ADDR,
+            data: "0x" as const,
+            description: "setup: VerifiableFactory.deployProxy(UserRegistryImpl)",
+            gas: 50_000n,
+          };
+          return {
+            name: input.manifest.name,
+            model: input.manifest.model,
+            cid: input.manifestCid,
+            txs: [],
+            calls: [register],
+            created: { model: true, version: true },
+            setup: [setup],
+          };
+        },
+      },
+      downloader: {
+        async fetch() {
+          throw new Error("plan must not download");
+        },
+      },
+      verifier: {
+        async verify() {
+          throw new Error("verify");
+        },
+        async quarantine() {
+          throw new Error("quarantine");
+        },
+      },
+      seedNode: {
+        async seed() {
+          throw new Error("seed");
+        },
+        async status() {
+          throw new Error("status");
+        },
+      },
+      resolver: resolverThatThrows(),
+      now: () => "2026-09-14T00:00:00.000Z",
+      hfWebseed: (repo, revision) => `https://huggingface.co/${repo}/resolve/${revision}/`,
+      log: silentLog(),
+    };
+
+    const code = await runCli(["plan", "--json", "--tier", "1"], {
+      deps,
+      modelsPath: modelsYamlPath,
+      statePath: join(dir, "state.json"),
+      io: {
+        stdout: { write: (s) => chunks.push(s) },
+        stderr: { write() {} },
+      },
+    });
+    expect(code).toBe(0);
+    const plan = JSON.parse(chunks.join("")) as PlanJson;
+    expect(plan.entries[0]?.gasEstimate).toBe("150000");
+    expect(plan.totals.gasEstimate).toBe("150000");
+    expect(plan.entries[0]?.plan).toMatch(
+      /setup: VerifiableFactory\.deployProxy\(UserRegistryImpl\)/,
+    );
   });
 });

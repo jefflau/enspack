@@ -14,6 +14,7 @@ import { http, type Hex, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, sepolia } from "viem/chains";
 import type { BootstrapDeps } from "./deps.js";
+import { ensOptsFor } from "./ens.js";
 import { wrapHuggingBay } from "./hb-wrap.js";
 import { stderrLogger } from "./log.js";
 import { createSeedClient } from "./seed-client.js";
@@ -56,11 +57,19 @@ export function createProductionDeps(opts: ProductionOpts): BootstrapDeps {
   const client = publicClientFor(opts.chain, url);
   const account = privateKeyToAccount(operatorKey(env));
   const chainObj = opts.chain === "sepolia" ? sepolia : mainnet;
+  const ens = ensOptsFor(opts.chain, env);
   const publisher = opts.dryRun
-    ? createPublisher({ client, account })
+    ? createPublisher({
+        client,
+        account,
+        ensVersion: ens.ensVersion,
+        ...(ens.ensV2 !== undefined ? { ensV2: ens.ensV2 } : {}),
+      })
     : createPublisher({
         client,
         wallet: createWalletClient({ account, chain: chainObj, transport: http(url) }),
+        ensVersion: ens.ensVersion,
+        ...(ens.ensV2 !== undefined ? { ensV2: ens.ensV2 } : {}),
       });
 
   const seedUrl = opts.seedNode ?? env.ENSPACK_SEED_NODE;
@@ -82,7 +91,13 @@ export function createProductionDeps(opts: ProductionOpts): BootstrapDeps {
   }
 
   const store = createManifestStore({ pinner });
-  const resolver = createResolver({ client, store });
+  const resolver = createResolver({
+    client,
+    store,
+    chain: opts.chain,
+    ensVersion: ens.ensVersion,
+    ...(ens.ensV2 !== undefined ? { ensV2: ens.ensV2 } : {}),
+  });
   const hfToken = env.HF_TOKEN;
   const hf = hfToken !== undefined ? new HfClient({ token: hfToken }) : new HfClient();
 

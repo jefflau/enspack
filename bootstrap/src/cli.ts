@@ -37,7 +37,7 @@ function toJson(value: unknown): string {
  * BOOTSTRAP.md §5: `enspack-bootstrap plan|run` entry. Human text on stderr, `--json` on stdout.
  */
 export async function runCli(argv: string[], opts: RunCliOpts = {}): Promise<number> {
-  const env = opts.env ?? process.env;
+  let env = opts.env ?? process.env;
   const io = opts.io ?? { stdout: process.stdout, stderr: process.stderr };
   try {
     const parsed = parseCli(argv);
@@ -47,6 +47,9 @@ export async function runCli(argv: string[], opts: RunCliOpts = {}): Promise<num
     }
     if (parsed.command === "run") {
       assertChainAllowed(parsed.chain, env, opts.interactive ?? isInteractive());
+    }
+    if (parsed.ensVersion !== undefined) {
+      env = { ...env, ENSPACK_ENS_VERSION: parsed.ensVersion };
     }
 
     const root = packageRoot();

@@ -8,15 +8,25 @@ run time, not by editing the yaml.
 
 ```bash
 enspack-bootstrap plan [--tier 1] [--only <repo>...] [--json]
+                       [--chain sepolia|mainnet] [--ens-version v1|v2]
 enspack-bootstrap run  [--tier 1] [--only <repo>...] [--limit n]
-                       [--chain sepolia|mainnet] [--downloads <dir>]
+                       [--chain sepolia|mainnet] [--ens-version v1|v2]
+                       [--downloads <dir>]
                        [--pin kubo|seed] [--seed-node URL]
                        [--submit-hb] [--resume]
 ```
 
 `plan` is a dry run: license/gating/revision gate, `buildFiles` + Hugging Bay
-cross-check, then `createPublisher({ account }).publish({ dryRun: true })` for a
-gas estimate. No downloads and no transactions.
+cross-check, then `createPublisher({ account, ensVersion }).publish({ dryRun: true })` for a
+gas estimate (including first-time `setup:` deploys). No downloads and no transactions.
+
+`--chain sepolia` (the default) uses ENSv2: **4 txs for a new model**, **2 for a
+new version**, plus any first-time publisher setup. `mirrors.enspack.eth` must
+already have a UserRegistry, or the runner's first publish creates it when the
+operator owns the name. Mainnet stays ENSv1 (3 / 2) and is still refused unless
+`ENSPACK_BOOTSTRAP_ALLOW_MAINNET=1` and stdin is a TTY.
+
+`--ens-version v1|v2` and `ENSPACK_ENS_VERSION` override the chain default.
 
 `--json` writes the machine payload to stdout. Human logs always go to stderr.
 
@@ -31,6 +41,8 @@ gas estimate. No downloads and no transactions.
 | `ENSPACK_KUBO_API` | `--pin kubo` (default `http://127.0.0.1:5001`) |
 | `ENSPACK_SEED_NODE` | `--pin seed` and `POST /v1/seed` |
 | `ENSPACK_BOOTSTRAP_ALLOW_MAINNET` | must be `1` **and** stdin must be a TTY to run mainnet |
+| `ENSPACK_ENS_VERSION` | `v1` or `v2` (default v2 on sepolia, v1 on mainnet) |
+| `ENSPACK_ENSV2_*` | Universal Resolver / factory / implementation overrides |
 
 Agents never run mainnet. Keys and RPC URLs are never written to disk or logs.
 

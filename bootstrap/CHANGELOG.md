@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+- WP-17: `--chain sepolia` uses ENSv2 (`ensVersionFor`); `--ens-version` /
+  `ENSPACK_ENS_VERSION` override. Plan gas totals include `PublishResultV2.setup`.
+  README notes v2 tx counts (4/2) and that `mirrors.enspack.eth` needs a
+  UserRegistry (or the first publish creates it when the operator owns the name).
 - WP-12: `enspack-bootstrap plan|run` mirrors `models.yaml` under
   `mirrors.enspack.eth` (BOOTSTRAP.md §5). Resumable `state.json`, license/gating
   gate, HF tree + Hugging Bay cross-check, aria2c download, local SHA-256,

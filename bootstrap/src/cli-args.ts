@@ -8,6 +8,7 @@ export interface CliOptions {
   json: boolean;
   limit?: number;
   chain: "sepolia" | "mainnet";
+  ensVersion?: "v1" | "v2";
   downloads?: string;
   pin: "kubo" | "seed";
   seedNode?: string;
@@ -20,13 +21,17 @@ const HELP = `enspack-bootstrap — mirror models.yaml under mirrors.enspack.eth
 
 Usage:
   enspack-bootstrap plan [--tier 1] [--only <repo>...] [--json]
+                       [--chain sepolia|mainnet] [--ens-version v1|v2]
   enspack-bootstrap run  [--tier 1] [--only <repo>...] [--limit n]
-                         [--chain sepolia|mainnet] [--downloads <dir>]
+                         [--chain sepolia|mainnet] [--ens-version v1|v2]
+                         [--downloads <dir>]
                          [--pin kubo|seed] [--seed-node URL]
                          [--submit-hb] [--resume]
 
 Env: SEPOLIA_RPC_URL / ETH_RPC_URL, ENSPACK_OPERATOR_KEY, HF_TOKEN,
-     ENSPACK_KUBO_API, ENSPACK_SEED_NODE, ENSPACK_BOOTSTRAP_ALLOW_MAINNET
+     ENSPACK_KUBO_API, ENSPACK_SEED_NODE, ENSPACK_BOOTSTRAP_ALLOW_MAINNET,
+     ENSPACK_ENS_VERSION (v1|v2; default v2 on sepolia, v1 on mainnet),
+     ENSPACK_ENSV2_* (Universal Resolver / factory / implementations)
 `;
 
 /**
@@ -42,6 +47,7 @@ export function parseCli(argv: string[]): CliOptions {
       json: { type: "boolean", default: false },
       limit: { type: "string" },
       chain: { type: "string" },
+      "ens-version": { type: "string" },
       downloads: { type: "string" },
       pin: { type: "string" },
       "seed-node": { type: "string" },
@@ -73,6 +79,15 @@ export function parseCli(argv: string[]): CliOptions {
   if (chain !== "sepolia" && chain !== "mainnet") {
     throw new EnspackError("POLICY", "--chain must be sepolia or mainnet");
   }
+  const ensVersionRaw = values["ens-version"];
+  if (
+    ensVersionRaw !== undefined &&
+    ensVersionRaw !== "" &&
+    ensVersionRaw !== "v1" &&
+    ensVersionRaw !== "v2"
+  ) {
+    throw new EnspackError("POLICY", "--ens-version must be v1 or v2");
+  }
   const pin = values.pin ?? "seed";
   if (pin !== "kubo" && pin !== "seed") {
     throw new EnspackError("POLICY", "--pin must be kubo or seed");
@@ -92,6 +107,9 @@ export function parseCli(argv: string[]): CliOptions {
     resume: values.resume === true,
     help: false,
   };
+  if (ensVersionRaw === "v1" || ensVersionRaw === "v2") {
+    opts.ensVersion = ensVersionRaw;
+  }
   if (values.limit !== undefined) {
     const n = Number(values.limit);
     if (!Number.isInteger(n) || n < 1) {
