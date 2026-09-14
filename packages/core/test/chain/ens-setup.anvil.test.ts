@@ -6,8 +6,9 @@ import { http, createPublicClient, createWalletClient, zeroAddress } from "viem"
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { registryV2Abi } from "../../src/ens/v2/abis.js";
 import { ensV2ConfigFor } from "../../src/ens/v2/config.js";
-import { hasRootRolesV2, nameStateV2 } from "../../src/ens/v2/discovery.js";
+import { hasRootRolesV2, labelId, nameStateV2 } from "../../src/ens/v2/discovery.js";
 import { REGISTRY_ROLES, RESOLVER_ROLES } from "../../src/ens/v2/roles.js";
 import { planEnsSetup, runEnsSetup } from "../../src/ens/v2/setup.js";
 import {
@@ -194,6 +195,61 @@ describe.skipIf(!anvilAvailable)("ens-setup anvil sepolia fork", { timeout: 300_
     expect(
       await hasRootRolesV2(publicClient, root.resolver, RESOLVER_ROLES.SET_TEXT, account1.address),
     ).toBe(true);
+  });
+
+  it("a delegate holding SET_RESOLVER | SET_SUBREGISTRY can run the setup without owning the name", async () => {
+    const { publicClient, wallet0, account0, account1 } = clients();
+    const DELEGATED = "delegated-test.eth";
+    const { ethRegistry } = await provisionV2Name(publicClient, wallet0, cfg, {
+      label: "delegated-test",
+      rpcUrl,
+      setupPublisher: false,
+    });
+    const input = { name: DELEGATED, subnames: ["mirrors"], account: account1.address };
+    // Foundry account 1 also carries an EIP-7702 delegation on live Sepolia; clear it so
+    // the ERC-1155 mint of `mirrors` to the delegate does not revert ERC1155InvalidReceiver.
+    await publicClient.request({
+      method: "anvil_setCode",
+      params: [account1.address, "0x"],
+    } as never);
+
+    await expect(planEnsSetup(publicClient, cfg, input)).rejects.toMatchObject({
+      code: "PUBLISH",
+      message: expect.stringContaining("grantRoles"),
+    });
+
+    const grant = await wallet0.writeContract({
+      address: ethRegistry,
+      abi: registryV2Abi,
+      functionName: "grantRoles",
+      args: [
+        labelId("delegated-test"),
+        REGISTRY_ROLES.SET_SUBREGISTRY | REGISTRY_ROLES.SET_RESOLVER,
+        account1.address,
+      ],
+    });
+    expect((await publicClient.waitForTransactionReceipt({ hash: grant })).status).toBe("success");
+
+    const wallet1 = createWalletClient({
+      account: account1,
+      chain: sepolia,
+      transport: http(rpcUrl),
+    });
+    const result = await runEnsSetup(publicClient, wallet1, cfg, input);
+    expect(result.txs.length).toBeGreaterThan(0);
+    for (const hash of result.txs) {
+      expect((await publicClient.waitForTransactionReceipt({ hash })).status).toBe("success");
+    }
+    const state = await nameStateV2(publicClient, cfg, DELEGATED);
+    expect(state.owner.toLowerCase()).toBe(account0.address.toLowerCase());
+    expect(state.resolver.toLowerCase()).toBe(result.resolver.toLowerCase());
+    expect(state.subregistry.toLowerCase()).toBe(result.registry.toLowerCase());
+    expect(
+      await hasRootRolesV2(publicClient, state.subregistry, OPERATOR_ROLES, account1.address),
+    ).toBe(true);
+    const mirrors = await nameStateV2(publicClient, cfg, `mirrors.${DELEGATED}`);
+    expect(mirrors.owner.toLowerCase()).toBe(account1.address.toLowerCase());
+    expect(mirrors.subregistry).not.toBe(zeroAddress);
   });
 
   it("re-running ens-setup is 0 transactions", async () => {

@@ -27,6 +27,8 @@ a publisher-owned name, host-independent verification, and a lockfile.
 
 ## 60-second quickstart
 
+Requires Node 22+ and pnpm 9.
+
 ```bash
 npm i -g @enspack/cli
 # or from this repo:

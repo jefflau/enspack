@@ -70,6 +70,17 @@ and `setup`.
 
 ## On-chain setup (once, Sepolia)
 
+Requires Node 22+ (`node --version`). If `enspack.eth` was registered from a wallet other than
+the hot key, either transfer the name (ERC-1155 `safeTransferFrom` on the ETHRegistry) or, from
+the owner, delegate the two roles `ens-setup` needs on the name itself — no deployment involved:
+
+```
+ETHRegistry.grantRoles(labelId("enspack"), ROLE_SET_SUBREGISTRY | ROLE_SET_RESOLVER, <hot key>)
+```
+
+(`(1<<20) | (1<<24)` = `17825792`). `ens-setup` then runs signed by the hot key; the proxies it
+deploys are initialised with the hot key as admin and `mirrors.enspack.eth` is registered to it.
+
 Owner and signer = the hot wallet that registered `enspack.eth`. Optional
 `--operator` is a second address (registrar + bootstrap) granted
 `ROLE_REGISTRAR | ROLE_RENEW` on the UserRegistries and resolver record

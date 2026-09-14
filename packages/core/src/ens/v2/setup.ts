@@ -33,6 +33,7 @@ import {
   encodeSetSubregistry,
   encodeUserRegistryInit,
   findExactRegistry,
+  hasRolesV2,
   hasRootRolesV2,
   isNameAvailable,
   isPendingProxy,
@@ -320,9 +321,25 @@ function pendingNote(ref: AddrOrSlot): string {
   return isSlotKey(ref) ? "<pending proxy>" : ref;
 }
 
+const NAME_SETUP_ROLES = REGISTRY_ROLES.SET_SUBREGISTRY | REGISTRY_ROLES.SET_RESOLVER;
+
+async function hasDelegatedNameRoles(
+  client: V2Client,
+  state: NameStateV2,
+  account: Address,
+): Promise<boolean> {
+  const resource = await client.readContract({
+    address: state.parentRegistry,
+    abi: registryV2Abi,
+    functionName: "getResource",
+    args: [state.tokenIdOrLabelId],
+  });
+  return hasRolesV2(client, state.parentRegistry, resource, NAME_SETUP_ROLES, account);
+}
+
 /**
- * Idempotent ENSv2 on-chain setup plan for a name the signer already owns.
- * Does not send transactions.
+ * Idempotent ENSv2 on-chain setup plan for a name the signer owns, or on which the
+ * owner granted the signer ROLE_SET_RESOLVER | ROLE_SET_SUBREGISTRY. Does not send transactions.
  */
 export async function planEnsSetup(
   client: V2Client,
@@ -346,8 +363,21 @@ export async function planEnsSetup(
   }
 
   const state = await nameStateV2(client, cfg, name);
-  if (isNameAvailable(state) || !isAddressEqual(state.owner, account)) {
+  if (isNameAvailable(state)) {
     throw new EnspackError("PUBLISH", `register ${name} first (ENS Sepolia app) with this wallet`);
+  }
+  if (!isAddressEqual(state.owner, account)) {
+    // A non-owner may still run the setup when the owner delegated the two roles
+    // this command needs on the name itself (ETHRegistry.grantRoles); the proxies
+    // it deploys are then initialised with the signer as their admin.
+    const delegated = await hasDelegatedNameRoles(client, state, account);
+    if (!delegated) {
+      throw new EnspackError(
+        "PUBLISH",
+        `${account} neither owns ${name} nor holds ROLE_SET_RESOLVER | ROLE_SET_SUBREGISTRY on it; ` +
+          `the owner can run: grantRoles(labelId("${state.label}"), ROLE_SET_SUBREGISTRY | ROLE_SET_RESOLVER, ${account}) on ${state.parentRegistry}`,
+      );
+    }
   }
 
   const ops: SetupOp[] = [];
