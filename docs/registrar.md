@@ -1,8 +1,11 @@
 # Registrar
 
 SPEC §7 / MVP.md §4.1. Implementation: `services/registrar`. Default listen
-port `8787` (`PORT`). Operator key is an ENS Registry operator approved by the
-root owner (`setApprovalForAll`), not the root owner.
+port `8787` (`PORT`). On **mainnet (v1)** the operator is an ENS Registry
+operator approved by the root owner (`setApprovalForAll`). On **Sepolia
+(v2)** the operator holds `ROLE_REGISTRAR | ROLE_RENEW` on `enspack.eth`'s
+UserRegistry (`grantRootRoles`) and `ROLE_SET_TEXT` on the project
+PermissionedResolver. See `docs/ens-v2.md`.
 
 Live issuance **requires Sepolia/mainnet** (`ENSPACK_OPERATOR_KEY`,
 `REGISTRAR_CHAIN`, `ETH_RPC_URL` / `SEPOLIA_RPC_URL`). Local tests use PGlite
@@ -26,7 +29,7 @@ POST /v1/claims/:id/verify             { "repo": "<hfNamespace>/<name>", "signat
 
 GET  /v1/claims/:id                    { claimId, label, status, expiresAt, ... }
 GET  /v1/publishers/:label             attestation JSON (public, permanent)
-GET  /v1/health                        { ok, chain, operator, approved, balanceWei }
+GET  /v1/health                        { ok, chain, operator, approved, balanceWei, ensVersion, … }
 GET  /
 ```
 
@@ -79,6 +82,17 @@ Issuance then:
 3. `Registry.setOwner(node, claimant)`
 
 PublicResolver is discovered from the parent name at runtime.
+
+## ENSv2 (Sepolia)
+
+Issuance is **2 transactions** (issue #17):
+
+1. `R_ROOT.register(label, claimant, 0x0, RES, NAME_OWNER_ROLES, expiryRoot)`
+2. `RES.multicall([setText(com.enspack.hf), setText(com.enspack.spec)])`
+
+`NAME_OWNER_ROLES` is `SET_SUBREGISTRY | SET_SUBREGISTRY_ADMIN | SET_RESOLVER | SET_RESOLVER_ADMIN | CAN_TRANSFER_ADMIN`. Operator setup (`grantRootRoles`, `authorizeNameRoles`) is listed in `docs/ens-v2.md` and `services/registrar/README.md`.
+
+If `enspack.eth` has no UserRegistry, health/issuance fail closed (`ROOT_REGISTRY_MISSING`).
 
 ## Collision review
 

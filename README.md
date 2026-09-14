@@ -43,7 +43,9 @@ enspack install
 
 `ensget` is an alias for `enspack get`. Human messages go to stderr; `--json`
 prints one JSON object to stdout. Global `--chain mainnet|sepolia` defaults to
-mainnet. Flags: `enspack <cmd> --help`.
+mainnet. `--ens-version v1|v2` (or `ENSPACK_ENS_VERSION`) selects ENSv1 vs
+ENSv2; Sepolia defaults to v2. Flags: `enspack <cmd> --help`. See
+`docs/ens-v2.md`.
 
 The live `get` of the Qwen mirror **requires Sepolia/mainnet infra** that is
 not published yet (MVP.md §0.1). Local proof uses Anvil + `test/fixtures/tiny-model/`
@@ -65,7 +67,7 @@ not published yet (MVP.md §0.1). Local proof uses Anvil + `test/fixtures/tiny-m
 | `test/e2e` | `@enspack/e2e` | local Anvil swarm (CI) + Sepolia (nightly) |
 
 Docs: `docs/publishing.md`, `docs/registrar.md`, `docs/seed-node.md`,
-`docs/indexer.md`, `docs/exit-codes.md`.
+`docs/indexer.md`, `docs/exit-codes.md`, `docs/ens-v2.md`.
 
 ## Development
 
@@ -85,13 +87,14 @@ logs. CLI env vars: `packages/cli/src/defaults.ts` and `enspack --help`.
 
 ## Status
 
-Honest against MVP.md §0. Local CI is the Anvil fork + fixture swarm, not mainnet.
+Honest against MVP.md §0. Live path is **Sepolia ENSv2**; mainnet v1 later.
+Local CI is the Anvil fork + fixture swarm, not mainnet.
 
 | MVP §0 | Claim | Status |
 |--------|-------|--------|
-| 1 | `enspack get qwen--qwen2-5-7b-instruct.mirrors.enspack.eth` on a clean machine | **Blocked** on mainnet mirrors + seedbox (BOOTSTRAP.md). Local equivalent proven in `test/e2e` against `tiny-model.enspack-test.eth` on an Anvil fork. |
-| 2 | `enspack publish --from-hf` ≤ 3 txs | Publisher on-chain path proven on Anvil (3 txs new model, 2 txs new version). Live `--from-hf` **requires Sepolia/HF** (`ENSPACK_PUBLISHER_KEY`, pin target). |
-| 3 | HF user claims `<user>.enspack.eth` with no human | **Blocked** on registrar deploy + Sepolia/mainnet operator. Claim HTTP is implemented; Sepolia E2E is unproven. |
+| 1 | `enspack get qwen--qwen2-5-7b-instruct.mirrors.enspack.eth` on a clean machine | **Blocked** on Sepolia `enspack.eth` / mirrors setup + seedbox (BOOTSTRAP.md). Live path is **Sepolia ENSv2**; mainnet v1 later. Local equivalent proven in `test/e2e` (`sepolia-fork.e2e.test.ts` on an Anvil Sepolia fork, plus mainnet v1 `local-swarm.e2e.test.ts`). |
+| 2 | `enspack publish --from-hf` ≤ 3 txs | **Sepolia ENSv2:** 4 txs new model / 2 new version (plus setup). Proven on Anvil Sepolia fork. V1 mainnet remains 3/2. Live `--from-hf` **requires Sepolia/HF**. |
+| 3 | HF user claims `<user>.enspack.eth` with no human | **Blocked** on registrar deploy + Sepolia `enspack.eth` UserRegistry. V2 issuance is 2 txs. Claim HTTP is implemented; live Sepolia E2E is unproven. |
 | 4 | `enspack.lock` + `enspack install`; refuse if CID changed | **Proven locally** (`packages/cli` lock tests + `test/e2e` add/install/--frozen + lock-mismatch exit 3). |
 | 5 | `GET https://index.enspack.dev/v1/names` lists mainnet names | **Blocked** on indexer deploy + mainnet names. API contract is implemented. |
 | 6 | ≥ 25 mirrored models under `mirrors.enspack.eth` seeded | **Blocked** on seedbox + WP-12 live run. `bootstrap/models.yaml` is the list. |

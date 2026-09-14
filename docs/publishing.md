@@ -7,10 +7,13 @@ enspack publish --from-hf <org/repo> --publisher <name> --version <semver>
   [--revision <sha>] [--webseed <url>...] [--pin kubo|pinata|seed]
   [--seed-node <url>] [--submit-hb] [--dry-run]
   [--i-have-redistribution-rights] [--json] [--chain mainnet|sepolia]
+  [--ens-version v1|v2]
 ```
 
 `--help` snapshot is in `packages/cli/test/__snapshots__/help.test.ts.snap` and is
 re-run against the built binary in `test/e2e/test/help-and-workflow.test.ts`.
+`--chain sepolia` selects ENSv2 (issue #17 / `docs/ens-v2.md`). `--ens-version`
+and `ENSPACK_ENS_VERSION` override. Mainnet stays v1.
 
 ## Flow
 
@@ -27,14 +30,18 @@ re-run against the built binary in `test/e2e/test/help-and-workflow.test.ts`.
    whitespace). `--pin` is required unless `--dry-run` (dry-run computes CIDs
    locally and does not pin).
 5. On-chain from `ENSPACK_PUBLISHER_KEY` via core `createPublisher` (SPEC §8
-   step 5):
+   step 5). **Mainnet (v1):**
    - first publish of a model: `Registry.setSubnodeRecord` for the model label
    - every version: `Registry.setSubnodeRecord` for `v<semver-with-dots-as-dashes>`
    - one `PublicResolver.multicall` writing `contenthash` + `com.enspack.spec`
      (+ magnet text on the version node) on **both** version and model nodes
-   That is **3 transactions for a new model and 2 for a new version**. Re-runs
-   are idempotent (existing subnodes are skipped). The resolver is read from
-   the publisher name at runtime; it is not hardcoded.
+   That is **3 transactions for a new model and 2 for a new version**.
+   **Sepolia (v2):** deploy a model UserRegistry, `register` the model with it,
+   `register` the version, one PermissionedResolver `multicall` — **4 txs new
+   model, 2 new version**, plus first-time publisher `setup:` deploys. Re-runs
+   are idempotent. The resolver is read from the publisher name at runtime; it
+   is not hardcoded. `publish` prints `setup:` lines and the expected tx count;
+   `--json` includes `ensVersion` and `setup`.
 6. If `ENSPACK_SEED_NODE` / `--seed-node` is set (and not dry-run),
    `POST /v1/seed { name }` is attempted (failures are logged, not fatal).
    `--submit-hb` POSTs the magnet to Hugging Bay.
@@ -49,8 +56,10 @@ under any label other than `*.mirrors.enspack.eth` (FLEET.md).
 
 Live `--from-hf` **requires Sepolia/seedbox** (RPC, publisher key, pin target,
 and HF). The local e2e suite publishes the tiny-model fixture through
-`createPublisher` on an Anvil fork (3 txs) because `publish --from-hf` cannot
-run without HF.
+`createPublisher({ ensVersion: "v2" })` on an Anvil **Sepolia** fork (4 txs)
+because `publish --from-hf` cannot run without HF (covered in
+`packages/cli` unit tests with a fake HF + fake v2 publisher). The mainnet v1
+swarm suite (`test/e2e/test/local-swarm.e2e.test.ts`) is unchanged (3 txs).
 
 ## Pinning
 
@@ -62,11 +71,13 @@ run without HF.
 
 ## Version immutability
 
-Subnames are plain ENS Registry records; the owner can always change them.
-Clients treat a version name as immutable: `createPublisher` refuses to
-repoint a version `contenthash` to a different CID. Model names are mutable
-pointers to the latest version. Indexers flag `ContenthashChanged` on a
-version name after first set (SPEC §6.2).
+Subnames are records the owner can always change. Clients treat a version
+name as immutable: `createPublisher` refuses to repoint a version
+`contenthash` to a different CID. Model names are mutable pointers to the
+latest version. On ENSv2 the version name itself cannot be rewritten, so a
+repoint is a **new version** (for example `1.1.0`) that moves the model
+pointer. Indexers flag `ContenthashChanged` on a version name after first set
+(SPEC §6.2).
 
 ## Lockfile (consumers)
 

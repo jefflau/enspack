@@ -11,10 +11,18 @@ pnpm --filter @enspack/indexer start
 
 ## Resolver discovery
 
-Public resolvers are not hardcoded. On each configured network the indexer
-reads the resolver of `enspack.eth` via core `readResolverAddress`, unions it
-with `ENSPACK_INDEXER_RESOLVERS_MAINNET` / `_SEPOLIA` (comma-separated), and
-indexes those contracts.
+**Sepolia (ENSv2):** `findResolverV2(enspack.eth)` and
+`findResolverV2(mirrors.enspack.eth)` (skip zero), union
+`ENSPACK_INDEXER_RESOLVERS_SEPOLIA`. Each publisher has its own
+PermissionedResolver proxy; add new ones via that env list. A future
+`ResolverUpdated` subscription is out of scope.
+
+**Mainnet (ENSv1):** `readResolverAddress(enspack.eth)` plus
+`ENSPACK_INDEXER_RESOLVERS_MAINNET`.
+
+`TextChanged` / `ContenthashChanged` ABIs match the v1 PublicResolver
+(PermissionedResolver inherits the standard profiles). The TextChanged
+handler already reads `contenthash` from `event.log.address`.
 
 A network whose RPC URL is missing is skipped. `ETH_RPC_URL` / `SEPOLIA_RPC_URL`
 come from env only.

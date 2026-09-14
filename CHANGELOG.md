@@ -5,6 +5,9 @@ details live in each package's `CHANGELOG.md`.
 
 ## 0.1.0
 
+WP-17 wires Sepolia ENSv2 through CLI, bootstrap, seed, indexer, e2e and docs
+(issue #17). Mainnet ENSv1 is unchanged. See `docs/ens-v2.md`.
+
 ### `@enspack/core`
 
 Schema-generated `Manifest` / `Lockfile` types, ajv validators, label/ref
@@ -28,8 +31,9 @@ quarantine.
 ### `@enspack/cli`
 
 `enspack` / `ensget`: get, inspect, versions, verify, add, install, update,
-publish `--from-hf`, seed. Exit codes from core `EXIT_CODES`. Human text on
-stderr; `--json` on stdout.
+publish `--from-hf`, seed. `--chain sepolia` selects ENSv2; `--ens-version` /
+`ENSPACK_ENS_VERSION` override. Exit codes from core `EXIT_CODES`. Human text on
+stderr; `--json` on stdout (`inspect` / `publish` include `ensVersion`).
 
 ### `@enspack/seed`
 
@@ -43,16 +47,16 @@ subnames, permanent attestations. PGlite locally; Postgres via `DATABASE_URL`.
 
 ### `@enspack/indexer`
 
-Ponder indexer for `com.enspack.spec` / `contenthash` on discovered resolvers,
+Ponder indexer for `com.enspack.spec` / `contenthash` on discovered resolvers
+(v1 `readResolverAddress` on mainnet; v2 `findResolverV2` on Sepolia),
 version-immutability violations, JSON API §4.3.
 
 ### `@enspack/bootstrap`
 
-Mirror runner for `bootstrap/models.yaml` under `mirrors.enspack.eth` (WP-12;
-present on master as `models.yaml`, full runner on `wp-12-bootstrap` until
-merged).
+Mirror runner for `bootstrap/models.yaml` under `mirrors.enspack.eth` (WP-12).
+`--chain sepolia` uses ENSv2 (4/2 txs + setup gas in `plan`).
 
 ### `@enspack/e2e`
 
-Local Anvil swarm suite in `pnpm check`. Sepolia suite self-skips without
-secrets. Nightly workflow at 03:00 UTC.
+Local Anvil mainnet-v1 swarm suite and Sepolia-fork ENSv2 suite in `pnpm check`.
+Real Sepolia suite self-skips without secrets. Nightly workflow at 03:00 UTC.

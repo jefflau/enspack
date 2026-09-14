@@ -30,6 +30,8 @@ From `services/seed/src/env.ts` / `.env.example`:
 | `KUBO_API` | `http://kubo:5001` | Kubo HTTP API |
 | `ETH_RPC_URL` / `SEPOLIA_RPC_URL` | (required for the selected chain) | viem RPC; never logged |
 | `ENSPACK_CHAIN` | `sepolia` | `mainnet` or `sepolia` |
+| `ENSPACK_ENS_VERSION` | chain default | `v1` or `v2` (default v2 on sepolia, v1 on mainnet) |
+| `ENSPACK_ENSV2_*` | core defaults | Universal Resolver / factory / implementation overrides |
 | `SEED_ALLOW_ROOTS` | `enspack.eth` | comma list; `manifest.publisher` must equal a root or end with `.<root>` |
 | `SEED_QUOTA_BYTES_PER_PUBLISHER` | `2199023255552` (2 TiB) | sum of `totalSize` already seeded for that publisher plus this manifest |
 | `SEED_LICENSE_ALLOWLIST` | core `LICENSE_ALLOWLIST` | SPDX ids, comma-separated |
@@ -49,7 +51,7 @@ POST /v1/pin         body bytes, Content-Type application/json | application/x-b
   413 too large · 422 invalid · 415 other types
 
 GET  /v1/status/:infohash    200 { state, progress, peers, uploaded }
-GET  /v1/health              { ok, qbittorrent, kubo, chain }  (HTTP 200 even if a dep is down)
+GET  /v1/health              { ok, qbittorrent, kubo, chain, ensVersion }  (HTTP 200 even if a dep is down)
 ```
 
 ```bash
