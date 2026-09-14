@@ -1,0 +1,37 @@
+name: e2e-nightly
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: sudo apt-get update && sudo apt-get install -y aria2
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Local swarm + Sepolia e2e
+        env:
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+          ENSPACK_PUBLISHER_KEY: ${{ secrets.ENSPACK_PUBLISHER_KEY }}
+          ENSPACK_SEED_NODE: ${{ secrets.ENSPACK_SEED_NODE }}
+          ENSPACK_KUBO_API: ${{ secrets.ENSPACK_KUBO_API }}
+        run: pnpm --filter @enspack/e2e test
+      - name: Bootstrap dry-run (tier 1)
+        run: |
+          if [ ! -f bootstrap/package.json ]; then
+            echo "bootstrap runner not on this branch; skipping"
+            exit 0
+          fi
+          if node -e "const p=require('./bootstrap/package.json'); process.exit(p.scripts && p.scripts.plan ? 0 : 1)"; then
+            pnpm --filter @enspack/bootstrap plan --tier 1 --json
+          elif [ -f bootstrap/dist/cli.js ]; then
+            node bootstrap/dist/cli.js plan --tier 1 --json
+          else
+            echo "bootstrap package has no plan script or built CLI; skipping"
+          fi
