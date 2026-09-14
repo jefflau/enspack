@@ -1,5 +1,9 @@
 # @enspack/indexer
 
+## Unreleased
+
+- CORS: `GET` / `OPTIONS` on `/v1/*` with `Access-Control-Allow-Origin: *` so the catalog site can call the API from `enspack.dev`.
+
 ## 0.1.0
 
 - WP-21: production Dockerfile copies `infra/package.json` so the workspace

@@ -1,5 +1,6 @@
 import type { Manifest } from "@enspack/core";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { decodeNamesCursor, encodeNamesCursor } from "../cursor.js";
 import type { IndexerReader, NameRow, VersionRow } from "../repo.js";
 
@@ -60,6 +61,8 @@ function preferName(rows: NameRow[]): NameRow | undefined {
  */
 export function createIndexerApi(repo: IndexerReader): Hono {
   const app = new Hono();
+
+  app.use("/v1/*", cors({ origin: "*", allowMethods: ["GET", "OPTIONS"] }));
 
   app.get("/v1/health", (c) => c.json({ ok: true }));
 

@@ -175,4 +175,22 @@ describe("API §4.3", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   });
+
+  it("CORS: GET /v1/names allows any origin; OPTIONS preflight succeeds", async () => {
+    const { app } = await seededRepo();
+    const get = await app.request("/v1/names", {
+      headers: { Origin: "https://enspack.dev" },
+    });
+    expect(get.status).toBe(200);
+    expect(get.headers.get("access-control-allow-origin")).toBe("*");
+
+    const preflight = await app.request("/v1/names", {
+      method: "OPTIONS",
+      headers: {
+        Origin: "https://enspack.dev",
+        "Access-Control-Request-Method": "GET",
+      },
+    });
+    expect([200, 204]).toContain(preflight.status);
+  });
 });
