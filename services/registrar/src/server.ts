@@ -1,13 +1,13 @@
 import { randomBytes } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ENS_REGISTRY, ROOT_NAME, publicClientFor } from "@enspack/core";
+import { ENS_REGISTRY, ROOT_NAME, ensV2ConfigFor, publicClientFor } from "@enspack/core";
 import { serve } from "@hono/node-server";
 import { http, type Hex, createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, sepolia } from "viem/chains";
 import { createApp } from "./app.js";
-import { readOperatorApproval } from "./chain.js";
+import { createRegistrarChain, readOperatorApproval, registrarEnsVersion } from "./chain.js";
 import { createDbFromEnv } from "./db.js";
 
 function env(name: string): string | undefined {
@@ -60,19 +60,24 @@ export async function start(): Promise<void> {
   const db = await createDbFromEnv();
   const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../public");
   const hfToken = env("HF_TOKEN");
+  const ensVersion = registrarEnsVersion(chain);
+  const ensV2 = ensVersion === "v2" ? ensV2ConfigFor(chain, process.env) : undefined;
+  const registrarChain = createRegistrarChain({
+    client,
+    wallet,
+    operator: account.address,
+    registry: ENS_REGISTRY,
+    rootName: ROOT_NAME,
+    ensVersion,
+    ...(ensV2 !== undefined ? { ensV2 } : {}),
+  });
   const deps = {
     db,
     hf: {
       fetch: globalThis.fetch.bind(globalThis),
       ...(hfToken !== undefined ? { token: hfToken } : {}),
     },
-    chain: {
-      client,
-      wallet,
-      operator: account.address,
-      registry: ENS_REGISTRY,
-      rootName: ROOT_NAME,
-    },
+    chain: registrarChain,
     now: () => new Date(),
     random: () => randomBytes(32),
     publicDir,
@@ -80,13 +85,19 @@ export async function start(): Promise<void> {
   };
 
   try {
-    const { approved, rootOwner } = await readOperatorApproval(deps.chain);
-    if (!approved) {
+    const approval = await readOperatorApproval(deps.chain);
+    if (!approval.approved) {
+      const extra =
+        ensVersion === "v2"
+          ? `, registrar=${String(approval.registrarApproved)} resolver=${String(approval.resolverApproved)}`
+          : `, rootOwner=${approval.rootOwner}`;
       process.stderr.write(
-        `operator ${account.address} is not approved for root owner ${rootOwner} on ${deps.chain.rootName}\n`,
+        `operator ${account.address} is not approved for ${deps.chain.rootName} (ensVersion=${ensVersion}${extra})\n`,
       );
     } else {
-      process.stderr.write(`operator ${account.address} is approved for ${deps.chain.rootName}\n`);
+      process.stderr.write(
+        `operator ${account.address} is approved for ${deps.chain.rootName} (ensVersion=${ensVersion})\n`,
+      );
     }
   } catch (err) {
     process.stderr.write(

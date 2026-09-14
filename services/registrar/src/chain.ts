@@ -1,6 +1,12 @@
 import {
+  ENS_REGISTRY,
+  type EnsV2Config,
+  type EnsVersion,
+  type EnspackChainName,
+  ROOT_NAME,
   SPEC_STRING,
   TEXT_KEYS,
+  ensVersionFor,
   labelhashOf,
   namehashOf,
   readResolverAddress,
@@ -16,6 +22,11 @@ import {
   encodeFunctionData,
   zeroAddress,
 } from "viem";
+import {
+  isLabelTakenOnChainV2,
+  issuePublisherSubnameV2,
+  readOperatorApprovalV2,
+} from "./chain-v2.js";
 import { publicResolverWriteAbi, registrarRegistryAbi } from "./ens-abi.js";
 import { HttpError } from "./http-error.js";
 
@@ -25,7 +36,63 @@ export type RegistrarChain = {
   operator: Address;
   registry: Address;
   rootName: string;
+  /** Defaults to `v1` so existing callers (v1 Anvil fork tests) stay unchanged. */
+  ensVersion?: EnsVersion;
+  ensV2?: EnsV2Config;
 };
+
+export type OperatorApproval = {
+  rootOwner: Address;
+  approved: boolean;
+  registrarApproved?: boolean;
+  resolverApproved?: boolean;
+  rootRegistry?: Address;
+  resolver?: Address;
+};
+
+export function ensVersionOf(chain: RegistrarChain): EnsVersion {
+  return chain.ensVersion ?? "v1";
+}
+
+/**
+ * `REGISTRAR_ENS_VERSION=v1|v2` overrides core `ensVersionFor` (default v2 on Sepolia, v1 on mainnet).
+ */
+export function registrarEnsVersion(
+  chain: EnspackChainName,
+  env: NodeJS.ProcessEnv = process.env,
+): EnsVersion {
+  const raw = env.REGISTRAR_ENS_VERSION;
+  if (raw === "v1" || raw === "v2") {
+    return raw;
+  }
+  if (raw !== undefined && raw !== "") {
+    throw new Error("REGISTRAR_ENS_VERSION must be v1 or v2");
+  }
+  return ensVersionFor(chain, env);
+}
+
+export function createRegistrarChain(input: {
+  client: RegistrarChain["client"];
+  wallet: RegistrarChain["wallet"];
+  operator: Address;
+  ensVersion: EnsVersion;
+  registry?: Address;
+  rootName?: string;
+  ensV2?: EnsV2Config;
+}): RegistrarChain {
+  if (input.ensVersion === "v2" && input.ensV2 === undefined) {
+    throw new Error("ensV2 config is required when ensVersion is v2");
+  }
+  return {
+    client: input.client,
+    wallet: input.wallet,
+    operator: input.operator,
+    registry: input.registry ?? ENS_REGISTRY,
+    rootName: input.rootName ?? ROOT_NAME,
+    ensVersion: input.ensVersion,
+    ...(input.ensV2 !== undefined ? { ensV2: input.ensV2 } : {}),
+  };
+}
 
 function publisherName(label: string, rootName: string): string {
   return `${label}.${rootName}`;
@@ -43,6 +110,9 @@ export async function ownerOfLabel(chain: RegistrarChain, label: string): Promis
 }
 
 export async function isLabelTakenOnChain(chain: RegistrarChain, label: string): Promise<boolean> {
+  if (ensVersionOf(chain) === "v2") {
+    return isLabelTakenOnChainV2(chain, label);
+  }
   const owner = await ownerOfLabel(chain, label);
   return owner !== zeroAddress;
 }
@@ -50,10 +120,10 @@ export async function isLabelTakenOnChain(chain: RegistrarChain, label: string):
 /**
  * SPEC §7 step 5: operator is an approved operator of the root owner, never assumed to be the owner.
  */
-export async function readOperatorApproval(chain: RegistrarChain): Promise<{
-  rootOwner: Address;
-  approved: boolean;
-}> {
+export async function readOperatorApproval(chain: RegistrarChain): Promise<OperatorApproval> {
+  if (ensVersionOf(chain) === "v2") {
+    return readOperatorApprovalV2(chain);
+  }
   const rootOwner = await chain.client.readContract({
     address: chain.registry,
     abi: registrarRegistryAbi,
@@ -112,6 +182,9 @@ export async function issuePublisherSubname(
   chain: RegistrarChain,
   input: { label: string; hfNamespace: string; address: Address },
 ): Promise<Hex[]> {
+  if (ensVersionOf(chain) === "v2") {
+    return issuePublisherSubnameV2(chain, input);
+  }
   const resolver = await readResolverAddress(chain.client, chain.rootName, chain.registry);
   if (resolver === zeroAddress) {
     throw new HttpError(502, "CHAIN_ERROR", `no resolver for ${chain.rootName}`);

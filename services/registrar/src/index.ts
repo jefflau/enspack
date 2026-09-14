@@ -9,8 +9,15 @@ export {
   selectDriver,
 } from "./db.js";
 export type { Db } from "./db.js";
-export { issuePublisherSubname, readOperatorApproval } from "./chain.js";
-export type { RegistrarChain } from "./chain.js";
+export {
+  createRegistrarChain,
+  ensVersionOf,
+  issuePublisherSubname,
+  readOperatorApproval,
+  registrarEnsVersion,
+} from "./chain.js";
+export type { OperatorApproval, RegistrarChain } from "./chain.js";
+export { publisherRecordsV2 } from "./chain-v2.js";
 export {
   parseClaimAddress,
   makeChallenge,
