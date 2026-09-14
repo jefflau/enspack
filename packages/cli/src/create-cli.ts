@@ -57,8 +57,8 @@ export function createCli(opts: CreateCliOpts): { run: (argv?: string[]) => Prom
     registerPublish(program, deps);
     registerSeed(program, deps);
 
-    program.hook("preAction", (thisCommand) => {
-      const opts = thisCommand.opts<{ ensVersion?: string }>();
+    program.hook("preAction", (_thisCommand, actionCommand) => {
+      const opts = actionCommand.opts<{ ensVersion?: string }>();
       applyEnsVersionFlag(deps.env, opts.ensVersion);
     });
 
