@@ -145,8 +145,7 @@ function summarizeCall(call: PublishCall): string {
 export function formatPublishPlan(calls: PublishCall[]): string {
   return calls
     .map((call, i) => {
-      const gas =
-        call.gas !== undefined ? ` gas=${call.gas.toString()}` : " (gas after deploy)";
+      const gas = call.gas !== undefined ? ` gas=${call.gas.toString()}` : " (gas after deploy)";
       return `${i + 1}. to=${call.to} ${summarizeCall(call)}${gas}`;
     })
     .join("\n");

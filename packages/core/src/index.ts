@@ -89,13 +89,9 @@ export type {
 } from "./ipfs/types.js";
 export { createPublisher, formatPublishPlan } from "./publisher.js";
 export type { CreatePublisherOptions } from "./publisher.js";
-<<<<<<< HEAD
-export { createResolver, readResolverAddressV2 } from "./resolver.js";
-=======
 export { createPublisherV2 } from "./publisher-v2.js";
-export type { PublishResultV2 } from "./publisher-v2.js";
-export { createResolver } from "./resolver.js";
->>>>>>> 7c63060 (feat(core): add ENSv2 publisher behind ensVersion v2)
+export type { PublishResultV2, PublisherV2 } from "./publisher-v2.js";
+export { createResolver, readResolverAddressV2 } from "./resolver.js";
 export type { CreateResolverOptions } from "./resolver.js";
 export {
   addToLock,

@@ -11,13 +11,9 @@ import {
 } from "viem";
 import { EnspackError } from "../../error.js";
 import type { PublishCall } from "../../interfaces.js";
-import {
-  permissionedResolverAbi,
-  registryV2Abi,
-  verifiableFactoryAbi,
-} from "./abis.js";
+import { permissionedResolverAbi, registryV2Abi, verifiableFactoryAbi } from "./abis.js";
 import type { EnsV2Config } from "./config.js";
-import { labelId, type NameStateV2 } from "./discovery.js";
+import { type NameStateV2, labelId } from "./discovery.js";
 import {
   NAME_OWNER_ROLES,
   RESOLVER_ADMIN_ROLES,
@@ -46,8 +42,7 @@ export {
 export { permissionedResolverAbi, registryV2Abi, verifiableFactoryAbi } from "./abis.js";
 
 /** Dry-run stand-in for a VerifiableFactory proxy that has not been mined yet (issue #17). */
-export const PENDING_PROXY_ADDRESS =
-  "0xdefa17a1defa17a1defa17a1defa17a1defa17a1" as Address;
+export const PENDING_PROXY_ADDRESS = "0xdefa17a1defa17a1defa17a1defa17a1defa17a1" as Address;
 
 const YEAR_SECONDS = 365n * 24n * 60n * 60n;
 

@@ -32,7 +32,7 @@ import {
   slotForDeploy,
 } from "./ens/v2/publisher-support.js";
 import { EnspackError, isEnspackError } from "./error.js";
-import type { PublishCall, PublishInput, PublishResult, Publisher } from "./interfaces.js";
+import type { PublishCall, PublishInput, PublishResult } from "./interfaces.js";
 import { namehashOf } from "./labels.js";
 import type { CreatePublisherOptions } from "./publisher.js";
 import {
@@ -49,6 +49,10 @@ import {
 
 /** SPEC §8 / issue #17: v2 publish result includes setup calls as an extra field. */
 export type PublishResultV2 = PublishResult & { setup: PublishCall[] };
+
+export interface PublisherV2 {
+  publish(input: PublishInput): Promise<PublishResultV2>;
+}
 
 function grantHint(role: string, on: string, account: Address): string {
   return `grant ${role} on ${on} to ${account}`;
@@ -104,7 +108,6 @@ async function fillDryRunGasV2(
   }
   for (const call of calls) {
     if (callNeedsDeploy(call)) {
-      call.gas = undefined;
       continue;
     }
     call.gas = await estimateCallGas(client, account, call);
@@ -180,7 +183,7 @@ function pending(name: AddressSlot): AddressRef {
  * (`VerifiableFactory.deployProxy` + `register` + one resolver `multicall`).
  * Behind `ensVersion: "v2"`; v1 `createPublisher` is unchanged.
  */
-export function createPublisherV2(opts: CreatePublisherOptions): Publisher {
+export function createPublisherV2(opts: CreatePublisherOptions): PublisherV2 {
   const client = opts.client;
 
   return {
@@ -389,9 +392,7 @@ export function createPublisherV2(opts: CreatePublisherOptions): Publisher {
         : effectiveExpiry(stateM.expiry === 0n ? expiryP.expiry : stateM.expiry);
       if (isNameAvailable(stateV)) {
         created.version = true;
-        const expiryNote = expiryM.usedFallback
-          ? "; model expiry was 0, using now + 365 days"
-          : "";
+        const expiryNote = expiryM.usedFallback ? "; model expiry was 0, using now + 365 days" : "";
         ops.push({
           kind: "register",
           registry: modelRegistryRef,
@@ -421,7 +422,12 @@ export function createPublisherV2(opts: CreatePublisherOptions): Publisher {
           versionNode,
           manifest.name,
         );
-        currentModelHash = await readContenthash(client, stateP.resolver, modelNode, manifest.model);
+        currentModelHash = await readContenthash(
+          client,
+          stateP.resolver,
+          modelNode,
+          manifest.model,
+        );
         currentVersionSpec = await readText(
           client,
           stateP.resolver,

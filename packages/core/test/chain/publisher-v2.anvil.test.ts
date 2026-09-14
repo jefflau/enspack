@@ -1,12 +1,12 @@
 import type { ChildProcess } from "node:child_process";
-import { createPublicClient, createWalletClient, http, zeroAddress } from "viem";
+import { http, createPublicClient, createWalletClient, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { encodeIpfsContenthash } from "../../src/ens/contenthash.js";
+import { permissionedResolverAbi } from "../../src/ens/v2/abis.js";
 import { ensV2ConfigFor } from "../../src/ens/v2/config.js";
 import { nameStateV2 } from "../../src/ens/v2/discovery.js";
-import { permissionedResolverAbi } from "../../src/ens/v2/abis.js";
 import { NAME_OWNER_ROLES, REGISTRY_ROLES } from "../../src/ens/v2/roles.js";
 import {
   EnspackError,

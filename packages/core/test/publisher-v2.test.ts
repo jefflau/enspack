@@ -1,12 +1,6 @@
 import { CID } from "multiformats/cid";
 import { sha256 } from "multiformats/hashes/sha2";
-import {
-  type Address,
-  createPublicClient,
-  custom,
-  encodeFunctionResult,
-  zeroAddress,
-} from "viem";
+import { type Address, createPublicClient, custom, encodeFunctionResult, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,7 +14,7 @@ import {
   manifestCid,
   validateManifest,
 } from "../src/index.js";
-import { createPublisherV2 } from "../src/publisher-v2.js";
+import { type PublishResultV2, createPublisherV2 } from "../src/publisher-v2.js";
 import type { Manifest } from "../src/types.js";
 import { PUBLISHER_NAME, tinyManifest } from "./helpers/tiny-manifest.js";
 
@@ -122,7 +116,7 @@ function publisherV2() {
   });
 }
 
-async function publishV2(manifest: unknown, cid?: string) {
+async function publishV2(manifest: unknown, cid?: string): Promise<PublishResultV2> {
   const validated = manifest as Manifest;
   const bytes = canonicalJson(validated);
   return publisherV2().publish({
