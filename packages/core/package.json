@@ -14,7 +14,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "gen": "node --experimental-strip-types scripts/generate.ts",
     "build": "tsup",
@@ -23,6 +25,7 @@
     "check": "pnpm typecheck && pnpm test"
   },
   "dependencies": {
+    "@ensdomains/content-hash": "^3.1.1",
     "@ipld/dag-pb": "^4.2.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
