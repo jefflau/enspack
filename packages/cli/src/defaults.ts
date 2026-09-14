@@ -6,7 +6,10 @@ import {
   createManifestStore,
   createPublisher,
   createResolver,
+  ensV2ConfigFor,
+  planEnsSetup,
   publicClientFor,
+  runEnsSetup,
 } from "@enspack/core";
 import { HfClient, HuggingBayClient, licenseGate } from "@enspack/hf";
 import { Aria2Downloader, Sha256Verifier } from "@enspack/torrent";
@@ -80,6 +83,55 @@ function publisherFromEnv(env: NodeJS.ProcessEnv): CliDeps["publisherFactory"] {
   };
 }
 
+/**
+ * WP-18: signer is `ENSPACK_OPERATOR_KEY`, falling back to `ENSPACK_PUBLISHER_KEY`.
+ * Keys are never logged.
+ */
+function operatorKeyFromEnv(env: NodeJS.ProcessEnv): `0x${string}` {
+  const operator = env.ENSPACK_OPERATOR_KEY;
+  const publisher = env.ENSPACK_PUBLISHER_KEY;
+  const key =
+    operator !== undefined && operator !== ""
+      ? operator
+      : publisher !== undefined && publisher !== ""
+        ? publisher
+        : undefined;
+  if (key === undefined || key === "") {
+    throw new EnspackError(
+      "PUBLISH",
+      "ENSPACK_OPERATOR_KEY is not set (falls back to ENSPACK_PUBLISHER_KEY)",
+    );
+  }
+  if (!isPrivateKey(key)) {
+    throw new EnspackError(
+      "PUBLISH",
+      "ENSPACK_OPERATOR_KEY (or ENSPACK_PUBLISHER_KEY) must be a 32-byte hex private key",
+    );
+  }
+  return key;
+}
+
+function ensSetupFromEnv(env: NodeJS.ProcessEnv): NonNullable<CliDeps["ensSetupFactory"]> {
+  return (chain, rpcUrl) => {
+    const key = operatorKeyFromEnv(env);
+    const account = privateKeyToAccount(key);
+    const viemChain = chain === "sepolia" ? sepolia : mainnet;
+    const client = publicClientFor(chain, rpcUrl);
+    const wallet = createWalletClient({
+      account,
+      chain: viemChain,
+      transport: http(rpcUrl),
+    });
+    const cfg = ensV2ConfigFor(chain, env);
+    return {
+      account: account.address,
+      plan: (input) => planEnsSetup(client, cfg, { ...input, account: account.address }),
+      run: (input, opts) =>
+        runEnsSetup(client, wallet, cfg, { ...input, account: account.address }, opts),
+    };
+  };
+}
+
 function hfFromEnv(env: NodeJS.ProcessEnv): CliHf {
   const token = env.HF_TOKEN;
   const hf = token !== undefined && token !== "" ? new HfClient({ token }) : new HfClient();
@@ -150,6 +202,7 @@ export function createDefaultDeps(opts: DefaultDepsOpts = {}): CliDeps {
     installer: createInstaller(),
     hf: hfFromEnv(env),
     publisherFactory: publisherFromEnv(env),
+    ensSetupFactory: ensSetupFromEnv(env),
     stdout,
     stderr,
     env,

@@ -5,8 +5,9 @@ details live in each package's `CHANGELOG.md`.
 
 ## 0.1.0
 
-WP-17 wires Sepolia ENSv2 through CLI, bootstrap, seed, indexer, e2e and docs
-(issue #17). Mainnet ENSv1 is unchanged. See `docs/ens-v2.md`.
+WP-18 adds `enspack ens-setup` for one-shot Sepolia ENSv2 on-chain setup
+(issue #17). WP-17 wires Sepolia ENSv2 through CLI, bootstrap, seed, indexer,
+e2e and docs. Mainnet ENSv1 is unchanged. See `docs/ens-v2.md`.
 
 ### `@enspack/core`
 
@@ -31,9 +32,10 @@ quarantine.
 ### `@enspack/cli`
 
 `enspack` / `ensget`: get, inspect, versions, verify, add, install, update,
-publish `--from-hf`, seed. `--chain sepolia` selects ENSv2; `--ens-version` /
-`ENSPACK_ENS_VERSION` override. Exit codes from core `EXIT_CODES`. Human text on
-stderr; `--json` on stdout (`inspect` / `publish` include `ensVersion`).
+publish `--from-hf`, `ens-setup` (Sepolia ENSv2), seed. `--chain sepolia`
+selects ENSv2; `--ens-version` / `ENSPACK_ENS_VERSION` override. Exit codes
+from core `EXIT_CODES`. Human text on stderr; `--json` on stdout (`inspect` /
+`publish` include `ensVersion`; `ens-setup` includes resolver/registry/txs).
 
 ### `@enspack/seed`
 

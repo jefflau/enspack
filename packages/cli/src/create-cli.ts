@@ -1,5 +1,6 @@
 import { Command, CommanderError } from "commander";
 import { registerAdd } from "./commands/add.js";
+import { registerEnsSetup } from "./commands/ens-setup.js";
 import { registerGet } from "./commands/get.js";
 import { registerInspect } from "./commands/inspect.js";
 import { registerInstall } from "./commands/install.js";
@@ -55,6 +56,7 @@ export function createCli(opts: CreateCliOpts): { run: (argv?: string[]) => Prom
     registerInstall(program, deps);
     registerUpdate(program, deps);
     registerPublish(program, deps);
+    registerEnsSetup(program, deps);
     registerSeed(program, deps);
 
     program.hook("preAction", (_thisCommand, actionCommand) => {

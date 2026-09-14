@@ -41,7 +41,9 @@ and `ENSPACK_ENS_VERSION` override. Mainnet stays v1.
    model, 2 new version**, plus first-time publisher `setup:` deploys. Re-runs
    are idempotent. The resolver is read from the publisher name at runtime; it
    is not hardcoded. `publish` prints `setup:` lines and the expected tx count;
-   `--json` includes `ensVersion` and `setup`.
+   `--json` includes `ensVersion` and `setup`. Run `enspack ens-setup` first
+   for `enspack.eth` / `mirrors.enspack.eth` so publish has no `setup:` deploys
+   (`docs/ens-v2.md`).
 6. If `ENSPACK_SEED_NODE` / `--seed-node` is set (and not dry-run),
    `POST /v1/seed { name }` is attempted (failures are logged, not fatal).
    `--submit-hb` POSTs the magnet to Hugging Bay.

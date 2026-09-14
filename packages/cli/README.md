@@ -25,11 +25,27 @@ and nothing else on stdout.
 | `install` | Reproduce every lock key (SPEC §9) |
 | `update [<ref>]` | Re-resolve model names and rewrite lock entries |
 | `publish --from-hf …` | SPEC §8 reference flow from a Hugging Face repo |
+| `ens-setup` | One-shot ENSv2 on-chain setup for a publisher name (Sepolia) |
 | `seed <ref> --seed-node URL` | `POST /v1/seed {name}` (MVP.md §4.2) |
 
 Every command has `--help`. `--chain mainnet|sepolia` defaults to mainnet.
 `--ens-version v1|v2` (or `ENSPACK_ENS_VERSION`) overrides the chain default:
 Sepolia is ENSv2, mainnet is ENSv1. See `docs/ens-v2.md`.
+
+### `ens-setup` (ENSv2 / Sepolia)
+
+One-shot on-chain setup after you register the name in the Sepolia ENS app.
+v1 exits 5 (`ens-setup is ENSv2 only`).
+
+```
+enspack ens-setup --chain sepolia --name enspack.eth --subname mirrors --dry-run
+enspack ens-setup --chain sepolia --name enspack.eth --subname mirrors [--operator 0x…]
+```
+
+Signer is `ENSPACK_OPERATOR_KEY`, falling back to `ENSPACK_PUBLISHER_KEY`.
+RPC is `SEPOLIA_RPC_URL`. `--json` prints
+`{ name, resolver, registry, subnames, operator, txs, skipped }`. Re-runs are
+idempotent. See `docs/ens-v2.md`.
 
 ### `get`
 
@@ -73,6 +89,7 @@ webseed; see `packages/cli/test/get.e2e.test.ts`.
 | `ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL` | PermissionedResolver implementation |
 | `ENSPACK_ENSV2_ETH_REGISTRAR` | ETHRegistrar (ROLE_REGISTRAR on ETHRegistry) |
 | `ENSPACK_PUBLISHER_KEY` | 32-byte hex private key for `publish` (wired to core `createPublisher`; never logged) |
+| `ENSPACK_OPERATOR_KEY` | 32-byte hex private key for `ens-setup` (falls back to `ENSPACK_PUBLISHER_KEY`; never logged) |
 | `HF_TOKEN` | Optional Hugging Face read token |
 | `PINATA_JWT` | `--pin pinata` |
 | `ENSPACK_SEED_NODE` | Default seed-node base URL (`--pin seed`, `seed`) |

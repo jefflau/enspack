@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+- WP-18: `enspack ens-setup --chain sepolia --name enspack.eth` one-shot ENSv2
+  on-chain setup. Signer is `ENSPACK_OPERATOR_KEY` (falls back to
+  `ENSPACK_PUBLISHER_KEY`). `--dry-run` / `--json` / `--subname` / `--operator`.
+  v1 exits 5. See `docs/ens-v2.md`.
 - WP-17: `--chain sepolia` selects ENSv2 via `ensVersionFor`; `--ens-version` /
   `ENSPACK_ENS_VERSION` override. `createDefaultDeps` passes `ensVersion` +
   `ensV2` into `createResolver` / `createPublisher`. `publish` prints `setup:`

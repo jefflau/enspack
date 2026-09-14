@@ -70,14 +70,57 @@ and `setup`.
 
 ## On-chain setup (once, Sepolia)
 
-Owner = cold key `O`. Hot operator `OP` = registrar + bootstrap runner.
+Owner and signer = the hot wallet that registered `enspack.eth`. Optional
+`--operator` is a second address (registrar + bootstrap) granted
+`ROLE_REGISTRAR | ROLE_RENEW` on the UserRegistries and resolver record
+roles. If you omit it, the signer already holds those roles from
+`initialize`.
 
-Role bitmaps live in `@enspack/core` (`REGISTRY_ROLES`, `RESOLVER_ROLES`,
-`USER_REGISTRY_ROOT_ROLES`, `RESOLVER_ADMIN_ROLES`, `NAME_OWNER_ROLES`).
-Admin variant of a role is `role << 128`.
+Signer key: `ENSPACK_OPERATOR_KEY`, falling back to `ENSPACK_PUBLISHER_KEY`.
+RPC: `SEPOLIA_RPC_URL`. Keys and RPC URLs are never logged.
+
+1. Register `enspack.eth` in the [Sepolia ENS app](https://sepolia.app.ens.domains/)
+   with this hot wallet.
+
+2. Dry-run the plan (prints `skip:` for already-satisfied steps; sends nothing):
+
+   ```
+   enspack ens-setup --chain sepolia --name enspack.eth --subname mirrors --dry-run
+   ```
+
+3. Send the transactions:
+
+   ```
+   enspack ens-setup --chain sepolia --name enspack.eth --subname mirrors
+   ```
+
+   Add `--operator 0x…` when the registrar/bootstrap key is not the signer.
+   `--json` prints `{ name, resolver, registry, subnames, operator, txs, skipped }`
+   to stdout. Exit 0 on success, 5 if the name is not owned (`register
+   enspack.eth first (ENS Sepolia app) with this wallet`) or the chain is
+   ENSv1, 2 on RPC/resolve failure. Re-runs are idempotent (0 txs).
+
+4. Secrets to set (operator env / GitHub):
+
+   | Variable | Value |
+   |----------|--------|
+   | `SEPOLIA_RPC_URL` | Sepolia JSON-RPC |
+   | `ENSPACK_OPERATOR_KEY` | hot key (ens-setup signer; registrar + bootstrap) |
+   | `ENSPACK_PUBLISHER_KEY` | same key for `publish` under `mirrors.enspack.eth`, or a dedicated publisher |
+
+After this, `enspack publish --publisher mirrors.enspack.eth` is 4 txs for a
+new model (no `setup:` deploys). `enspack.eth` is **not registered on
+Sepolia** until step 1 is done.
+
+## Appendix: manual calls
+
+The same flow as `enspack ens-setup`, written out as contract calls. Prefer
+the command. Role bitmaps live in `@enspack/core` (`REGISTRY_ROLES`,
+`RESOLVER_ROLES`, `USER_REGISTRY_ROOT_ROLES`, `RESOLVER_ADMIN_ROLES`,
+`NAME_OWNER_ROLES`). Admin variant of a role is `role << 128`.
 
 1. Register `enspack.eth` on Sepolia ENSv2 (ENS app, or `ETHRegistrar`
-   commit/reveal with the deployment's mock USDC). Owner = `O`.
+   commit/reveal with the deployment's mock USDC). Owner = the hot wallet `O`.
 
 2. Deploy the project resolver:
 
@@ -117,7 +160,7 @@ Admin variant of a role is `role << 128`.
    `USER_REGISTRY_ROOT_ROLES` =
    `ROLE_REGISTRAR | ROLE_REGISTRAR_ADMIN | ROLE_RENEW | ROLE_RENEW_ADMIN | ROLE_SET_PARENT | ROLE_SET_PARENT_ADMIN | ROLE_SET_SUBREGISTRY | ROLE_SET_SUBREGISTRY_ADMIN | ROLE_SET_RESOLVER | ROLE_SET_RESOLVER_ADMIN | ROLE_UPGRADE | ROLE_UPGRADE_ADMIN`.
 
-4. Grant the hot operator `OP` on `R_ROOT` and `RESOLVER`:
+4. Grant the hot operator `OP` on `R_ROOT` and `RESOLVER` (only when `OP` ≠ `O`):
 
    ```
    R_ROOT.grantRootRoles(ROLE_REGISTRAR | ROLE_RENEW, OP)
@@ -133,28 +176,24 @@ Admin variant of a role is `role << 128`.
    ```
    R_ROOT.register(
      "mirrors",
-     OP,
-     R_MIRRORS,
+     O,
+     0x0,
      RESOLVER,
-     ROLE_SET_RESOLVER | ROLE_SET_RESOLVER_ADMIN | ROLE_SET_SUBREGISTRY | ROLE_SET_SUBREGISTRY_ADMIN | ROLE_CAN_TRANSFER_ADMIN,
+     NAME_OWNER_ROLES,
      expiry(enspack.eth)
    )
    ```
 
-   `R_MIRRORS` is another UserRegistry proxy initialised with `OP` holding
-   `USER_REGISTRY_ROOT_ROLES`. The publisher also does this on first run when
-   `OP` owns `mirrors.enspack.eth`.
+   then deploy a UserRegistry for mirrors and `R_ROOT.setSubregistry(labelId("mirrors"), R_MIRRORS)`.
+   If `--operator` is set, `R_MIRRORS.grantRootRoles(ROLE_REGISTRAR | ROLE_RENEW, OP)`.
 
-6. Fund `OP` with Sepolia ETH. Put `SEPOLIA_RPC_URL`, `ENSPACK_OPERATOR_KEY`
-   (= OP), `ENSPACK_PUBLISHER_KEY` (= OP for mirrors) in operator env. Never
-   write keys to disk or logs.
+6. Fund `O` with Sepolia ETH. Put the secrets from step 4 in operator env.
+   Never write keys to disk or logs.
 
-`enspack publish` v2 performs steps 2–3/5 automatically for a publisher name
-whose owner runs it (it detects "no subregistry" / "resolver not writable" and
-prints the setup plan). A future HF-verified publisher only needs to own
-`<user>.enspack.eth`.
+`enspack publish` v2 still performs first-time publisher deploys when a
+publisher name has no UserRegistry / writable resolver. After `ens-setup`,
+`mirrors.enspack.eth` needs none of that.
 
-`enspack.eth` is **not registered on Sepolia** until this setup is done.
 
 ## Indexer
 

@@ -5,6 +5,7 @@ const SECRET_KEYS = [
   "ETH_RPC_URL",
   "SEPOLIA_RPC_URL",
   "ENSPACK_PUBLISHER_KEY",
+  "ENSPACK_OPERATOR_KEY",
   "HF_TOKEN",
   "PINATA_JWT",
 ] as const;

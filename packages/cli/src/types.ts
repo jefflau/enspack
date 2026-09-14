@@ -1,5 +1,7 @@
 import type {
   Downloader,
+  EnsSetupPlan,
+  EnsSetupResult,
   EnspackChainName,
   InstallTarget,
   Installer,
@@ -21,6 +23,7 @@ import type {
   HfModelInfo,
   LicenseGateOptions,
 } from "@enspack/hf";
+import type { Address } from "viem";
 
 /** Writable used by the CLI (tests inject string buffers). */
 export interface Writer {
@@ -71,6 +74,27 @@ export interface CliInstaller extends Installer {
   readyToRunLines?(m: Manifest, installedPath: string, target: InstallTarget): string[];
 }
 
+/** WP-18: injected ENSv2 setup planner so unit tests never touch the network. */
+export interface EnsSetupHandle {
+  account: Address;
+  plan: (input: {
+    name: string;
+    subnames: readonly string[];
+    operator?: Address;
+  }) => Promise<EnsSetupPlan>;
+  run: (
+    input: {
+      name: string;
+      subnames: readonly string[];
+      operator?: Address;
+    },
+    opts?: {
+      plan?: EnsSetupPlan;
+      onTx?: (hash: `0x${string}`, description: string) => void;
+    },
+  ) => Promise<EnsSetupResult>;
+}
+
 /**
  * SPEC §4 / MVP.md WP-08: injected collaborators so unit tests never touch the
  * network. `bin/enspack.js` wires real implementations from env.
@@ -83,6 +107,8 @@ export interface CliDeps {
   installer: CliInstaller;
   hf: CliHf;
   publisherFactory: (chain: EnspackChainName, rpcUrl: string) => Publisher;
+  /** WP-18: `enspack ens-setup`. Tests inject fakes; the binary wires keys from env. */
+  ensSetupFactory?: (chain: EnspackChainName, rpcUrl: string) => EnsSetupHandle;
   stdout: Writer;
   stderr: Writer;
   env: NodeJS.ProcessEnv;

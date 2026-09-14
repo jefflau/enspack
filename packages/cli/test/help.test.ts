@@ -11,6 +11,7 @@ const COMMANDS = [
   ["install"],
   ["update"],
   ["publish"],
+  ["ens-setup"],
   ["seed"],
 ] as const;
 

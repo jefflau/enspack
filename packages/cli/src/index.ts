@@ -18,6 +18,7 @@ export type {
   CliHf,
   CliInstaller,
   CliVerifier,
+  EnsSetupHandle,
   GetJson,
   Writer,
 } from "./types.js";

@@ -16,6 +16,7 @@ describe("cli --help (docs flags)", () => {
       ["install"],
       ["update"],
       ["publish"],
+      ["ens-setup"],
       ["seed"],
     ];
     for (const cmd of commands) {
