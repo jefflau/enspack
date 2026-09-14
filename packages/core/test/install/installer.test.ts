@@ -75,7 +75,7 @@ describe("createInstaller hf-cache", () => {
       const st = await lstat(dest);
       expect(st.isSymbolicLink()).toBe(false);
       expect(st.isFile()).toBe(true);
-      expect(await readFile(dest)).toEqual(readFileSync(join(fixtureDir, name)));
+      expect(Buffer.compare(await readFile(dest), readFileSync(join(fixtureDir, name)))).toBe(0);
     }
   });
 
@@ -172,7 +172,9 @@ describe("createInstaller dir / select / idempotent", () => {
     for (const name of fixtureFiles) {
       const st = await lstat(join(dest, name));
       expect(st.isSymbolicLink()).toBe(false);
-      expect(await readFile(join(dest, name))).toEqual(readFileSync(join(fixtureDir, name)));
+      expect(
+        Buffer.compare(await readFile(join(dest, name)), readFileSync(join(fixtureDir, name))),
+      ).toBe(0);
     }
   });
 
@@ -198,7 +200,12 @@ describe("createInstaller dir / select / idempotent", () => {
     const second = await installer.install(m, fixtureDir, { kind: "hf-cache", hfHome });
     expect(second.path).toBe(first.path);
     for (const name of fixtureFiles) {
-      expect(await readFile(join(first.path, name))).toEqual(readFileSync(join(fixtureDir, name)));
+      expect(
+        Buffer.compare(
+          await readFile(join(first.path, name)),
+          readFileSync(join(fixtureDir, name)),
+        ),
+      ).toBe(0);
     }
   });
 
