@@ -1,0 +1,11 @@
+publisher: mirrors.enspack.eth
+license_allowlist: [apache-2.0, mit, bsd-3-clause, bsd-2-clause, cc0-1.0, cc-by-4.0, odc-by]
+webseeds:
+  huggingface: "https://huggingface.co/{repo}/resolve/{revision}/"
+  huggingbay: "https://huggingbay.xyz/api/downloads/{hb_id}/"
+models:
+  - repo: enspack/tiny-model
+    tier: 1
+    expected_license: apache-2.0
+    revision: abcdef12
+    storage_gb: 0.002
