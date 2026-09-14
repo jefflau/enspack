@@ -11,7 +11,7 @@ export function isSelectAll(select: string[] | undefined): boolean {
  * both `model.gguf` and `weights/model.gguf`.
  */
 export function matchesSelect(path: string, select: string[] | undefined): boolean {
-  if (isSelectAll(select)) {
+  if (select === undefined || isSelectAll(select)) {
     return true;
   }
   const base = path.split("/").pop() ?? path;
