@@ -3,8 +3,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
-  EnspackError,
   EXIT_CODES,
+  EnspackError,
   hfCacheRepoDir,
   isEnspackError,
   validateManifest,
@@ -50,8 +50,8 @@ describe("hfCacheRepoDir", () => {
     const raw = JSON.parse(
       readFileSync(join(repoRoot, "examples/qwen--qwen2-5-7b-instruct.enspack.json"), "utf8"),
     ) as Record<string, unknown>;
-    delete raw.upstream;
-    const manifest = validateManifest(raw);
+    const rest = Object.fromEntries(Object.entries(raw).filter(([key]) => key !== "upstream"));
+    const manifest = validateManifest(rest);
     expect(hfCacheRepoDir(manifest)).toBe("models--enspack--qwen--qwen2-5-7b-instruct");
   });
 });

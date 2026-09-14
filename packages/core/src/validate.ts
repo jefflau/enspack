@@ -1,16 +1,36 @@
-import addFormats from "ajv-formats";
-import Ajv2020, { type ErrorObject } from "ajv/dist/2020.js";
+import type { AnySchemaObject, ValidateFunction } from "ajv";
+import addFormatsImport from "ajv-formats";
+import Ajv2020Import, { type ErrorObject } from "ajv/dist/2020.js";
 import { normalize } from "viem/ens";
 import lockSchema from "../../../schema/enspack.lock.schema.json" with { type: "json" };
 import manifestSchema from "../../../schema/enspack.schema.json" with { type: "json" };
 import { EnspackError } from "./error.js";
 import type { Lockfile, Manifest } from "./types.js";
 
+type Ajv2020Class = typeof import("ajv/dist/2020.js").default;
+type AddFormats = typeof import("ajv-formats").default;
+
+/** NodeNext types CJS default imports as the module namespace; unwrap if needed. */
+function cjsDefault<T>(mod: unknown): T {
+  if (typeof mod === "function") {
+    return mod as T;
+  }
+  if (typeof mod === "object" && mod !== null && "default" in mod) {
+    return (mod as { default: T }).default;
+  }
+  return mod as T;
+}
+
+const Ajv2020 = cjsDefault<Ajv2020Class>(Ajv2020Import);
+const addFormats = cjsDefault<AddFormats>(addFormatsImport);
+
 const ajv = new Ajv2020({ strict: true, allErrors: true });
 addFormats(ajv);
 
-const manifestValidator = ajv.compile(manifestSchema);
-const lockValidator = ajv.compile(lockSchema);
+const manifestValidator: ValidateFunction<Manifest> = ajv.compile(
+  manifestSchema as AnySchemaObject,
+);
+const lockValidator: ValidateFunction<Lockfile> = ajv.compile(lockSchema as AnySchemaObject);
 
 function formatAjvErrors(errors: ErrorObject[] | null | undefined): string {
   if (!errors || errors.length === 0) {
@@ -69,7 +89,10 @@ function assertManifestRules(manifest: Manifest): void {
 
   const last = manifest.versions[manifest.versions.length - 1];
   if (last === undefined) {
-    throw new EnspackError("VERIFY", "versions[] must include the current version as its last entry");
+    throw new EnspackError(
+      "VERIFY",
+      "versions[] must include the current version as its last entry",
+    );
   }
   if (last.name !== manifest.name || last.version !== manifest.version) {
     throw new EnspackError(
@@ -103,9 +126,8 @@ export function validateManifest(x: unknown): Manifest {
   if (!manifestValidator(x)) {
     throw new EnspackError("VERIFY", formatAjvErrors(manifestValidator.errors));
   }
-  const manifest = x as Manifest;
-  assertManifestRules(manifest);
-  return manifest;
+  assertManifestRules(x);
+  return x;
 }
 
 /**
@@ -115,5 +137,5 @@ export function validateLock(x: unknown): Lockfile {
   if (!lockValidator(x)) {
     throw new EnspackError("VERIFY", formatAjvErrors(lockValidator.errors));
   }
-  return x as Lockfile;
+  return x;
 }

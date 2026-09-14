@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canonicalJson, cidMatches, EnspackError, manifestCid, parseCid } from "../src/index.js";
+import { EnspackError, canonicalJson, cidMatches, manifestCid, parseCid } from "../src/index.js";
 
 const ENSPACK_BYTES = new TextEncoder().encode("enspack");
 /** sha2-256 raw CIDv1 of UTF-8 "enspack", computed once and pinned. */

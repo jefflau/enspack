@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compile, type Options } from "json-schema-to-typescript";
+import { type Options, compile } from "json-schema-to-typescript";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = join(here, "..");
@@ -30,7 +30,10 @@ const COMPILE_OPTS: Partial<Options> = {
 };
 
 async function compileSchema(relPath: string, title: string, name: string): Promise<string> {
-  const raw = JSON.parse(await readFile(join(repoRoot, relPath), "utf8")) as Record<string, unknown>;
+  const raw = JSON.parse(await readFile(join(repoRoot, relPath), "utf8")) as Record<
+    string,
+    unknown
+  >;
   raw.title = title;
   const body = await compile(raw, name, COMPILE_OPTS);
   return BANNER + body;

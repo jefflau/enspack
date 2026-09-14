@@ -8,10 +8,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 function loadExample(): Record<string, unknown> {
   return JSON.parse(
-    readFileSync(
-      join(repoRoot, "examples/qwen--qwen2-5-7b-instruct.enspack.json"),
-      "utf8",
-    ),
+    readFileSync(join(repoRoot, "examples/qwen--qwen2-5-7b-instruct.enspack.json"), "utf8"),
   ) as Record<string, unknown>;
 }
 
