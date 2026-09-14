@@ -139,6 +139,35 @@ export function encodeResolverMulticall(inner: Hex[]): Hex {
   });
 }
 
+export function encodeGrantRootRoles(roleBitmap: bigint, account: Address): Hex {
+  return encodeFunctionData({
+    abi: registryV2Abi,
+    functionName: "grantRootRoles",
+    args: [roleBitmap, account],
+  });
+}
+
+export function encodeSetParent(parent: Address, label: string): Hex {
+  return encodeFunctionData({
+    abi: registryV2Abi,
+    functionName: "setParent",
+    args: [parent, label],
+  });
+}
+
+export function encodeAuthorizeNameRoles(
+  toName: Hex,
+  roleBitmap: bigint,
+  account: Address,
+  grant: boolean,
+): Hex {
+  return encodeFunctionData({
+    abi: permissionedResolverAbi,
+    functionName: "authorizeNameRoles",
+    args: [toName, roleBitmap, account, grant],
+  });
+}
+
 export type AddressSlot = "publisherRegistry" | "publisherResolver" | "modelRegistry";
 
 export type AddressRef = Address | { slot: AddressSlot };

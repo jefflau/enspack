@@ -51,6 +51,20 @@ export {
   USER_REGISTRY_ROOT_ROLES,
   adminOf,
 } from "./ens/v2/roles.js";
+export {
+  ensSetupResultJson,
+  formatEnsSetupPlan,
+  planEnsSetup,
+  runEnsSetup,
+} from "./ens/v2/setup.js";
+export type {
+  EnsSetupInput,
+  EnsSetupPlan,
+  EnsSetupResult,
+  EnsSetupSubname,
+  RunEnsSetupOpts,
+  SetupOp,
+} from "./ens/v2/setup.js";
 export { hfCacheRepoDir } from "./hf-cache.js";
 export type { CoreInstaller, InstallRequest } from "./install/installer.js";
 export { createInstaller } from "./install/installer.js";

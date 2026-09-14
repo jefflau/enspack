@@ -117,7 +117,7 @@ export async function provisionV2Name(
   client: SepoliaForkPublicClient,
   wallet0: WalletClient<Transport, Chain | undefined, Account>,
   cfg: EnsV2Config,
-  opts?: { label?: string; rpcUrl?: string },
+  opts?: { label?: string; rpcUrl?: string; setupPublisher?: boolean },
 ): Promise<{
   ethRegistry: Address;
   rootUserRegistry: Address;
@@ -211,6 +211,10 @@ export async function provisionV2Name(
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
     throw new Error(`ETHRegistry.register(${label}) failed: ${detail}`);
+  }
+
+  if (opts?.setupPublisher === false) {
+    return { ethRegistry, rootUserRegistry: zeroAddress, resolver: zeroAddress, expiry };
   }
 
   const resolverInit = encodeFunctionData({
