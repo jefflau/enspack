@@ -15,6 +15,7 @@ ponder.on("PublicResolver:ContenthashChanged", async ({ event, context }) => {
     hash: event.args.hash,
     block: Number(event.block.number),
     txHash: event.transaction.hash,
+    knownNodesOnly: true,
   });
 });
 

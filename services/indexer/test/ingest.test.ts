@@ -34,6 +34,39 @@ describe("ingest ContenthashChanged", () => {
     expect(await repo.listNames()).toEqual([]);
   });
 
+  it("with knownNodesOnly ignores nodes never seen with the spec beacon (SPEC §2.3)", async () => {
+    const built = await buildManifest();
+    const repo = createMemoryRepository();
+    let fetches = 0;
+    const inner = fakeStore(new Map([[built.cid, built.bytes]]));
+    const store = {
+      ...inner,
+      getVerified: async (cid: string) => {
+        fetches += 1;
+        return inner.getVerified(cid);
+      },
+    };
+
+    const base = {
+      store,
+      repo,
+      chain: CHAIN,
+      node: built.versionNode,
+      hash: ipfsHash(built.cid),
+      block: 10,
+      txHash: TX_A,
+    };
+    await ingestContenthashChanged({ ...base, knownNodesOnly: true });
+    expect(fetches).toBe(0);
+    expect(await repo.findVersionByNode(built.versionNode, CHAIN)).toBeNull();
+    expect(await repo.listErrors()).toEqual([]);
+
+    await repo.upsertNode({ node: built.versionNode, chain: CHAIN, name: "", hf: "" });
+    await ingestContenthashChanged({ ...base, knownNodesOnly: true });
+    expect(fetches).toBe(1);
+    expect((await repo.findVersionByNode(built.versionNode, CHAIN))?.cid).toBe(built.cid);
+  });
+
   it("on the model node updates names latest and upserts publishers", async () => {
     const built = await buildManifest();
     const repo = createMemoryRepository();

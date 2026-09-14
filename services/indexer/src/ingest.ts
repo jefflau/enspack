@@ -100,12 +100,21 @@ async function learnManifestNodes(
 
 /**
  * SPEC §2.3 / §6.2: fetch and verify a contenthash, then upsert names/versions or flag a violation.
+ *
+ * With `knownNodesOnly`, events for nodes never seen with the `com.enspack.spec`
+ * beacon or learned from a verified manifest are ignored (SPEC §2.3 subscribes to
+ * `ContenthashChanged` "for known nodes" only), so every ENS contenthash change on
+ * a shared PublicResolver does not trigger an IPFS fetch.
  */
 export async function ingestContenthashChanged(
-  meta: IngestEventMeta & { hash: `0x${string}` },
+  meta: IngestEventMeta & { hash: `0x${string}`; knownNodesOnly?: boolean },
 ): Promise<void> {
   const node = lowerNode(meta.node);
   const event = { ...meta, node };
+
+  if (event.knownNodesOnly === true && (await event.repo.findNode(node, event.chain)) === null) {
+    return;
+  }
 
   let cid: string;
   try {
@@ -211,6 +220,10 @@ export async function ingestTextChanged(
   const event = { ...meta, node };
 
   if (event.key === TEXT_KEYS.spec && event.value === SPEC_STRING) {
+    const seen = await event.repo.findNode(node, event.chain);
+    if (seen === null) {
+      await event.repo.upsertNode({ node, chain: event.chain, name: "", hf: "" });
+    }
     let hash: `0x${string}`;
     try {
       hash = await event.readContenthash(event.resolver, node);
@@ -218,7 +231,7 @@ export async function ingestTextChanged(
       await recordError(event, errorReason(err));
       return;
     }
-    await ingestContenthashChanged({ ...event, hash });
+    await ingestContenthashChanged({ ...event, hash, knownNodesOnly: false });
     return;
   }
 
