@@ -9,7 +9,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "pnpm -r --if-present test",
-    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test",
     "validate:examples": "node scripts/validate-examples.mjs"
   },
   "devDependencies": {
