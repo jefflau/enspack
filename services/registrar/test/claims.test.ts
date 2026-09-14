@@ -1,13 +1,34 @@
 import { privateKeyToAccount } from "viem/accounts";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { verifyFileContents } from "../src/claim.js";
 import type { Db } from "../src/db.js";
 import { listReviews } from "../src/store.js";
 import { ANVIL_0_KEY, CLAIMANT, FIXED_RANDOM, createFakeChain, createTestApp } from "./helpers.js";
 
+vi.mock("@enspack/core", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@enspack/core")>();
+  const { keccak256, toBytes } = await import("viem");
+  const extra = actual as typeof actual & { labelId?: (label: string) => bigint };
+  return {
+    ...actual,
+    labelId: extra.labelId ?? ((label: string) => BigInt(keccak256(toBytes(label)))),
+    nameStateV2: vi.fn(async () => ({
+      label: "enspack",
+      parentRegistry: actual.ENS_REGISTRY,
+      owner: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      expiry: 2_000_000_000n,
+      resolver: "0x231b0Ee14048e9dCcD1d247744d114a4EB5E8E63",
+      subregistry: "0x1111111111111111111111111111111111111111",
+      status: 2,
+    })),
+    hasRootRolesV2: vi.fn(async () => true),
+  };
+});
+
 const CHALLENGE_HEX = [...FIXED_RANDOM].map((b) => b.toString(16).padStart(2, "0")).join("");
 const CHALLENGE = `enspack-verify:${CHALLENGE_HEX}`;
 const ADDRESS = CLAIMANT.address;
+const ENS_VERSIONS = ["v1", "v2"] as const;
 
 let db: Db | undefined;
 
@@ -22,9 +43,9 @@ async function jsonOf(res: Response): Promise<Record<string, unknown>> {
   return (await res.json()) as Record<string, unknown>;
 }
 
-describe("POST /v1/claims", () => {
+describe.each(ENS_VERSIONS)("POST /v1/claims (ensVersion=%s)", (ensVersion) => {
   it("returns 201 with enspack-verify: + 64 hex challenge and the normalized label", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const res = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -44,7 +65,7 @@ describe("POST /v1/claims", () => {
   });
 
   it("returns 400 INVALID_ADDRESS for a non-checksum mixed-case address", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const res = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -59,7 +80,7 @@ describe("POST /v1/claims", () => {
   });
 
   it("returns 409 TAKEN for a duplicate verified label", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -86,7 +107,7 @@ describe("POST /v1/claims", () => {
   });
 
   it("returns 409 COLLISION for a.b vs a-b and inserts a reviews row", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const first = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -112,9 +133,9 @@ describe("POST /v1/claims", () => {
   });
 });
 
-describe("POST /v1/claims/:id/verify", () => {
+describe.each(ENS_VERSIONS)("POST /v1/claims/:id/verify (ensVersion=%s)", (ensVersion) => {
   it("returns 401 BAD_SIGNATURE for a signature from the wrong key", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -136,7 +157,7 @@ describe("POST /v1/claims/:id/verify", () => {
   });
 
   it("returns 404 FILE_NOT_FOUND when enspack-verify.txt is missing", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -156,7 +177,7 @@ describe("POST /v1/claims/:id/verify", () => {
   });
 
   it("returns 401 CHALLENGE_MISMATCH when the file contents differ", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -177,7 +198,7 @@ describe("POST /v1/claims/:id/verify", () => {
 
   it("returns 410 EXPIRED when the claim is past 24h", async () => {
     let now = new Date("2026-09-14T00:00:00.000Z");
-    const ctx = await createTestApp({ now: () => now });
+    const ctx = await createTestApp({ now: () => now, ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -198,7 +219,7 @@ describe("POST /v1/claims/:id/verify", () => {
   });
 
   it("returns 403 AUTHOR_MISMATCH when the repo author is not hfNamespace", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -217,7 +238,7 @@ describe("POST /v1/claims/:id/verify", () => {
   });
 
   it("returns the attestation via GET /v1/publishers/:label after success and identically on repeat", async () => {
-    const ctx = await createTestApp();
+    const ctx = await createTestApp({ ensVersion });
     db = ctx.db;
     const created = await ctx.app.request("/v1/claims", {
       method: "POST",
@@ -234,7 +255,7 @@ describe("POST /v1/claims/:id/verify", () => {
     });
     expect(verified.status).toBe(200);
     const verifyBody = await jsonOf(verified);
-    expect(verifyBody.txs).toHaveLength(3);
+    expect(verifyBody.txs).toHaveLength(ensVersion === "v2" ? 2 : 3);
     expect(verifyBody.attestationUrl).toBe("/v1/publishers/alice");
 
     const first = await ctx.app.request("/v1/publishers/alice");
@@ -255,54 +276,57 @@ describe("POST /v1/claims/:id/verify", () => {
   });
 });
 
-describe("GET /v1/claims/:id status transitions", () => {
-  it("moves pending → verified, and pending → expired", async () => {
-    let now = new Date("2026-09-14T00:00:00.000Z");
-    const ctx = await createTestApp({ now: () => now });
-    db = ctx.db;
-    const created = await ctx.app.request("/v1/claims", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ hfNamespace: "alice", address: ADDRESS }),
-    });
-    const claim = await jsonOf(created);
-    const pending = await ctx.app.request(`/v1/claims/${claim.claimId}`);
-    expect(pending.status).toBe(200);
-    expect(await jsonOf(pending)).toMatchObject({
-      claimId: claim.claimId,
-      label: "alice",
-      status: "pending",
-    });
+describe.each(ENS_VERSIONS)(
+  "GET /v1/claims/:id status transitions (ensVersion=%s)",
+  (ensVersion) => {
+    it("moves pending → verified, and pending → expired", async () => {
+      let now = new Date("2026-09-14T00:00:00.000Z");
+      const ctx = await createTestApp({ now: () => now, ensVersion });
+      db = ctx.db;
+      const created = await ctx.app.request("/v1/claims", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ hfNamespace: "alice", address: ADDRESS }),
+      });
+      const claim = await jsonOf(created);
+      const pending = await ctx.app.request(`/v1/claims/${claim.claimId}`);
+      expect(pending.status).toBe(200);
+      expect(await jsonOf(pending)).toMatchObject({
+        claimId: claim.claimId,
+        label: "alice",
+        status: "pending",
+      });
 
-    ctx.hf.file = verifyFileContents(String(claim.challenge), ADDRESS);
-    const signature = await CLAIMANT.signMessage({ message: String(claim.challenge) });
-    expect(
-      (
-        await ctx.app.request(`/v1/claims/${claim.claimId}/verify`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ repo: "alice/proof", signature }),
-        })
-      ).status,
-    ).toBe(200);
-    const verified = await ctx.app.request(`/v1/claims/${claim.claimId}`);
-    expect(await jsonOf(verified)).toMatchObject({ status: "verified" });
+      ctx.hf.file = verifyFileContents(String(claim.challenge), ADDRESS);
+      const signature = await CLAIMANT.signMessage({ message: String(claim.challenge) });
+      expect(
+        (
+          await ctx.app.request(`/v1/claims/${claim.claimId}/verify`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ repo: "alice/proof", signature }),
+          })
+        ).status,
+      ).toBe(200);
+      const verified = await ctx.app.request(`/v1/claims/${claim.claimId}`);
+      expect(await jsonOf(verified)).toMatchObject({ status: "verified" });
 
-    const other = await ctx.app.request("/v1/claims", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ hfNamespace: "carol", address: ADDRESS }),
+      const other = await ctx.app.request("/v1/claims", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ hfNamespace: "carol", address: ADDRESS }),
+      });
+      const otherClaim = await jsonOf(other);
+      now = new Date("2026-09-16T00:00:00.000Z");
+      const expired = await ctx.app.request(`/v1/claims/${otherClaim.claimId}`);
+      expect(await jsonOf(expired)).toMatchObject({ status: "expired" });
     });
-    const otherClaim = await jsonOf(other);
-    now = new Date("2026-09-16T00:00:00.000Z");
-    const expired = await ctx.app.request(`/v1/claims/${otherClaim.claimId}`);
-    expect(await jsonOf(expired)).toMatchObject({ status: "expired" });
-  });
-});
+  },
+);
 
-describe("GET /v1/health", () => {
+describe.each(ENS_VERSIONS)("GET /v1/health (ensVersion=%s)", (ensVersion) => {
   it("reports operator, approval, and balance", async () => {
-    const ctx = await createTestApp({ chain: createFakeChain({ approved: true }) });
+    const ctx = await createTestApp({ chain: createFakeChain({ approved: true, ensVersion }) });
     db = ctx.db;
     const res = await ctx.app.request("/v1/health");
     expect(res.status).toBe(200);
@@ -310,7 +334,14 @@ describe("GET /v1/health", () => {
     expect(body.ok).toBe(true);
     expect(body.chain).toBe("mainnet");
     expect(body.approved).toBe(true);
+    expect(body.ensVersion).toBe(ensVersion);
     expect(typeof body.operator).toBe("string");
     expect(body.balanceWei).toBe((10n ** 18n).toString());
+    if (ensVersion === "v2") {
+      expect(body.registrarApproved).toBe(true);
+      expect(body.resolverApproved).toBe(true);
+      expect(body.rootRegistry).toBeDefined();
+      expect(body.resolver).toBeDefined();
+    }
   });
 });

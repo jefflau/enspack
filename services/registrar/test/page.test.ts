@@ -17,6 +17,7 @@ describe("GET / static claim page", () => {
       expect(html).toContain('id="repo"');
       expect(html).toContain('id="verify"');
       expect(html).toContain('id="status"');
+      expect(html).toContain('id="ens-version"');
     } finally {
       await db.close();
     }
