@@ -1,4 +1,5 @@
 import { hexToBytes } from "viem";
+import { versionLabel } from "../../src/labels.js";
 
 export const PINNED_CID = "bafkreibtpfyx25ckr5fj2r7tfh6m6bdmzqnb3kq7lywlqs53peqq6h2ble";
 /** `@ensdomains/content-hash` encode("ipfs", PINNED_CID), computed once and pinned. */
@@ -8,6 +9,7 @@ export const SWARM_CONTENTHASH =
   "0xe40101701b20d1de9994b4d039f6548d191eb26786769f580809256b4685ef316805265ea162" as const;
 
 export const VERSION_NAME = "v1-0-0.tiny-model.enspack-test.eth";
+export const VERSION_1_1_NAME = "v1-1-0.tiny-model.enspack-test.eth";
 export const MODEL_NAME = "tiny-model.enspack-test.eth";
 export const PUBLISHER_NAME = "enspack-test.eth";
 export const MAGNET = "magnet:?xt=urn:btih:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -18,22 +20,28 @@ export function tinyManifest(overrides?: {
   model?: string;
   publisher?: string;
   spec?: string;
+  version?: string;
+  magnet?: string;
+  createdAt?: string;
 }): Record<string, unknown> {
-  const name = overrides?.name ?? VERSION_NAME;
   const model = overrides?.model ?? MODEL_NAME;
   const publisher = overrides?.publisher ?? PUBLISHER_NAME;
   const spec = overrides?.spec ?? "enspack/0.1";
+  const version = overrides?.version ?? "1.0.0";
+  const name = overrides?.name ?? `${versionLabel(version)}.${model}`;
+  const magnet = overrides?.magnet ?? MAGNET;
+  const createdAt = overrides?.createdAt ?? "2026-09-14T00:00:00Z";
   return {
     spec,
     name,
     model,
     publisher,
-    version: "1.0.0",
-    createdAt: "2026-09-14T00:00:00Z",
+    version,
+    createdAt,
     license: "mit",
     distribution: {
       infohash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      magnet: MAGNET,
+      magnet,
       webseeds: ["https://example.com/files/"],
     },
     files: [
@@ -46,10 +54,10 @@ export function tinyManifest(overrides?: {
     totalSize: 2,
     versions: [
       {
-        version: "1.0.0",
+        version,
         name,
         cid: PINNED_CID,
-        createdAt: "2026-09-14T00:00:00Z",
+        createdAt,
       },
     ],
   };
