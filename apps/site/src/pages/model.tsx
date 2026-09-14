@@ -11,6 +11,7 @@ import { ApiError, type NameDetail, type NameVersion } from "../lib/api.js";
 import { useClient } from "../lib/client-context.js";
 import { config } from "../lib/config.js";
 import { ensAppUrl, formatBytes, shortHex } from "../lib/format.js";
+import { useDocumentTitle } from "../lib/use-document-title.js";
 import { useQuery } from "../lib/use-query.js";
 import "../styles/pages/model.css";
 
@@ -80,6 +81,8 @@ export function ModelPage() {
     }
     return client.getName(name);
   });
+
+  useDocumentTitle(data?.manifest.displayName ?? null);
 
   if (loading) return <Loading />;
   if (error instanceof ApiError && error.status === 404) {

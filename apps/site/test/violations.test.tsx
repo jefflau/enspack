@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { ViolationsPage } from "../src/lib/api.js";
 import { FixtureIndexClient } from "../src/lib/client.js";
@@ -14,6 +14,14 @@ describe("ViolationsPage", () => {
         "No violations. No version name has changed its contenthash after it was first set.",
       ),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "A row would show the version name, the previous CID → new CID, and the block of the change.",
+      ),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(document.title).toBe("Violations · enspack");
+    });
   });
 
   it("renders a violation row with a name link and a sepolia block explorer link", async () => {

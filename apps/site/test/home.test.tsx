@@ -25,25 +25,44 @@ function rejectingClient(): IndexClient {
 
 describe("HomePage", () => {
   it("renders three models from fixtures", async () => {
-    const { findByText, getByText } = renderAt("/", <HomePage />);
+    const { findByText, getByText, getByLabelText } = renderAt("/", <HomePage />);
     expect(await findByText(QWEN)).toBeInTheDocument();
     expect(getByText(LLAMA)).toBeInTheDocument();
     expect(getByText(JEFF)).toBeInTheDocument();
+    const stats = getByLabelText("Catalog stats");
+    expect(stats).toHaveTextContent("3");
+    expect(stats).toHaveTextContent("indexed models");
+    await waitFor(() => {
+      expect(document.title).toBe("enspack");
+    });
   });
 
   it("narrows the list to one model when searching Qwen", async () => {
-    const { findByText, getByLabelText, queryByText } = renderAt("/", <HomePage />);
+    const { findByText, getByLabelText, getByRole, getByText, queryByText } = renderAt(
+      "/",
+      <HomePage />,
+    );
     await findByText(QWEN);
     fireEvent.change(getByLabelText("Search"), { target: { value: "Qwen" } });
     await waitFor(() => {
-      expect(queryByText(LLAMA)).not.toBeInTheDocument();
       expect(queryByText(JEFF)).not.toBeInTheDocument();
+      expect(queryByText("meta-llama/llama-3-2-1b-instruct")).not.toBeInTheDocument();
     });
     expect(queryByText(QWEN)).toBeInTheDocument();
+    expect(getByText(`enspack get ${LLAMA}`)).toBeInTheDocument();
+    const stats = getByLabelText("Catalog stats");
+    expect(stats).toHaveTextContent("3");
+    expect(stats).toHaveTextContent("indexed models");
+    expect(getByRole("button", { name: "Clear search" })).toBeInTheDocument();
+    fireEvent.click(getByRole("button", { name: "Clear search" }));
+    await waitFor(() => {
+      expect(getByText("meta-llama/llama-3-2-1b-instruct")).toBeInTheDocument();
+    });
+    expect(queryByText(JEFF)).toBeInTheDocument();
   });
 
   it("filters by publisher chip", async () => {
-    const { findByRole, getByText, queryByText } = renderAt("/", <HomePage />);
+    const { findByRole, getByText, getByLabelText, queryByText } = renderAt("/", <HomePage />);
     const chip = await findByRole("button", { name: "mirrors.enspack.eth" });
     fireEvent.click(chip);
     await waitFor(() => {
@@ -51,6 +70,9 @@ describe("HomePage", () => {
     });
     expect(getByText(QWEN)).toBeInTheDocument();
     expect(getByText(LLAMA)).toBeInTheDocument();
+    const stats = getByLabelText("Catalog stats");
+    expect(stats).toHaveTextContent("3");
+    expect(stats).toHaveTextContent("indexed models");
   });
 
   it("renders the empty state when the index has no names", async () => {
@@ -64,6 +86,7 @@ describe("HomePage", () => {
     const { findByText } = renderAt("/", <HomePage />, { client });
     expect(await findByText("No names indexed yet on sepolia.")).toBeInTheDocument();
     expect(await findByText(/enspack publish --from-hf/)).toBeInTheDocument();
+    expect(await findByText(`enspack get ${QWEN}`)).toBeInTheDocument();
   });
 
   it("renders the error state when the client rejects", async () => {

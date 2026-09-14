@@ -1,4 +1,4 @@
-import { CopyButton } from "./copy-button.js";
+import { CommandBlock } from "./command-block.js";
 
 const QWEN_EXAMPLE = "qwen--qwen2-5-7b-instruct.mirrors.enspack.eth";
 
@@ -12,12 +12,7 @@ export function Hero({ firstModel }: { firstModel?: string }) {
         An ENS name points at a content-addressed manifest; every file is SHA-256 checked; bytes
         come from BitTorrent + HF webseeds, never trusted.
       </p>
-      <div className="command-block">
-        <pre>
-          <code>{command}</code>
-        </pre>
-        <CopyButton value={command} />
-      </div>
+      <CommandBlock command={command} />
     </header>
   );
 }

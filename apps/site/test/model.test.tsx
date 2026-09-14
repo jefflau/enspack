@@ -84,7 +84,13 @@ describe("ModelPage", () => {
     const ensLink = document.querySelector(`a[href="${ensHref}"]`);
     expect(ensLink).not.toBeNull();
 
-    expect(screen.getByText(/"lockfileVersion": 1/)).toBeInTheDocument();
+    const lockPre = screen.getByText(/"lockfileVersion": 1/);
+    expect(lockPre).toBeInTheDocument();
+    const lockDetails = lockPre.closest("details");
+    expect(lockDetails).toBeInstanceOf(HTMLDetailsElement);
+    expect(lockDetails?.open).toBe(false);
+    expect(screen.getByText("enspack.lock entry")).toBeInTheDocument();
+    expect(document.title).toBe("Qwen2.5-7B-Instruct · enspack");
   });
 
   it("marks Jeff's latest version and links the older version name", async () => {

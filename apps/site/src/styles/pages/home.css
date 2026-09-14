@@ -25,27 +25,6 @@
   font-size: var(--fs-md);
 }
 
-.command-block {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-3) var(--sp-4);
-}
-
-.command-block pre {
-  margin: 0;
-  flex: 1;
-  min-width: 0;
-}
-
-.command-block code {
-  overflow-wrap: anywhere;
-}
-
 .home-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -68,7 +47,7 @@
 }
 
 .stat-label {
-  color: var(--muted);
+  color: var(--text);
   font-size: var(--fs-sm);
   margin-top: var(--sp-1);
 }
@@ -138,7 +117,14 @@
   flex: 1 1 16rem;
 }
 
+.model-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .model-search input {
+  width: 100%;
   font: inherit;
   font-family: var(--font-mono);
   color: var(--text);
@@ -146,6 +132,39 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--sp-2) var(--sp-3);
+  padding-right: calc(24px + var(--sp-3) + var(--sp-2));
+}
+
+.model-search input[type="search"]::-webkit-search-cancel-button,
+.model-search input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.model-search-clear {
+  position: absolute;
+  right: var(--sp-2);
+  top: 0;
+  bottom: 0;
+  margin-block: auto;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  line-height: 1;
+}
+
+.model-search-clear:hover {
+  border-color: var(--muted);
 }
 
 .publisher-chips {
@@ -215,10 +234,10 @@ a.chip:hover {
   font-weight: 500;
   color: var(--muted);
   font-size: var(--fs-xs);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border);
-  padding: var(--sp-2) var(--sp-3);
+  padding: var(--sp-3) var(--sp-3);
 }
 
 .model-table td {

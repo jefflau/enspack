@@ -13,7 +13,7 @@ export function Stats({
     <section className="home-stats" aria-label="Catalog stats">
       <div className="stat">
         <div className="stat-value">{models}</div>
-        <div className="stat-label">models</div>
+        <div className="stat-label">indexed models</div>
       </div>
       <div className="stat">
         <div className="stat-value">{publishers}</div>

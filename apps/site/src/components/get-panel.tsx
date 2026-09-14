@@ -56,7 +56,10 @@ export function GetPanel({ manifest, cid }: { manifest: Manifest; cid: string })
       <h2 id="get-heading">Get it</h2>
       <CopyBlock label="get" text={getCmd} />
       <CopyBlock label="add + install" text={addCmd} />
-      <CopyBlock label="enspack.lock" text={lockJson} />
+      <details className="get-lock">
+        <summary>enspack.lock entry</summary>
+        <CopyBlock label="enspack.lock" text={lockJson} />
+      </details>
       <p className="get-footnote muted">
         Requires <code>aria2c</code>. Installs into <code>$HF_HOME/hub</code>.
       </p>

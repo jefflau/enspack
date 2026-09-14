@@ -45,16 +45,29 @@ export function ModelList({
         Models
       </h2>
       <div className="model-list-controls">
-        <label className="model-search">
-          Search
-          <input
-            type="search"
-            value={qInput}
-            onChange={(e) => onQChange(e.target.value)}
-            placeholder="Name, org, or upstream"
-            autoComplete="off"
-          />
-        </label>
+        <div className="model-search">
+          <label htmlFor="model-search-q">Search</label>
+          <div className="model-search-field">
+            <input
+              id="model-search-q"
+              type="search"
+              value={qInput}
+              onChange={(e) => onQChange(e.target.value)}
+              placeholder="Name, org, or upstream"
+              autoComplete="off"
+            />
+            {qInput !== "" && (
+              <button
+                type="button"
+                className="model-search-clear"
+                aria-label="Clear search"
+                onClick={() => onQChange("")}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
         <fieldset className="publisher-chips">
           <legend>Filter by publisher</legend>
           <button

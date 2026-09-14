@@ -5,7 +5,7 @@
 }
 
 .get-started-lead {
-  margin: 0 0 var(--sp-8);
+  margin: 0 0 var(--sp-3);
   color: var(--muted);
   max-width: 62ch;
 }
@@ -26,7 +26,7 @@
 }
 
 .get-started-page ul {
-  margin: 0 0 var(--sp-5);
+  margin: 0 0 var(--sp-4);
   padding-left: 1.25rem;
   max-width: 68ch;
 }
@@ -35,44 +35,12 @@
   margin-top: var(--sp-2);
 }
 
-.command-block {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
+.get-started-page .cmd {
   margin: var(--sp-3) 0 var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
 }
 
-.command-block pre {
-  margin: 0;
-  flex: 1;
-  overflow-x: auto;
-  font-size: var(--fs-sm);
-  line-height: 1.5;
-}
-
-.command-block code {
-  font-family: var(--font-mono);
-}
-
-.get-started-cta {
-  display: inline-block;
+.get-started-page .btn-primary {
   margin: var(--sp-2) 0 var(--sp-5);
-  padding: var(--sp-3) var(--sp-5);
-  background: var(--accent-soft);
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  font-weight: 600;
-}
-
-.get-started-cta:hover {
-  text-decoration: none;
-  background: var(--accent);
-  color: var(--bg);
 }
 
 .get-started-links {

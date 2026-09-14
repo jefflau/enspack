@@ -1,9 +1,13 @@
-import { screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { PublisherPage } from "../src/pages/publisher.js";
 import { renderAt } from "./helpers.js";
 
 const route = { routePattern: "/publisher/:label" };
+
+afterEach(() => {
+  cleanup();
+});
 
 describe("PublisherPage", () => {
   it("shows the no-attestation sentence and two models for mirrors", async () => {
@@ -34,6 +38,12 @@ describe("PublisherPage", () => {
       .getAllByRole("link")
       .filter((el) => el.getAttribute("href")?.includes("etherscan.io/tx/"));
     expect(txLinks.length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        "0xd368b0e8bbbd4a474a846a5fbfab4d8cfc1b3f8f413d25dbce5605f3fd38bbc260af54755aae952ac69e62de639b238540c593d6d3e6e9cc992768ff150fdc987f",
+      ),
+    ).toBeInTheDocument();
+    expect(document.title).toBe("jeff.enspack.eth · enspack");
   });
 
   it("shows the unknown-publisher empty state", async () => {

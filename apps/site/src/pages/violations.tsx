@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, Loading } from "../components/states.js";
 import { useClient } from "../lib/client-context.js";
 import { config } from "../lib/config.js";
 import { explorerBlock } from "../lib/format.js";
+import { useDocumentTitle } from "../lib/use-document-title.js";
 import { useQuery } from "../lib/use-query.js";
 import "../styles/pages/violations.css";
 
@@ -26,6 +27,7 @@ function ViolationNameLink({ name }: { name: string }) {
 }
 
 export function ViolationsPage() {
+  useDocumentTitle("Violations");
   const client = useClient();
   const { data, error, loading } = useQuery("violations", () => client.listViolations());
 
@@ -33,7 +35,12 @@ export function ViolationsPage() {
   if (error) return <ErrorState error={error} what="violations" />;
   if (data === null || data.items.length === 0) {
     return (
-      <EmptyState title="No violations. No version name has changed its contenthash after it was first set." />
+      <EmptyState title="No violations. No version name has changed its contenthash after it was first set.">
+        <p>
+          A row would show the version name, the previous CID → new CID, and the block of the
+          change.
+        </p>
+      </EmptyState>
     );
   }
 

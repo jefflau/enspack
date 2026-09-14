@@ -8,7 +8,8 @@ import type { Attestation, NameListItem } from "../lib/api.js";
 import { useClient } from "../lib/client-context.js";
 import type { IndexClient } from "../lib/client.js";
 import { config } from "../lib/config.js";
-import { explorerTx, firstLabel, formatBytes, hfUrl, isAddress, isTxHash } from "../lib/format.js";
+import { explorerTx, firstLabel, formatBytes, hfUrl, isTxHash } from "../lib/format.js";
+import { useDocumentTitle } from "../lib/use-document-title.js";
 import { useQuery } from "../lib/use-query.js";
 import "../styles/pages/publisher.css";
 
@@ -44,6 +45,11 @@ function attestationItemKey(item: unknown, i: number): string {
   return String(i);
 }
 
+/** Addresses, commits, signatures: full hex plus a copy control. Tx hashes stay explorer links. */
+function isCopyableHex(value: unknown): value is string {
+  return typeof value === "string" && /^(?:0x)?[0-9a-fA-F]{40,}$/.test(value);
+}
+
 function AttestationValue({ value }: { value: unknown }) {
   if (value === null || value === undefined) {
     return <span className="muted">—</span>;
@@ -55,7 +61,7 @@ function AttestationValue({ value }: { value: unknown }) {
       </ExternalLink>
     );
   }
-  if (isAddress(value)) {
+  if (isCopyableHex(value)) {
     return <Hash value={value} />;
   }
   if (Array.isArray(value)) {
@@ -154,6 +160,8 @@ export function PublisherPage() {
       ? Promise.resolve({ publisher: null, models: [] as NameListItem[], attestation: null })
       : loadPublisherPage(client, name),
   );
+
+  useDocumentTitle(name);
 
   if (name === null) {
     return <EmptyState title="Unknown publisher" />;

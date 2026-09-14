@@ -6,6 +6,7 @@ import { Stats } from "../components/stats.js";
 import type { ListNamesParams, NameListItem } from "../lib/api.js";
 import { useClient } from "../lib/client-context.js";
 import { config } from "../lib/config.js";
+import { useDocumentTitle } from "../lib/use-document-title.js";
 import { useQuery } from "../lib/use-query.js";
 import "../styles/pages/home.css";
 
@@ -20,6 +21,7 @@ function namesParams(q: string, publisher: string | null, cursor?: string): List
 }
 
 export function HomePage() {
+  useDocumentTitle("");
   const client = useClient();
   const [qInput, setQInput] = useState("");
   const [q, setQ] = useState("");
@@ -30,6 +32,8 @@ export function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [namesError, setNamesError] = useState<Error | null>(null);
 
+  // Stable key: hero/stats stay on the first unfiltered page and do not refetch on search.
+  const catalog = useQuery("names-unfiltered", () => client.listNames());
   const publishers = useQuery("publishers", () => client.listPublishers());
 
   useEffect(() => {
@@ -79,15 +83,16 @@ export function HomePage() {
     );
   }
 
-  const first = items[0];
-  const bytes = items.reduce((sum, item) => sum + item.totalSize, 0);
+  const catalogItems = catalog.data?.items ?? [];
+  const first = catalogItems[0];
+  const bytes = catalogItems.reduce((sum, item) => sum + item.totalSize, 0);
   const publisherCount = publishers.data?.items.length ?? 0;
 
   return (
     <article className="home">
       {first ? <Hero firstModel={first.model} /> : <Hero />}
-      {!loading && namesError === null && (
-        <Stats models={items.length} publishers={publisherCount} bytes={bytes} />
+      {!catalog.loading && catalog.error === null && (
+        <Stats models={catalogItems.length} publishers={publisherCount} bytes={bytes} />
       )}
       <HowItWorks />
       <ModelList

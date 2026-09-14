@@ -70,14 +70,16 @@ export function FilesTable({
           <tbody>
             {rows.map((file) => (
               <tr key={file.path}>
-                <td>
+                <td data-label="path">
                   <code className="files-path">{file.path}</code>
                 </td>
-                <td>
+                <td data-label="role">
                   <RoleBadge role={file.role} />
                 </td>
-                <td className="files-size">{formatBytes(file.size)}</td>
-                <td className="files-sha">
+                <td className="files-size" data-label="size">
+                  {formatBytes(file.size)}
+                </td>
+                <td className="files-sha" data-label="sha256">
                   <Hash value={file.sha256} />
                 </td>
               </tr>
