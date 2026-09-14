@@ -47,7 +47,7 @@ Status ∈ `todo · working · ci-failing · needs-human · ready-for-review · 
 ```
 Repository: <repo url>. Read AGENTS.md, SPEC.md, and MVP.md before anything.
 You are implementing WP-XX (<name>) exactly as specified in MVP.md §3.
-Create branch wp-XX-<short-name> from main.
+Create branch wp-XX-<short-name> from master.
 
 Scope: only the deliverable listed for WP-XX. Import shared types from
 @enspack/core (MVP.md §2); do not redefine them. If core lacks something,
@@ -84,7 +84,7 @@ implement behind a flag.
   human-run from the `bootstrap/` runner.
 - Never handle `ENSPACK_OPERATOR_KEY` for mainnet. Sepolia keys only, via
   Cursor Cloud Agent Secrets, never pasted in chat or committed.
-- No force-push to `main`, no edits to `SPEC.md`/`schema/*` outside a
+- No force-push to `master`, no edits to `SPEC.md`/`schema/*` outside a
   human-approved `spec-change` PR.
 - No publishing under any label other than `*.mirrors.enspack.eth` on Sepolia.
 - Escalate to the human for: spec changes, anything touching wallets,

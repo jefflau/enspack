@@ -23,7 +23,7 @@ contracts), then the package you were assigned.
 7. **Keys and RPC URLs come from env.** Never write them to disk or logs.
    Operator/publisher keys in tests are Anvil's default accounts only.
 8. **One WP per branch**, named `wp-XX-short-name`. Small PRs. Rebase, don't
-   merge, onto `main`.
+   merge, onto `master`.
 9. **Definition of done** is in `MVP.md §5`. Do not mark a WP done without the
    acceptance tests listed for it passing in CI.
 10. **Comments explain why, not what.** No narration comments, no TODOs
