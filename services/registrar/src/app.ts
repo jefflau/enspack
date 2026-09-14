@@ -8,6 +8,7 @@ import { Hono } from "hono";
 import { type Address, type Hex, verifyMessage } from "viem";
 import {
   type RegistrarChain,
+  ensVersionOf,
   isLabelTakenOnChain,
   issuePublisherSubname,
   publisherName,
@@ -81,7 +82,7 @@ export function createApp(deps: RegistrarDeps): Hono {
     if (err instanceof HttpError) {
       return c.json(
         jsonError(err.message, err.code),
-        err.status as 400 | 401 | 403 | 404 | 409 | 410 | 502,
+        err.status as 400 | 401 | 403 | 404 | 409 | 410 | 500 | 502 | 503,
       );
     }
     process.stderr.write(`registrar error: ${err instanceof Error ? err.message : "unknown"}\n`);
@@ -283,20 +284,31 @@ export function createApp(deps: RegistrarDeps): Hono {
   });
 
   app.get("/v1/health", async (c) => {
+    const ensVersion = ensVersionOf(deps.chain);
     try {
-      const { approved } = await readOperatorApproval(deps.chain);
+      const approval = await readOperatorApproval(deps.chain);
       const balance = await deps.chain.client.getBalance({ address: deps.chain.operator });
-      return c.json({
+      const body: Record<string, unknown> = {
         ok: true,
         chain: deps.chainName,
         operator: deps.chain.operator,
-        approved,
+        approved: approval.approved,
         balanceWei: balance.toString(),
-      });
+        ensVersion,
+      };
+      if (ensVersion === "v2") {
+        body.registrarApproved = approval.registrarApproved ?? false;
+        body.resolverApproved = approval.resolverApproved ?? false;
+        body.rootRegistry = approval.rootRegistry;
+        body.resolver = approval.resolver;
+      }
+      return c.json(body);
     } catch (err) {
       process.stderr.write(
         `health check failed: ${err instanceof Error ? err.message : "unknown"}\n`,
       );
+      const code = err instanceof HttpError ? err.code : "HEALTH";
+      const message = err instanceof Error ? err.message : "health check failed";
       return c.json(
         {
           ok: false,
@@ -304,7 +316,8 @@ export function createApp(deps: RegistrarDeps): Hono {
           operator: deps.chain.operator,
           approved: false,
           balanceWei: "0",
-          ...jsonError(err instanceof Error ? err.message : "health check failed", "HEALTH"),
+          ensVersion,
+          ...jsonError(message, code),
         },
         503,
       );

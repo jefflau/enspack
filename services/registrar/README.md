@@ -13,7 +13,7 @@ POST /v1/claims/:id/verify             { repo, signature }
   200 { label, name, owner, txs, attestationUrl }
 GET  /v1/claims/:id                     { claimId, label, status, expiresAt, ... }
 GET  /v1/publishers/:label              attestation JSON (public, permanent)
-GET  /v1/health                         { ok, chain, operator, approved, balanceWei }
+GET  /v1/health                         { ok, chain, operator, approved, balanceWei, ensVersion, … }
 GET  /
 ```
 
@@ -42,6 +42,7 @@ Repo author mismatch is **403 `AUTHOR_MISMATCH`** (authorization), not 401.
 | --- | --- |
 | `ENSPACK_OPERATOR_KEY` | Operator private key (`0x` + 64 hex). Never logged. |
 | `REGISTRAR_CHAIN` | `mainnet` or `sepolia`. |
+| `REGISTRAR_ENS_VERSION` | `v1` or `v2`. Overrides core `ensVersionFor` (default v2 on Sepolia, v1 on mainnet). |
 | `ETH_RPC_URL` | Mainnet JSON-RPC (`REGISTRAR_CHAIN=mainnet`). |
 | `SEPOLIA_RPC_URL` | Sepolia JSON-RPC (`REGISTRAR_CHAIN=sepolia`). |
 | `DATABASE_URL` | Postgres URL. Unset → PGlite. |
@@ -103,6 +104,51 @@ cast send $REG "setApprovalForAll(address,bool)" $OPERATOR true \
 3. `Registry.setOwner(node, claimant)`
 
 PublicResolver is read at runtime from the parent name (`readResolverAddress`), never hardcoded.
+
+## ENSv2 (Sepolia)
+
+Sepolia uses ENSv2 (`ensdomains/contracts-v2`). Set `REGISTRAR_ENS_VERSION=v2` (or leave it unset on Sepolia — core `ensVersionFor` defaults to v2). Issue #17 replaces the three v1 txs with two. The v1 path and its Anvil mainnet-fork test stay intact.
+
+### Required operator roles
+
+The operator is **not** the owner of `enspack.eth`. The name owner grants:
+
+```sh
+# On enspack.eth's UserRegistry (R_ROOT = nameStateV2("enspack.eth").subregistry)
+cast send $R_ROOT "grantRootRoles(uint256,address)" \
+  $(( (1 << 0) | (1 << 16) )) $OPERATOR \
+  --rpc-url $SEPOLIA_RPC_URL --private-key $ROOT_OWNER_KEY
+# ROLE_REGISTRAR | ROLE_RENEW
+
+# On the project PermissionedResolver (RES = nameStateV2("enspack.eth").resolver)
+# dnsEncode("") == 0x00 grants ROOT_RESOURCE (any name), equivalent to grantRootRoles.
+cast send $RES "authorizeNameRoles(bytes,uint256,address,bool)" \
+  0x00 $(( 1 << 4 )) $OPERATOR true \
+  --rpc-url $SEPOLIA_RPC_URL --private-key $ROOT_OWNER_KEY
+# ROLE_SET_TEXT
+```
+
+`GET /v1/health` reports `ensVersion`, `rootRegistry`, `resolver`, and both flags (`registrarApproved`, `resolverApproved`). `approved` is true only when both are true.
+
+Issuance (SPEC §7 step 5 as amended by [issue #17](https://github.com/jefflau/enspack/issues/17)):
+
+1. `R_ROOT.register(label, claimant, 0x0, RES, NAME_OWNER_ROLES, expiryRoot)` — claimant is the owner immediately.
+2. `RES.multicall([setText(com.enspack.hf), setText(com.enspack.spec)])`.
+
+`NAME_OWNER_ROLES` is `SET_SUBREGISTRY | SET_SUBREGISTRY_ADMIN | SET_RESOLVER | SET_RESOLVER_ADMIN | CAN_TRANSFER_ADMIN`. The claimant can later repoint the name to their own resolver (`SET_RESOLVER`) and attach their own UserRegistry (`SET_SUBREGISTRY`) without the registrar.
+
+If `enspack.eth` has no UserRegistry, the service fails closed with `503 ROOT_REGISTRY_MISSING` and tells the operator to run the setup in `docs/ens-v2-sepolia` (On-chain setup Jeff must do on Sepolia).
+
+`expiryRoot` is the root name's expiry. If that is 0, issuance uses now+365 days so the child is not registered with a zero expiry.
+
+### Env (v2)
+
+| Variable | Purpose |
+| --- | --- |
+| `REGISTRAR_ENS_VERSION` | `v1` or `v2`. Unset → `ensVersionFor(chain)`. |
+| `SEPOLIA_RPC_URL` | Sepolia JSON-RPC. |
+| `ENSPACK_OPERATOR_KEY` | Operator key holding the roles above. |
+| Core `ensV2ConfigFor` env | Universal Resolver and factory/implementation addresses (see `@enspack/core`). |
 
 ## Sepolia E2E (unproven here)
 

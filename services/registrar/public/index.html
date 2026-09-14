@@ -49,6 +49,7 @@
   </head>
   <body>
     <h1>Claim an <code>enspack.eth</code> publisher name</h1>
+    <p id="ens-version"></p>
     <p>
       Prove control of a public Hugging Face namespace, sign the challenge with your wallet, and
       receive <code>&lt;label&gt;.enspack.eth</code>. The registrar never asks for your private key.
@@ -88,6 +89,13 @@
       let claimId = "";
       let challenge = "";
       let address = "";
+
+      fetch("/v1/health")
+        .then((r) => r.json())
+        .then((h) => {
+          $("ens-version").textContent = "ensVersion: " + (h.ensVersion || "");
+        })
+        .catch(() => {});
 
       function show(errOrText, el = $("status")) {
         el.textContent = typeof errOrText === "string" ? errOrText : JSON.stringify(errOrText, null, 2);
