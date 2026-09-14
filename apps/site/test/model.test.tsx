@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { ensAppUrl } from "../src/lib/format.js";
 import { ModelPage } from "../src/pages/model.js";
@@ -90,7 +90,9 @@ describe("ModelPage", () => {
     expect(lockDetails).toBeInstanceOf(HTMLDetailsElement);
     expect(lockDetails?.open).toBe(false);
     expect(screen.getByText("enspack.lock entry")).toBeInTheDocument();
-    expect(document.title).toBe("Qwen2.5-7B-Instruct · enspack");
+    await waitFor(() => {
+      expect(document.title).toBe("Qwen2.5-7B-Instruct · enspack");
+    });
   });
 
   it("marks Jeff's latest version and links the older version name", async () => {

@@ -1,4 +1,4 @@
-import { cleanup, screen } from "@testing-library/react";
+import { cleanup, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { PublisherPage } from "../src/pages/publisher.js";
 import { renderAt } from "./helpers.js";
@@ -43,7 +43,9 @@ describe("PublisherPage", () => {
         "0xd368b0e8bbbd4a474a846a5fbfab4d8cfc1b3f8f413d25dbce5605f3fd38bbc260af54755aae952ac69e62de639b238540c593d6d3e6e9cc992768ff150fdc987f",
       ),
     ).toBeInTheDocument();
-    expect(document.title).toBe("jeff.enspack.eth · enspack");
+    await waitFor(() => {
+      expect(document.title).toBe("jeff.enspack.eth · enspack");
+    });
   });
 
   it("shows the unknown-publisher empty state", async () => {
