@@ -70,6 +70,32 @@ async function flattenTopDir(dest: string, topName: string): Promise<void> {
   await rm(top, { recursive: true, force: true });
 }
 
+async function removeUnselected(dest: string, select: string[] | undefined): Promise<void> {
+  if (isSelectAll(select)) return;
+
+  async function walk(rel: string): Promise<void> {
+    const abs = rel === "" ? dest : join(dest, rel);
+    const entries = await readdir(abs, { withFileTypes: true });
+    for (const entry of entries) {
+      const childRel = rel === "" ? entry.name : `${rel}/${entry.name}`;
+      const full = join(dest, childRel);
+      if (entry.isDirectory()) {
+        await walk(childRel);
+        const leftover = await readdir(full);
+        if (leftover.length === 0) {
+          await rm(full, { recursive: true, force: true });
+        }
+        continue;
+      }
+      if (!matchesSelect(childRel, select)) {
+        await rm(full, { force: true });
+      }
+    }
+  }
+
+  await walk("");
+}
+
 /**
  * SPEC §4 step 7: acquire bytes via (a) metainfo, (b) magnet then metainfo,
  * or (c) `--http-only` multi-source HTTP. aria2c is always spawned with an argv
@@ -203,12 +229,15 @@ export class Aria2Downloader implements Downloader {
       await writeFile(torrentPath, withSeeds);
       const args = [
         ...this.commonBtArgs(dest),
-        ...(selectFile !== undefined ? [`--select-file=${selectFile}`] : []),
+        ...(selectFile !== undefined
+          ? [`--select-file=${selectFile}`, "--bt-remove-unselected-file=true"]
+          : []),
         "--",
         torrentPath,
       ];
       await this.run(args, opts, "download");
       await flattenTopDir(dest, parsed.name);
+      await removeUnselected(dest, opts.select);
     } finally {
       await rm(tmp, { recursive: true, force: true });
     }
