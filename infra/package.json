@@ -1,0 +1,21 @@
+{
+  "name": "@enspack/infra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "One-box Sepolia MVP compose stack, deploy scripts, and structure tests (WP-21)",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "yaml": "^2.7.0"
+  }
+}
