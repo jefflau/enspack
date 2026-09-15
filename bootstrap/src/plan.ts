@@ -1,8 +1,10 @@
 import {
+  type Manifest,
   type PublishCall,
   type PublishResult,
   canonicalJson,
   formatPublishPlan,
+  isEnspackError,
   manifestCid,
   validateManifest,
 } from "@enspack/core";
@@ -105,14 +107,22 @@ export async function planBootstrap(
 
     const modelName = modelNameFor(gate.data.org, gate.data.repoName ?? "");
     let version = "1.0.0";
+    let previousVersions: Manifest["versions"] | undefined;
+    let previous: string | undefined;
     try {
       const resolved = await deps.resolver.resolve(modelName, { chain });
-      if (resolved.manifest !== null) {
+      if (resolved.manifest !== null && resolved.cid !== null) {
+        previousVersions = resolved.manifest.versions;
+        previous = resolved.cid;
         const last = resolved.manifest.versions[resolved.manifest.versions.length - 1];
         version = bumpMinor(last?.version ?? resolved.manifest.version);
       }
-    } catch {
-      /* first publish */
+    } catch (err) {
+      if (!isEnspackError(err) || err.code !== "RESOLVE") {
+        const message = err instanceof Error ? err.message : String(err);
+        out.push({ repo: entry.repo, status: "failed", snapshotSize, license, reason: message });
+        continue;
+      }
     }
 
     const webseeds = [deps.hfWebseed(entry.repo, revision)];
@@ -140,34 +150,49 @@ export async function planBootstrap(
       version,
       createdAt: deps.now(),
     };
-    const manifest = assembleManifest(assemble);
-    validateManifest(manifest);
-    const cid = await manifestCid(canonicalJson(manifest));
-    const published = await deps.publisher.publish({
-      manifest,
-      manifestCid: cid,
-      chain,
-      dryRun: true,
-    });
-    const calls = allPublishCalls(published);
-    const gas = sumGas(calls);
-    totalBytes += snapshotSize;
-    totalGas += gas;
-    const row: PlanEntryJson = {
-      repo: entry.repo,
-      status: "ok",
-      snapshotSize,
-      fileCount: files.length,
-      license,
-      gasEstimate: gas.toString(),
-      version,
-      name: manifest.name,
-      plan: formatPublishPlan(calls),
-    };
-    if (filesResult.data.hbCrossCheck !== undefined) {
-      row.hbCrossCheck = filesResult.data.hbCrossCheck;
+    if (previousVersions !== undefined) assemble.previousVersions = previousVersions;
+    if (previous !== undefined) assemble.previous = previous;
+
+    try {
+      const manifest = assembleManifest(assemble);
+      validateManifest(manifest);
+      const cid = await manifestCid(canonicalJson(manifest));
+      const published = await deps.publisher.publish({
+        manifest,
+        manifestCid: cid,
+        chain,
+        dryRun: true,
+      });
+      const calls = allPublishCalls(published);
+      const gas = sumGas(calls);
+      totalBytes += snapshotSize;
+      totalGas += gas;
+      const row: PlanEntryJson = {
+        repo: entry.repo,
+        status: "ok",
+        snapshotSize,
+        fileCount: files.length,
+        license,
+        gasEstimate: gas.toString(),
+        version,
+        name: manifest.name,
+        plan: formatPublishPlan(calls),
+      };
+      if (filesResult.data.hbCrossCheck !== undefined) {
+        row.hbCrossCheck = filesResult.data.hbCrossCheck;
+      }
+      out.push(row);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      out.push({
+        repo: entry.repo,
+        status: "failed",
+        snapshotSize,
+        license,
+        reason: message,
+        version,
+      });
     }
-    out.push(row);
   }
 
   return { entries: out, totals: { bytes: totalBytes, gasEstimate: totalGas.toString() } };

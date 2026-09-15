@@ -2,10 +2,11 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { PublishInput } from "@enspack/core";
+import { EnspackError, namehashOf } from "@enspack/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { runCli } from "../src/cli.js";
 import type { BootstrapDeps } from "../src/deps.js";
-import type { PlanJson } from "../src/plan.js";
+import { type PlanJson, planBootstrap } from "../src/plan.js";
 import {
   ZERO_ADDR,
   emptyHb,
@@ -15,6 +16,7 @@ import {
   recordingPublisher,
   resolverThatThrows,
   silentLog,
+  tinyModelFiles,
 } from "./helpers.js";
 
 describe("plan --json (MVP.md WP-12 dry run)", () => {
@@ -175,5 +177,128 @@ describe("plan --json (MVP.md WP-12 dry run)", () => {
     expect(plan.entries[0]?.plan).toMatch(
       /setup: VerifiableFactory\.deployProxy\(UserRegistryImpl\)/,
     );
+  });
+});
+
+describe("planBootstrap resilience (WP-22)", () => {
+  function basePlanDeps(overrides: Partial<BootstrapDeps> = {}): BootstrapDeps {
+    return {
+      hf: fakeHf(),
+      hb: emptyHb(),
+      store: {
+        async put() {
+          throw new Error("plan must not pin");
+        },
+        async getVerified() {
+          throw new Error("unused");
+        },
+      },
+      publisher: recordingPublisher([]),
+      downloader: {
+        async fetch() {
+          throw new Error("plan must not download");
+        },
+      },
+      verifier: {
+        async verify() {
+          throw new Error("verify");
+        },
+        async quarantine() {
+          throw new Error("quarantine");
+        },
+      },
+      seedNode: {
+        async seed() {
+          throw new Error("seed");
+        },
+        async status() {
+          throw new Error("status");
+        },
+      },
+      resolver: resolverThatThrows(),
+      now: () => "2026-09-14T00:00:00.000Z",
+      hfWebseed: (repo, revision) => `https://huggingface.co/${repo}/resolve/${revision}/`,
+      log: silentLog(),
+      ...overrides,
+    };
+  }
+
+  it("records a throwing publisher as failed and continues other entries", async () => {
+    const config = loadModels();
+    const first = config.models[0];
+    if (first === undefined) throw new Error("fixture");
+    const second = { ...first, repo: "enspack/other-model" };
+    const inner = recordingPublisher([]);
+    const deps = basePlanDeps({
+      publisher: {
+        async publish(input) {
+          if (input.manifest.model.includes("tiny-model")) {
+            throw new EnspackError("PUBLISH", "version name already points at cid");
+          }
+          return inner.publish(input);
+        },
+      },
+    });
+    const plan = await planBootstrap(config, [first, second], "sepolia", deps);
+    expect(plan.entries).toHaveLength(2);
+    expect(plan.entries[0]?.status).toBe("failed");
+    expect(plan.entries[0]?.reason).toMatch(/already points/);
+    expect(plan.entries[1]?.status).toBe("ok");
+    expect(plan.entries[1]?.version).toBe("1.0.0");
+    expect(plan.totals.bytes).toBe(plan.entries[1]?.snapshotSize);
+    expect(plan.totals.gasEstimate).toBe(plan.entries[1]?.gasEstimate);
+  });
+
+  it("plans 1.1.0 when the model name already resolves", async () => {
+    const config = loadModels();
+    const entry = config.models[0];
+    if (entry === undefined) throw new Error("fixture");
+    const prevCid = `bafkrei${"c".repeat(52)}`;
+    const deps = basePlanDeps({
+      resolver: {
+        async resolve(ref) {
+          if (!ref.includes("enspack--tiny-model")) {
+            throw new EnspackError("RESOLVE", `unresolved ${ref}`);
+          }
+          return {
+            name: ref,
+            node: namehashOf(ref),
+            cid: prevCid,
+            magnet: null,
+            spec: "enspack/0.1" as const,
+            manifest: {
+              spec: "enspack/0.1" as const,
+              name: "v1-0-0.enspack--tiny-model.mirrors.enspack.eth",
+              model: "enspack--tiny-model.mirrors.enspack.eth",
+              publisher: "mirrors.enspack.eth",
+              version: "1.0.0",
+              createdAt: "2026-09-14T00:00:00Z",
+              license: "apache-2.0",
+              distribution: {
+                infohash: "0".repeat(40),
+                magnet: `magnet:?xt=urn:btih:${"0".repeat(40)}`,
+                webseeds: ["https://example.invalid/"],
+              },
+              files: tinyModelFiles(),
+              totalSize: tinyModelFiles().reduce((s, f) => s + f.size, 0),
+              versions: [
+                {
+                  version: "1.0.0",
+                  name: "v1-0-0.enspack--tiny-model.mirrors.enspack.eth",
+                  cid: `bafkrei${"a".repeat(52)}`,
+                  createdAt: "2026-09-14T00:00:00Z",
+                },
+              ],
+            },
+            manifestBytes: null,
+          };
+        },
+      },
+    });
+    const plan = await planBootstrap(config, [entry], "sepolia", deps);
+    expect(plan.entries).toHaveLength(1);
+    expect(plan.entries[0]?.status).toBe("ok");
+    expect(plan.entries[0]?.version).toBe("1.1.0");
+    expect(plan.entries[0]?.name).toMatch(/^v1-1-0\./);
   });
 });
