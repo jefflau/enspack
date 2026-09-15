@@ -246,7 +246,7 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
       cid: SELF_CID_PLACEHOLDER,
       createdAt,
     };
-    const versions = [...prior, thisVersion] as Manifest["versions"];
+    const versions = [...prior, thisVersion] as unknown as Manifest["versions"];
 
     const manifestDraft: Record<string, unknown> = {
       spec: "enspack/0.1",
