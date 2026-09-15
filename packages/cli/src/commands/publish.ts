@@ -2,7 +2,6 @@ import { mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  DEFAULT_GATEWAYS,
   EnspackError,
   MIRROR_NAMESPACE,
   type Manifest,
@@ -14,6 +13,7 @@ import {
   createManifestStore,
   ensVersionFor,
   formatPublishPlan,
+  gatewaysFromEnv,
   isEnspackError,
   kuboPinner,
   manifestCid,
@@ -59,18 +59,6 @@ function splitRepo(repo: string): { org: string; name: string } {
   return { org: repo.slice(0, slash), name: repo.slice(slash + 1) };
 }
 
-function parseGateways(env: NodeJS.ProcessEnv): string[] {
-  const extra = env.ENSPACK_IPFS_GATEWAYS;
-  const extras =
-    extra !== undefined && extra !== ""
-      ? extra
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0)
-      : [];
-  return [...extras, ...DEFAULT_GATEWAYS];
-}
-
 function pinnerFor(
   kind: "kubo" | "pinata" | "seed",
   deps: CliDeps,
@@ -104,7 +92,7 @@ function pinStore(deps: CliDeps, pinner: Pinner): ManifestStore {
   if (deps.storeWithPinner !== undefined) {
     return deps.storeWithPinner(pinner);
   }
-  return createManifestStore({ gateways: parseGateways(deps.env), pinner });
+  return createManifestStore({ gateways: gatewaysFromEnv(deps.env), pinner });
 }
 
 async function putBytes(

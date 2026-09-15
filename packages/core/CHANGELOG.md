@@ -4,6 +4,8 @@
 
 - WP-22: `SELF_CID_PLACEHOLDER` (`bafkrei` + 52×`a`) for `versions[last].cid`
   (issue #30). A manifest cannot contain its own CID.
+- WP-22: `PINATA_GATEWAY` and `gatewaysFromEnv(env)` (env extras, Pinata, then
+  SPEC `DEFAULT_GATEWAYS`). `DEFAULT_GATEWAYS` itself is unchanged.
 - WP-18: `planEnsSetup` / `runEnsSetup` for one-shot ENSv2 publisher setup
   (resolver + UserRegistry + optional operator grants + subname registries).
   Idempotent; pending proxies resolved from `ProxyDeployed`.

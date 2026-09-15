@@ -1,5 +1,4 @@
 import {
-  DEFAULT_GATEWAYS,
   EnspackError,
   type Pinner,
   createInstaller,
@@ -7,6 +6,7 @@ import {
   createPublisher,
   createResolver,
   ensV2ConfigFor,
+  gatewaysFromEnv,
   planEnsSetup,
   publicClientFor,
   runEnsSetup,
@@ -30,18 +30,6 @@ function asWriter(stream: NodeJS.WritableStream): Writer {
     return { ...writer, isTTY: true };
   }
   return writer;
-}
-
-function parseGateways(env: NodeJS.ProcessEnv): string[] {
-  const extra = env.ENSPACK_IPFS_GATEWAYS;
-  const extras =
-    extra !== undefined && extra !== ""
-      ? extra
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0)
-      : [];
-  return [...extras, ...DEFAULT_GATEWAYS];
 }
 
 /** Secret stores often strip the `0x`; accept both forms, never log the value. */
@@ -190,7 +178,7 @@ function isWriter(value: NodeJS.WritableStream | Writer): value is Writer {
  */
 export function createDefaultDeps(opts: DefaultDepsOpts = {}): CliDeps {
   const env = opts.env ?? process.env;
-  const gateways = parseGateways(env);
+  const gateways = gatewaysFromEnv(env);
   const store = createManifestStore({ gateways });
   const stdout =
     opts.stdout === undefined

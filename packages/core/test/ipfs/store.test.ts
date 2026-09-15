@@ -62,6 +62,35 @@ describe("createManifestStore.getVerified", () => {
     }
   });
 
+  it("rotates on HTTP 429 like other gateway failures", async () => {
+    const cid = await manifestCid(PAYLOAD);
+    const { origin: limited } = await listen((_req, res) => {
+      res.writeHead(429, { "content-type": "text/plain" });
+      res.end("rate-limit-body-must-not-leak");
+    });
+    const good = await serveBytes(PAYLOAD);
+    const store = createManifestStore({
+      gateways: [gatewayTemplate(limited), gatewayTemplate(good)],
+      timeoutMs: 2000,
+    });
+    const got = await store.getVerified(cid);
+    expect(got).toEqual(PAYLOAD);
+
+    const only429 = createManifestStore({
+      gateways: [gatewayTemplate(limited)],
+      timeoutMs: 2000,
+    });
+    try {
+      await only429.getVerified(cid);
+      expect.unreachable("should throw");
+    } catch (err) {
+      const message = (err as EnspackError).message;
+      expect(err).toMatchObject({ code: "FETCH" });
+      expect(message).toContain("HTTP 429");
+      expect(message).not.toContain("rate-limit-body-must-not-leak");
+    }
+  });
+
   it("rotates on HTTP 500 without including the response body", async () => {
     const cid = await manifestCid(PAYLOAD);
     const { origin: bad } = await listen((_req, res) => {

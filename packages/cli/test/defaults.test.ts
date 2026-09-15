@@ -1,5 +1,5 @@
 import type { Manifest } from "@enspack/core";
-import { ensVersionFor } from "@enspack/core";
+import { DEFAULT_GATEWAYS, PINATA_GATEWAY, ensVersionFor, gatewaysFromEnv } from "@enspack/core";
 import { describe, expect, it } from "vitest";
 import { createDefaultDeps } from "../src/defaults.js";
 import { applyEnsVersionFlag, ensOptsFor } from "../src/ens.js";
@@ -100,5 +100,28 @@ describe("ensOptsFor (WP-17)", () => {
 
   it("applyEnsVersionFlag rejects values other than v1|v2", () => {
     expect(() => applyEnsVersionFlag({}, "v3")).toThrow(/must be v1 or v2/);
+  });
+});
+
+describe("CLI configured gateway order (WP-22)", () => {
+  it("uses gatewaysFromEnv: env extras, Pinata, then SPEC DEFAULT_GATEWAYS", () => {
+    expect([...DEFAULT_GATEWAYS]).toEqual([
+      "https://{cid}.ipfs.dweb.link",
+      "https://ipfs.io/ipfs/{cid}",
+      "https://{cid}.ipfs.w3s.link",
+    ]);
+    expect(gatewaysFromEnv({})).toEqual([PINATA_GATEWAY, ...DEFAULT_GATEWAYS]);
+    const extra = "https://custom.example/ipfs/{cid}";
+    expect(gatewaysFromEnv({ ENSPACK_IPFS_GATEWAYS: extra })).toEqual([
+      extra,
+      PINATA_GATEWAY,
+      ...DEFAULT_GATEWAYS,
+    ]);
+    const deps = createDefaultDeps({
+      stdout: capturingWriter(),
+      stderr: capturingWriter(),
+      env: { ETH_RPC_URL: "http://127.0.0.1:1", ENSPACK_IPFS_GATEWAYS: extra },
+    });
+    expect(deps.store).toBeDefined();
   });
 });

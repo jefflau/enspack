@@ -39,6 +39,30 @@ export const DEFAULT_GATEWAYS = [
 ] as const;
 
 /**
+ * Pinata public gateway. CLI and bootstrap configured lists prepend this
+ * (manifests are pinned there); it is not part of SPEC `DEFAULT_GATEWAYS`.
+ */
+export const PINATA_GATEWAY = "https://gateway.pinata.cloud/ipfs/{cid}";
+
+type EnvLike = Record<string, string | undefined>;
+
+/**
+ * SPEC §4 step 3 order for configured clients: `ENSPACK_IPFS_GATEWAYS`, then
+ * Pinata, then `DEFAULT_GATEWAYS`.
+ */
+export function gatewaysFromEnv(env: EnvLike = process.env): string[] {
+  const extra = env.ENSPACK_IPFS_GATEWAYS;
+  const extras =
+    extra !== undefined && extra !== ""
+      ? extra
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
+      : [];
+  return [...extras, PINATA_GATEWAY, ...DEFAULT_GATEWAYS];
+}
+
+/**
  * Schema-valid placeholder for `versions[last].cid` (issue #30). A manifest
  * cannot contain its own CID; clients take the current version from contenthash.
  */

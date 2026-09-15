@@ -7,6 +7,8 @@
   real CIDs. `inspect` / `versions` human output marks the latest cid as
   "(this manifest — see contenthash)"; `versions --json` adds
   `latestCidFromContenthash`.
+- WP-22: default store prepends `https://gateway.pinata.cloud/ipfs/{cid}`
+  (`gatewaysFromEnv`); `ENSPACK_IPFS_GATEWAYS` still comes first.
 - WP-18: `enspack ens-setup --chain sepolia --name enspack.eth` one-shot ENSv2
   on-chain setup. Signer is `ENSPACK_OPERATOR_KEY` (falls back to
   `ENSPACK_PUBLISHER_KEY`). `--dry-run` / `--json` / `--subname` / `--operator`.

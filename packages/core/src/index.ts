@@ -7,11 +7,13 @@ export {
   MAGNET_RE,
   MANIFEST_MAX_BYTES,
   MIRROR_NAMESPACE,
+  PINATA_GATEWAY,
   ROOT_NAME,
   SELF_CID_PLACEHOLDER,
   SPEC_STRING,
   TEXT_KEYS,
   TORRENT_MAX_BYTES,
+  gatewaysFromEnv,
 } from "./constants.js";
 export { EnspackError, EXIT_CODES, isEnspackError } from "./error.js";
 export type { EnspackErrorCode } from "./error.js";
