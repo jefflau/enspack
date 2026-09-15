@@ -52,6 +52,21 @@ and `ENSPACK_ENS_VERSION` override. Mainnet stays v1.
 manifest, CID, and calldata/gas on stderr (`formatPublishPlan`). No pins, no
 txs.
 
+### `versions[].cid` (issue #30)
+
+A manifest cannot contain its own CID: writing the CID changes the bytes.
+`enspack publish` (and bootstrap `assembleManifest`) put the schema-valid
+placeholder `SELF_CID_PLACEHOLDER` (`bafkrei` + 52×`a`) on the **last**
+`versions[]` entry. Previous entries keep real CIDs (the previous tail is
+stamped with the on-chain CID of that version). Clients take the current
+version's CID from `contenthash`. `enspack versions --json` adds
+`latestCidFromContenthash`. Human `inspect` / `versions` mark the latest
+entry as `(this manifest — see contenthash)`.
+
+`enspack get --http-only` skips torrent metainfo (`distribution.torrent.cid`)
+and fetches files from `webseeds[]` with SHA-256 verification (SPEC §4 step
+7c). Without `--http-only`, metainfo is still fetched and checked.
+
 Publisher names under `mirrors.enspack.eth` use `<org>--<repo>` labels and set
 `canonical` to `<repo>.<org>.enspack.eth`. Agents must not publish on Sepolia
 under any label other than `*.mirrors.enspack.eth` (FLEET.md).

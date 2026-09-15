@@ -57,6 +57,10 @@ enspack get <ref> [--dir <path>] [--select <glob>...] [--http-only]
 Default install target is `$HF_HOME/hub/models--{org}--{repo}/` (SPEC §5).
 `--dir` copies files flat into that directory.
 
+`--http-only` fetches each `files[]` entry from `webseeds[]` and verifies
+SHA-256. It does **not** fetch `distribution.torrent.cid` metainfo from IPFS
+(SPEC §4 step 7c). The torrent path still checks metainfo.
+
 If `enspack.lock` in the current working directory already has an entry for the
 name, a CID mismatch is a hard error (exit 3) unless `--update`. The lockfile
 is rewritten only when that entry already exists, or when `--save` is passed
@@ -93,7 +97,7 @@ webseed; see `packages/cli/test/get.e2e.test.ts`.
 | `HF_TOKEN` | Optional Hugging Face read token |
 | `PINATA_JWT` | `--pin pinata` |
 | `ENSPACK_SEED_NODE` | Default seed-node base URL (`--pin seed`, `seed`) |
-| `ENSPACK_IPFS_GATEWAYS` | Comma-separated gateway templates (`{cid}`), prepended to core `DEFAULT_GATEWAYS` |
+| `ENSPACK_IPFS_GATEWAYS` | Comma-separated gateway templates (`{cid}`), tried first. Then Pinata (`https://gateway.pinata.cloud/ipfs/{cid}`), then core `DEFAULT_GATEWAYS` (dweb.link, ipfs.io, w3s.link) |
 | `ENSPACK_KUBO_API` | Kubo HTTP API base for `--pin kubo` |
 | `HF_HOME` | Hugging Face cache root (default `~/.cache/huggingface`) |
 
