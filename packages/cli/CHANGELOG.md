@@ -2,6 +2,11 @@
 
 ## 0.1.0
 
+- WP-22: `publish` writes `SELF_CID_PLACEHOLDER` on `versions[last].cid` instead
+  of the draft CID (issue #30). Previous entries keep (or are stamped with)
+  real CIDs. `inspect` / `versions` human output marks the latest cid as
+  "(this manifest — see contenthash)"; `versions --json` adds
+  `latestCidFromContenthash`.
 - WP-18: `enspack ens-setup --chain sepolia --name enspack.eth` one-shot ENSv2
   on-chain setup. Signer is `ENSPACK_OPERATOR_KEY` (falls back to
   `ENSPACK_PUBLISHER_KEY`). `--dry-run` / `--json` / `--subname` / `--operator`.

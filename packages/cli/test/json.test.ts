@@ -54,16 +54,18 @@ describe("json payloads", () => {
     });
   });
 
-  it("versions --json marks the latest", async () => {
+  it("versions --json marks the latest and adds latestCidFromContenthash", async () => {
     await withTmp(async (tmp) => {
-      const { deps, manifest } = await baseDeps(tmp);
-      const { code, stdout } = await runCli(deps, ["versions", manifest.model, "--json"]);
+      const { deps, manifest, cid } = await baseDeps(tmp);
+      const { code, stdout, stderr } = await runCli(deps, ["versions", manifest.model, "--json"]);
       expect(code).toBe(0);
+      expect(stderr).toBe("");
       expect(JSON.parse(stdout)).toEqual({
         versions: manifest.versions.map((v, i) => ({
           ...v,
           latest: i === manifest.versions.length - 1,
         })),
+        latestCidFromContenthash: cid,
       });
       expect(stdout).toMatchSnapshot();
     });

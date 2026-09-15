@@ -40,7 +40,7 @@ exports[`json payloads > verify --json on a matching directory 1`] = `
 "
 `;
 
-exports[`json payloads > versions --json marks the latest 1`] = `
-"{"versions":[{"version":"1.0.0","name":"v1-0-0.tiny-model.mirrors.enspack.eth","cid":"bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","createdAt":"2026-09-14T00:00:00Z","latest":true}]}
+exports[`json payloads > versions --json marks the latest and adds latestCidFromContenthash 1`] = `
+"{"versions":[{"version":"1.0.0","name":"v1-0-0.tiny-model.mirrors.enspack.eth","cid":"bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","createdAt":"2026-09-14T00:00:00Z","latest":true}],"latestCidFromContenthash":"bafkreihsttlkrfbniygoxztnhtdxhhpk4uerx6lpceyx4plsxnfuellp3i"}
 "
 `;

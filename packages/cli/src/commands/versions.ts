@@ -27,12 +27,16 @@ export async function runVersions(
     latest: last !== undefined && v === last,
   }));
   if (flags.json === true) {
-    writeJson(deps.stdout, { versions: rows });
+    writeJson(deps.stdout, { versions: rows, latestCidFromContenthash: resolved.cid });
     return;
   }
   for (const row of rows) {
+    const cid = row.latest ? "(this manifest — see contenthash)" : row.cid;
     const mark = row.latest ? " latest" : "";
-    human(deps.stderr, `${row.version} ${row.name} ${row.cid} ${row.createdAt}${mark}`);
+    human(deps.stderr, `${row.version} ${row.name} ${cid} ${row.createdAt}${mark}`);
+  }
+  if (resolved.cid !== null) {
+    human(deps.stderr, `latestCidFromContenthash ${resolved.cid}`);
   }
 }
 

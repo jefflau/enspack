@@ -38,6 +38,12 @@ export const DEFAULT_GATEWAYS = [
   "https://{cid}.ipfs.w3s.link",
 ] as const;
 
+/**
+ * Schema-valid placeholder for `versions[last].cid` (issue #30). A manifest
+ * cannot contain its own CID; clients take the current version from contenthash.
+ */
+export const SELF_CID_PLACEHOLDER = `bafkrei${"a".repeat(52)}`;
+
 /** SPEC / MVP WP-03: manifest size cap (1 MiB). */
 export const MANIFEST_MAX_BYTES = 1024 * 1024;
 

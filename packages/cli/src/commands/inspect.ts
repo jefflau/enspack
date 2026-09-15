@@ -40,6 +40,14 @@ export async function runInspect(
     `webseeds ${manifest.distribution.webseeds.join(" ")}`,
     `canonical ${manifest.canonical ?? "-"}`,
   ];
+  const lastIdx = manifest.versions.length - 1;
+  for (const [i, v] of manifest.versions.entries()) {
+    const cid = i === lastIdx ? "(this manifest — see contenthash)" : v.cid;
+    lines.push(`version ${v.version} ${v.name} ${cid}`);
+  }
+  if (resolved.cid !== null) {
+    lines.push(`contenthash ${resolved.cid}`);
+  }
   for (const line of lines) {
     human(deps.stderr, line);
   }

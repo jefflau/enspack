@@ -9,6 +9,7 @@ import {
   type ManifestStore,
   type Pinner,
   type PublishResult,
+  SELF_CID_PLACEHOLDER,
   canonicalJson,
   createManifestStore,
   ensVersionFor,
@@ -242,14 +243,18 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
     const createdAt = (deps.now ?? (() => new Date()))().toISOString();
     const prev = await previousVersions(deps, chain, modelName);
 
-    const placeholderCid = `bafkrei${"p".repeat(52)}`;
+    // Issue #30: a manifest cannot contain its own CID. Keep a schema-valid
+    // placeholder on the last entry; stamp the previous tail with the on-chain CID.
+    const prior = prev.versions.map((v, i, arr) =>
+      i === arr.length - 1 && prev.previous !== undefined ? { ...v, cid: prev.previous } : { ...v },
+    );
     const thisVersion = {
       version: flags.version,
       name: versionName,
-      cid: placeholderCid,
+      cid: SELF_CID_PLACEHOLDER,
       createdAt,
     };
-    const versions = [...prev.versions, thisVersion] as Manifest["versions"];
+    const versions = [...prior, thisVersion] as Manifest["versions"];
 
     const manifestDraft: Record<string, unknown> = {
       spec: "enspack/0.1",
@@ -284,13 +289,7 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
       manifestDraft.canonical = `${normalizeLabel(repoName)}.${normalizeLabel(org)}.enspack.eth`;
     }
 
-    const first = validateManifest(manifestDraft);
-    const firstCid = await manifestCid(canonicalJson(first));
-    const last = first.versions[first.versions.length - 1];
-    if (last !== undefined) {
-      last.cid = firstCid;
-    }
-    const manifest = validateManifest(first);
+    const manifest = validateManifest(manifestDraft);
     const manifestBytes = canonicalJson(manifest);
     const C = await putBytes(deps, flags, manifestBytes, "application/json");
 

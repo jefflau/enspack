@@ -1,6 +1,12 @@
-import { MIRROR_NAMESPACE, type Manifest, type ManifestFile, SPEC_STRING } from "@enspack/core";
+import {
+  MIRROR_NAMESPACE,
+  type Manifest,
+  type ManifestFile,
+  SELF_CID_PLACEHOLDER,
+  SPEC_STRING,
+} from "@enspack/core";
 import { magnetFor } from "@enspack/torrent";
-import { PLACEHOLDER_CID, PLACEHOLDER_INFOHASH, PLACEHOLDER_MAGNET } from "./constants.js";
+import { PLACEHOLDER_INFOHASH, PLACEHOLDER_MAGNET } from "./constants.js";
 import { canonicalNameFor, modelNameFor, versionNameFor } from "./names.js";
 
 function hasLicenseFile(files: ManifestFile[]): boolean {
@@ -39,11 +45,18 @@ export function assembleManifest(input: AssembleInput): Manifest {
   const thisVersion = {
     version: input.version,
     name,
-    cid: PLACEHOLDER_CID,
+    cid: SELF_CID_PLACEHOLDER,
     createdAt: input.createdAt,
   };
-  const versions =
-    input.previousVersions !== undefined ? [...input.previousVersions, thisVersion] : [thisVersion];
+  const prior =
+    input.previousVersions === undefined
+      ? []
+      : input.previousVersions.map((v, i, arr) =>
+          i === arr.length - 1 && input.previous !== undefined
+            ? { ...v, cid: input.previous }
+            : { ...v },
+        );
+  const versions = [...prior, thisVersion];
 
   const distribution: Manifest["distribution"] = {
     infohash: input.infohash,
@@ -107,7 +120,7 @@ export function draftManifestForDownload(
     },
     files: files as Manifest["files"],
     totalSize,
-    versions: [{ version: "0.0.0", name, cid: PLACEHOLDER_CID, createdAt }],
+    versions: [{ version: "0.0.0", name, cid: SELF_CID_PLACEHOLDER, createdAt }],
   };
 }
 
