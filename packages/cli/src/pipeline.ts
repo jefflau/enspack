@@ -229,16 +229,21 @@ export async function runPipeline(deps: CliDeps, opts: PipelineOptions): Promise
     human(deps.stderr, `a publisher-verified name exists: ${manifest.canonical}`);
   }
 
-  const metainfo = await fetchTorrentVerified(asIpfsStore(deps.store), manifest, deps.fetch);
-  if (metainfo !== null) {
-    const parsed = await parseTorrent(metainfo);
-    if (parsed.infohash !== manifest.distribution.infohash) {
-      throw new EnspackError(
-        "VERIFY",
-        `torrent infohash ${parsed.infohash} !== manifest.distribution.infohash ${manifest.distribution.infohash}`,
-      );
+  let metainfo: Uint8Array | null = null;
+  if (opts.httpOnly === true) {
+    human(deps.stderr, "http-only: skipping metainfo");
+  } else {
+    metainfo = await fetchTorrentVerified(asIpfsStore(deps.store), manifest, deps.fetch);
+    if (metainfo !== null) {
+      const parsed = await parseTorrent(metainfo);
+      if (parsed.infohash !== manifest.distribution.infohash) {
+        throw new EnspackError(
+          "VERIFY",
+          `torrent infohash ${parsed.infohash} !== manifest.distribution.infohash ${manifest.distribution.infohash}`,
+        );
+      }
+      metainfoMatchesManifest(parsed, manifest);
     }
-    metainfoMatchesManifest(parsed, manifest);
   }
 
   const infohash = manifest.distribution.infohash;
