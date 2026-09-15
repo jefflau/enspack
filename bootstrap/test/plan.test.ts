@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { PublishInput } from "@enspack/core";
+import type { PublishInput, Resolved } from "@enspack/core";
 import { EnspackError, namehashOf } from "@enspack/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { runCli } from "../src/cli.js";
@@ -11,12 +11,12 @@ import {
   ZERO_ADDR,
   emptyHb,
   fakeHf,
+  loadFixtureManifest,
   loadModels,
   modelsYamlPath,
   recordingPublisher,
   resolverThatThrows,
   silentLog,
-  tinyModelFiles,
 } from "./helpers.js";
 
 describe("plan --json (MVP.md WP-12 dry run)", () => {
@@ -256,37 +256,28 @@ describe("planBootstrap resilience (WP-22)", () => {
     const prevCid = `bafkrei${"c".repeat(52)}`;
     const deps = basePlanDeps({
       resolver: {
-        async resolve(ref) {
+        async resolve(ref): Promise<Resolved> {
           if (!ref.includes("enspack--tiny-model")) {
             throw new EnspackError("RESOLVE", `unresolved ${ref}`);
           }
+          const previous = loadFixtureManifest();
           return {
             name: ref,
             node: namehashOf(ref),
             cid: prevCid,
-            magnet: null,
-            spec: "enspack/0.1" as const,
+            magnet: previous.distribution.magnet,
+            spec: previous.spec,
             manifest: {
-              spec: "enspack/0.1" as const,
+              ...previous,
               name: "v1-0-0.enspack--tiny-model.mirrors.enspack.eth",
               model: "enspack--tiny-model.mirrors.enspack.eth",
-              publisher: "mirrors.enspack.eth",
               version: "1.0.0",
-              createdAt: "2026-09-14T00:00:00Z",
-              license: "apache-2.0",
-              distribution: {
-                infohash: "0".repeat(40),
-                magnet: `magnet:?xt=urn:btih:${"0".repeat(40)}`,
-                webseeds: ["https://example.invalid/"],
-              },
-              files: tinyModelFiles(),
-              totalSize: tinyModelFiles().reduce((s, f) => s + f.size, 0),
               versions: [
                 {
                   version: "1.0.0",
                   name: "v1-0-0.enspack--tiny-model.mirrors.enspack.eth",
-                  cid: `bafkrei${"a".repeat(52)}`,
-                  createdAt: "2026-09-14T00:00:00Z",
+                  cid: previous.versions[0]?.cid ?? `bafkrei${"a".repeat(52)}`,
+                  createdAt: previous.createdAt,
                 },
               ],
             },

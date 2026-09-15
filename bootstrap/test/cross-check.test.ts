@@ -108,6 +108,7 @@ describe("cross-check (BOOTSTRAP.md §2 rule 3)", () => {
       },
     );
     expect(result.outcome).toBe("ok");
+    if (result.outcome !== "ok") return;
     expect(result.data.hbCrossCheck).toBe("skipped");
     expect(logs).toContain("no Hugging Bay lock; cross-check skipped");
   });
