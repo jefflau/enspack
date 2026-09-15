@@ -4,6 +4,7 @@ import {
   createManifestStore,
   createPublisher,
   createResolver,
+  gatewaysFromEnv,
   kuboPinner,
   publicClientFor,
   seedNodePinner,
@@ -90,7 +91,7 @@ export function createProductionDeps(opts: ProductionOpts): BootstrapDeps {
     pinner = seedNodePinner({ baseUrl: seedUrl });
   }
 
-  const store = createManifestStore({ pinner });
+  const store = createManifestStore({ gateways: gatewaysFromEnv(env), pinner });
   const resolver = createResolver({
     client,
     store,
