@@ -24,13 +24,14 @@ function decodeNameParam(raw: string | undefined): string | null {
   }
 }
 
-/** Latest CID: the version whose name matches the manifest, else the last listed. */
-function latestVersion(detail: NameDetail): NameVersion {
+/**
+ * Latest CID comes from the indexer's on-chain `contenthash` record, never from
+ * `manifest.versions[last].cid`: a manifest cannot contain its own CID (issue #30).
+ */
+function latestVersion(detail: NameDetail): NameVersion | null {
   const match = detail.versions.find((v) => v.name === detail.manifest.name);
   if (match !== undefined) return match;
-  const last = detail.versions[detail.versions.length - 1];
-  if (last !== undefined) return last;
-  return detail.manifest.versions[0];
+  return detail.versions[detail.versions.length - 1] ?? null;
 }
 
 function ModelHeader({ detail }: { detail: NameDetail }) {
@@ -96,6 +97,14 @@ export function ModelPage() {
   if (data === null) return <Loading />;
 
   const latest = latestVersion(data);
+  if (latest === null) {
+    return (
+      <ErrorState
+        error={new ApiError(500, "NO_VERSIONS", "indexer returned a name without versions")}
+        what="name"
+      />
+    );
+  }
 
   return (
     <article className="model-page">

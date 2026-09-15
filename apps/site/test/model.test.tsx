@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensAppUrl } from "../src/lib/format.js";
+import { FixtureIndexClient } from "../src/lib/client.js";
+import { ensAppUrl, ipfsUrl } from "../src/lib/format.js";
 import { ModelPage } from "../src/pages/model.js";
-import { renderAt } from "./helpers.js";
+import { demoFixtures, renderAt } from "./helpers.js";
 
 afterEach(() => {
   cleanup();
@@ -93,6 +94,41 @@ describe("ModelPage", () => {
     await waitFor(() => {
       expect(document.title).toBe("Qwen2.5-7B-Instruct · enspack");
     });
+  });
+
+  it("takes the latest CID from the indexer, never from manifest.versions[last] (issue #30)", async () => {
+    const detail = demoFixtures.details[QWEN];
+    if (detail === undefined) throw new Error("missing qwen fixture");
+    const indexerCid = detail.versions[0]?.cid;
+    const selfCid = detail.manifest.versions[detail.manifest.versions.length - 1]?.cid;
+    if (indexerCid === undefined || selfCid === undefined) throw new Error("fixture shape");
+    expect(selfCid).not.toBe(indexerCid);
+
+    renderName(QWEN);
+    await screen.findByRole("heading", { name: "Qwen2.5-7B-Instruct" });
+
+    expect(document.querySelector(`a[href="${ipfsUrl(indexerCid)}"]`)).not.toBeNull();
+    expect(document.querySelector(`a[href="${ipfsUrl(selfCid)}"]`)).toBeNull();
+    expect(screen.getByText(/"lockfileVersion": 1/)).toHaveTextContent(indexerCid);
+    expect(screen.getByText(/"lockfileVersion": 1/)).not.toHaveTextContent(selfCid);
+    // The placeholder may only appear inside the raw manifest JSON viewer.
+    for (const el of screen.getAllByText(new RegExp(selfCid))) {
+      expect(el.closest("details")).not.toBeNull();
+    }
+  });
+
+  it("shows an error when the indexer returns a name without versions", async () => {
+    const detail = demoFixtures.details[QWEN];
+    if (detail === undefined) throw new Error("missing qwen fixture");
+    const client = new FixtureIndexClient({
+      ...demoFixtures,
+      details: { [QWEN]: { ...detail, versions: [] } },
+    });
+    renderAt(`/name/${encodeURIComponent(QWEN)}`, <ModelPage />, {
+      routePattern: "/name/:name",
+      client,
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not load name");
   });
 
   it("marks Jeff's latest version and links the older version name", async () => {
