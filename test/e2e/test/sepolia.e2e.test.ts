@@ -190,6 +190,12 @@ describe.skipIf(skip)("sepolia e2e", { timeout: 600_000 }, () => {
   });
 
   it("enspack get --json from a fresh HF_HOME, then verify", async () => {
+    const kind = pinKind(process.env);
+    const existing = process.env.ENSPACK_E2E_NAME;
+    if (kind === null && (existing === undefined || existing === "")) {
+      // First test did not publish; there is no live name to get.
+      return;
+    }
     const hfHome = await mkdtemp(join(tmpdir(), "enspack-sepolia-hf-"));
     tmps.push(hfHome);
     const env: NodeJS.ProcessEnv = {
