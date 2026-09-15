@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "../src/lib/api.js";
 import { FixtureIndexClient, HttpIndexClient } from "../src/lib/client.js";
-import { readConfig } from "../src/lib/config.js";
+import { readConfig, routerBasename } from "../src/lib/config.js";
 import { ensAppUrl, firstLabel, formatBytes, shortHex } from "../src/lib/format.js";
 import { demoFixtures } from "./helpers.js";
 
@@ -11,6 +11,12 @@ describe("config", () => {
     expect(c.chain).toBe("sepolia");
     expect(c.dataSource).toBe("http");
     expect(c.indexUrl).toBe("https://idx.example");
+  });
+
+  it("derives the router basename from Vite's BASE_URL", () => {
+    expect(routerBasename("/")).toBe("/");
+    expect(routerBasename("/enspack/")).toBe("/enspack");
+    expect(routerBasename("/enspack")).toBe("/enspack");
   });
 
   it("honours mainnet + demo", () => {

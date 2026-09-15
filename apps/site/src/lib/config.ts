@@ -27,3 +27,9 @@ export function readConfig(env: ImportMetaEnv = import.meta.env): SiteConfig {
 }
 
 export const config: SiteConfig = readConfig();
+
+/** react-router wants the base path without a trailing slash; Vite's BASE_URL always has one. */
+export function routerBasename(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/+$/, "");
+  return trimmed === "" ? "/" : trimmed;
+}
