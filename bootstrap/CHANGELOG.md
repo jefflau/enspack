@@ -7,6 +7,11 @@
   (issue #30).
 - WP-22: `createProductionDeps` uses `gatewaysFromEnv` so `ENSPACK_IPFS_GATEWAYS`
   is prepended (then Pinata, then SPEC defaults).
+- WP-22: `planBootstrap` records per-entry `failed` on resolve/publish throws
+  and continues; totals count only `ok` rows. Already-published models plan
+  `1.1.0` via `bumpMinor` / previous-manifest (same as `run`).
+- WP-22: Hugging Bay lock HTTP 409/404 is treated as no lock; files step logs
+  "no Hugging Bay lock; cross-check skipped" and continues.
 - WP-21: `ENSPACK_BOOTSTRAP_STATE` overrides the `state.json` path so the one-box
   seed volume can persist resume state. `bootstrap/Dockerfile` is the infra
   compose `bootstrap` profile image (aria2c + `pnpm deploy --filter @enspack/bootstrap`).

@@ -39,7 +39,7 @@ export interface CliHf {
   licenseGate(license: string | null | undefined, opts?: LicenseGateOptions): void;
   huggingBay: {
     resolve(repo: string): Promise<HbArtifact | null>;
-    lock(artifactId: string): Promise<HbLock>;
+    lock(artifactId: string): Promise<HbLock | null>;
     submitFallback(artifactId: string, input: HbFallbackInput): Promise<unknown>;
   };
 }

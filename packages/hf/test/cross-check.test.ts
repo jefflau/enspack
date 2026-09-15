@@ -11,6 +11,7 @@ describe("crossCheck", () => {
     };
     const hb = new HuggingBayClient({ fetch: createReplayFetch() });
     const lock = await hb.lock("hf-model-qwen-qwen2-5-7b-instruct");
+    if (lock === null) throw new Error("expected lock");
     expect(crossCheck(example.files, lock)).toEqual({ ok: true, compared: example.files.length });
   });
 
@@ -20,6 +21,7 @@ describe("crossCheck", () => {
     };
     const hb = new HuggingBayClient({ fetch: createReplayFetch() });
     const lock = await hb.lock("hf-model-qwen-qwen2-5-7b-instruct");
+    if (lock === null) throw new Error("expected lock");
     const tampered = {
       ...lock,
       files: lock.files.map((f) =>
@@ -43,6 +45,7 @@ describe("crossCheck", () => {
     };
     const hb = new HuggingBayClient({ fetch: createReplayFetch() });
     const lock = await hb.lock("hf-model-qwen-qwen2-5-7b-instruct");
+    if (lock === null) throw new Error("expected lock");
     const tampered = {
       ...lock,
       files: lock.files.map((f) => (f.path === "README.md" ? { ...f, size: f.size + 1 } : f)),

@@ -10,7 +10,7 @@ import type { EntrySnapshot, ModelEntry, StepOutcome } from "../types.js";
 export async function stepFiles(
   entry: ModelEntry,
   revision: string,
-  deps: Pick<BootstrapDeps, "hf" | "hb">,
+  deps: Pick<BootstrapDeps, "hf" | "hb" | "log">,
 ): Promise<StepOutcome> {
   const files = await deps.hf.buildFiles(entry.repo, revision);
   const artifact = await deps.hb.resolve(entry.repo);
@@ -24,6 +24,15 @@ export async function stepFiles(
   }
   try {
     const lock = await deps.hb.lock(artifact.id);
+    if (lock === null) {
+      deps.log.info("no Hugging Bay lock; cross-check skipped");
+      const data: Partial<EntrySnapshot> = {
+        files,
+        fileCount: files.length,
+        hbCrossCheck: "skipped",
+      };
+      return { outcome: "ok", data };
+    }
     crossCheck(files, lock);
   } catch (err) {
     const message = err instanceof EnspackError ? err.message : String(err);

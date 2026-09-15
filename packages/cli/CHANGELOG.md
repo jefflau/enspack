@@ -7,6 +7,9 @@
   real CIDs. `inspect` / `versions` human output marks the latest cid as
   "(this manifest — see contenthash)"; `versions --json` adds
   `latestCidFromContenthash`.
+- WP-22: `--http-only` skips torrent metainfo fetch/verify (files still SHA-256
+  checked from webseeds). Logs `http-only: skipping metainfo` on stderr.
+- WP-22: Hugging Bay lock 404/409 skips the publish cross-check.
 - WP-22: default store prepends `https://gateway.pinata.cloud/ipfs/{cid}`
   (`gatewaysFromEnv`); `ENSPACK_IPFS_GATEWAYS` still comes first.
 - WP-18: `enspack ens-setup --chain sepolia --name enspack.eth` one-shot ENSv2

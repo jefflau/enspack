@@ -38,9 +38,45 @@ describe("HuggingBayClient", () => {
   it("parses lock files from artifacts[].files sizeBytes", async () => {
     const client = new HuggingBayClient({ fetch: createReplayFetch() });
     const lock = await client.lock("hf-model-qwen-qwen2-5-7b-instruct");
+    expect(lock).not.toBeNull();
+    if (lock === null) return;
     expect(lock.files.length).toBeGreaterThan(0);
     expect(lock.files.some((f) => f.path === "config.json" && f.size === 663)).toBe(true);
     expect(lock.raw).toBeTruthy();
+  });
+
+  it("returns null on lock HTTP 404 and 409", async () => {
+    for (const status of [404, 409]) {
+      const client = new HuggingBayClient({
+        fetch: async (input) => {
+          const url =
+            typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+          if (url.includes("/lock")) {
+            return new Response("{}", {
+              status,
+              headers: { "content-type": "application/json" },
+            });
+          }
+          return new Response("{}", { status: 500 });
+        },
+      });
+      expect(await client.lock("hf-model-missing")).toBeNull();
+    }
+  });
+
+  it("throws FETCH on lock HTTP 500", async () => {
+    const client = new HuggingBayClient({
+      fetch: async () =>
+        new Response("{}", { status: 500, headers: { "content-type": "application/json" } }),
+    });
+    try {
+      await client.lock("hf-model-broken");
+      expect.unreachable("expected FETCH");
+    } catch (err) {
+      expect(err).toBeInstanceOf(EnspackError);
+      expect((err as EnspackError).code).toBe("FETCH");
+      expect((err as EnspackError).message).toContain("HTTP 500");
+    }
   });
 
   it("rejects magnets that fail MAGNET_RE", async () => {

@@ -158,10 +158,12 @@ export class HuggingBayClient {
   /**
    * Fetch a Hugging Bay lock. Observed 2026-09-14: `GET /api/artifacts/{id}/lock`
    * returns `{ artifacts: [{ files: [{ path, sha256, sizeBytes }] }] }` (SPEC §8 step 1).
+   * 404 and 409 mean no lock (BOOTSTRAP.md §2 rule 3 only cross-checks where a lock exists).
    */
-  async lock(artifactId: string): Promise<HbLock> {
+  async lock(artifactId: string): Promise<HbLock | null> {
     const url = `${this.baseUrl}/api/artifacts/${encodeURIComponent(artifactId)}/lock`;
     const res = await this.#get(url);
+    if (res.status === 404 || res.status === 409) return null;
     if (!res.ok) {
       throw new EnspackError("FETCH", `Hugging Bay lock ${artifactId} HTTP ${res.status}`);
     }

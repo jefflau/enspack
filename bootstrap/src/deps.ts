@@ -20,7 +20,7 @@ export interface BootstrapHf {
 
 export interface BootstrapHb {
   resolve(repo: string): Promise<HbArtifact | null>;
-  lock(artifactId: string): Promise<HbLock>;
+  lock(artifactId: string): Promise<HbLock | null>;
   submitFallback(
     artifactId: string,
     input: HbFallbackInput & { sourceUrl?: string; filePath?: string },

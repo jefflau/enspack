@@ -130,6 +130,25 @@ export function emptyHb(): BootstrapDeps["hb"] {
   };
 }
 
+export function noLockHb(): BootstrapDeps["hb"] {
+  return {
+    async resolve() {
+      return {
+        id: "hf-model-enspack-tiny-model",
+        repo: TINY_REPO,
+        digest: "aa".repeat(32),
+        raw: {},
+      };
+    },
+    async lock() {
+      return null;
+    },
+    async submitFallback() {
+      return {};
+    },
+  };
+}
+
 export function disagreeingHb(): BootstrapDeps["hb"] {
   return {
     async resolve() {

@@ -175,7 +175,11 @@ export async function runPublish(deps: CliDeps, flags: PublishFlags): Promise<vo
     human(deps.stderr, "Hugging Bay artifact not found; skipping cross-check");
   } else {
     const hbLock = await deps.hf.huggingBay.lock(artifact.id);
-    crossCheck(files, hbLock);
+    if (hbLock === null) {
+      human(deps.stderr, "no Hugging Bay lock; cross-check skipped");
+    } else {
+      crossCheck(files, hbLock);
+    }
   }
 
   const webseeds = [hfWebseed(repo, revision), ...(flags.webseed ?? [])];
