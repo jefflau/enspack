@@ -83,7 +83,7 @@ webseed; see `packages/cli/test/get.e2e.test.ts`.
 | `ETH_RPC_URL` | Mainnet (and Anvil fork) JSON-RPC |
 | `SEPOLIA_RPC_URL` | Sepolia JSON-RPC |
 | `ENSPACK_ENS_VERSION` | `v1` or `v2`. Overrides `--chain` default (Sepolia → v2, mainnet → v1) |
-| `ENSPACK_ENSV2_UNIVERSAL_RESOLVER` | ENSv2 Universal Resolver (default `0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe`) |
+| `ENSPACK_ENSV2_UNIVERSAL_RESOLVER` | ENSv2 UniversalResolverV2 (default `0x4a1817d13e9cf196f471725176355c1234b63c70`, a pinned Sepolia deployment; see `docs/ens-v2.md`) |
 | `ENSPACK_ENSV2_VERIFIABLE_FACTORY` | VerifiableFactory (Sepolia redeploys; override if ENS docs change) |
 | `ENSPACK_ENSV2_USER_REGISTRY_IMPL` | UserRegistry implementation |
 | `ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL` | PermissionedResolver implementation |

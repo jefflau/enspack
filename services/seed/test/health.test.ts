@@ -45,7 +45,7 @@ describe("seedEnsOpts", () => {
   it("defaults sepolia to v2 and honors ENSPACK_ENS_VERSION", () => {
     expect(seedEnsOpts("sepolia", {}).ensVersion).toBe("v2");
     expect(seedEnsOpts("sepolia", {}).ensV2?.universalResolver).toBe(
-      "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe",
+      "0x4A1817d13E9cF196f471725176355C1234b63C70",
     );
     expect(seedEnsOpts("sepolia", { ENSPACK_ENS_VERSION: "v1" }).ensVersion).toBe("v1");
     expect(seedEnsOpts("mainnet", {}).ensVersion).toBe("v1");

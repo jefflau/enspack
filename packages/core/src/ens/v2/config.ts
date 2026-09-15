@@ -14,8 +14,15 @@ export interface EnsV2Config {
   ethRegistrar: `0x${string}`;
 }
 
+/**
+ * One coherent Sepolia deployment (docs.ens.domains table, 2026-05-25 stack). The public
+ * `UpgradableUniversalResolverProxy` (0xeEeE…EeEe) is repointed by ENS between redeploys, which
+ * silently moves ROOT_REGISTRY and orphans everything registered on the previous stack; pinning
+ * this deployment's own UniversalResolverV2 keeps discovery, impls and ETHRegistrar consistent.
+ * Set ENSPACK_ENSV2_UNIVERSAL_RESOLVER=0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe to follow ENS.
+ */
 const SEPOLIA_DEFAULTS = {
-  universalResolver: "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe",
+  universalResolver: "0x4a1817d13e9cf196f471725176355c1234b63c70",
   verifiableFactory: "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef",
   userRegistryImpl: "0x624a25d67b59d587752ebec8dded8827dae52050",
   permissionedResolverImpl: "0x9eae5c2730a7dd16bdd1dee6421a1b91e3b0365e",

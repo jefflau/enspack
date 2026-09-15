@@ -3,7 +3,7 @@ import { labelhash } from "viem/ens";
 import { describe, expect, it } from "vitest";
 import { EnspackError, ensV2ConfigFor, ensVersionFor, labelId } from "../../src/index.js";
 
-const UR = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
+const UR = "0x4a1817d13e9cf196f471725176355c1234b63c70";
 const FACTORY = "0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef";
 const ALT = "0x0000000000000000000000000000000000000001";
 

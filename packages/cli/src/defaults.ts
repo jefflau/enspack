@@ -44,8 +44,11 @@ function parseGateways(env: NodeJS.ProcessEnv): string[] {
   return [...extras, ...DEFAULT_GATEWAYS];
 }
 
-function isPrivateKey(value: string): value is `0x${string}` {
-  return /^0x[0-9a-fA-F]{64}$/.test(value);
+/** Secret stores often strip the `0x`; accept both forms, never log the value. */
+function normalizePrivateKey(value: string): `0x${string}` | null {
+  const trimmed = value.trim();
+  const hex = trimmed.startsWith("0x") || trimmed.startsWith("0X") ? trimmed.slice(2) : trimmed;
+  return /^[0-9a-fA-F]{64}$/.test(hex) ? `0x${hex}` : null;
 }
 
 /**
@@ -61,10 +64,11 @@ function publisherFromEnv(env: NodeJS.ProcessEnv): CliDeps["publisherFactory"] {
         },
       };
     }
-    if (!isPrivateKey(key)) {
+    const normalized = normalizePrivateKey(key);
+    if (normalized === null) {
       throw new EnspackError("PUBLISH", "ENSPACK_PUBLISHER_KEY must be a 32-byte hex private key");
     }
-    const account = privateKeyToAccount(key);
+    const account = privateKeyToAccount(normalized);
     const viemChain = chain === "sepolia" ? sepolia : mainnet;
     const client = publicClientFor(chain, rpcUrl);
     const wallet = createWalletClient({
@@ -102,13 +106,14 @@ function operatorKeyFromEnv(env: NodeJS.ProcessEnv): `0x${string}` {
       "ENSPACK_OPERATOR_KEY is not set (falls back to ENSPACK_PUBLISHER_KEY)",
     );
   }
-  if (!isPrivateKey(key)) {
+  const normalized = normalizePrivateKey(key);
+  if (normalized === null) {
     throw new EnspackError(
       "PUBLISH",
       "ENSPACK_OPERATOR_KEY (or ENSPACK_PUBLISHER_KEY) must be a 32-byte hex private key",
     );
   }
-  return key;
+  return normalized;
 }
 
 function ensSetupFromEnv(env: NodeJS.ProcessEnv): NonNullable<CliDeps["ensSetupFactory"]> {

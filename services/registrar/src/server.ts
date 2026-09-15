@@ -24,11 +24,12 @@ function requireEnv(name: string): string {
 }
 
 function operatorAccount() {
-  const key = env("ENSPACK_OPERATOR_KEY");
-  if (key === undefined || !/^0x[0-9a-fA-F]{64}$/.test(key)) {
-    throw new Error("ENSPACK_OPERATOR_KEY must be a 0x-prefixed 32-byte hex private key");
+  const raw = env("ENSPACK_OPERATOR_KEY")?.trim();
+  const hex = raw === undefined ? undefined : raw.replace(/^0[xX]/, "");
+  if (hex === undefined || !/^[0-9a-fA-F]{64}$/.test(hex)) {
+    throw new Error("ENSPACK_OPERATOR_KEY must be a 32-byte hex private key");
   }
-  return privateKeyToAccount(key as Hex);
+  return privateKeyToAccount(`0x${hex}` as Hex);
 }
 
 function chainName(): "mainnet" | "sepolia" {

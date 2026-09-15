@@ -46,7 +46,7 @@ describe("ensOptsFor (WP-17)", () => {
   it("selects v2 on sepolia by default", () => {
     const opts = ensOptsFor("sepolia", {});
     expect(opts.ensVersion).toBe("v2");
-    expect(opts.ensV2?.universalResolver).toBe("0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe");
+    expect(opts.ensV2?.universalResolver).toBe("0x4A1817d13E9cF196f471725176355C1234b63C70");
   });
 
   it("selects v1 on mainnet by default", () => {

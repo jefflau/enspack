@@ -38,18 +38,25 @@ fails closed (`ENSv2 is not deployed on mainnet`).
 
 ### Discovery anchor
 
-The only configured address is the Universal Resolver proxy
-`0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe` (stable across ENS redeploys).
-Everything else is read at runtime: `ROOT_REGISTRY()` → `getSubregistry("eth")`
-→ ETHRegistry → … Implementation addresses (VerifiableFactory, UserRegistry,
-PermissionedResolver) come from `ensV2ConfigFor` defaults and are **overridable**
-because ENS redeploys Sepolia periodically.
+The only configured discovery address is a `UniversalResolverV2`; everything
+else is read at runtime: `ROOT_REGISTRY()` → `getSubregistry("eth")` → ETHRegistry
+→ … The default is the `UniversalResolverV2` of one specific Sepolia deployment
+(`0x4a1817d13e9cf196f471725176355c1234b63c70`, root `0x8115…4354`), **not** the
+public `UpgradableUniversalResolverProxy` `0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe`:
+ENS repoints that proxy between Sepolia redeploys (observed twice on 2026-09-14/15),
+which moves `ROOT_REGISTRY` and orphans every name registered on the previous
+stack — including `enspack.eth`. Pinning keeps discovery, the implementation
+addresses and the ETHRegistrar (used by fork tests) mutually consistent. Set
+`ENSPACK_ENSV2_UNIVERSAL_RESOLVER` to the proxy to follow ENS, and update all
+five overrides together when moving to a new deployment. Names on a pinned
+deployment resolve through enspack tooling and services; the ENS app only shows
+whatever deployment the proxy currently points at.
 
 ### Deployment-specific overrides
 
 | Env | Default (docs.ens.domains Sepolia table) |
 |-----|-------------------------------------------|
-| `ENSPACK_ENSV2_UNIVERSAL_RESOLVER` | `0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe` |
+| `ENSPACK_ENSV2_UNIVERSAL_RESOLVER` | `0x4a1817d13e9cf196f471725176355c1234b63c70` (deployment's UniversalResolverV2; proxy `0xeEeE…EeEe` follows ENS) |
 | `ENSPACK_ENSV2_VERIFIABLE_FACTORY` | `0x10dc6333cdfe1fcef624c6e0a8221b91804cd7ef` |
 | `ENSPACK_ENSV2_USER_REGISTRY_IMPL` | `0x624a25d67b59d587752ebec8dded8827dae52050` |
 | `ENSPACK_ENSV2_PERMISSIONED_RESOLVER_IMPL` | `0x9eae5c2730a7dd16bdd1dee6421a1b91e3b0365e` |
